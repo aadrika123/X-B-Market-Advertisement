@@ -31,10 +31,6 @@ trait WorkflowTrait
             "ulbId" => $ulbId,
             "workflowMstrId" => $wfMasterId
         ])->json();
-        // $promise = Http::async()->post($baseUrl . 'api/workflow/get-ulb-workflow')->then(function ($response) {
-        //     echo $response; 
-        // });
-        // print_r($promise);
         return $workflows;
     }
 
