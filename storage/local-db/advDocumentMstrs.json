@@ -1,0 +1,961 @@
+{
+    "SelfAdvertisements":[
+        {
+            "id":2,
+            "document_name":"Aadhar",
+            "workflow_id":129,
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Aadhar Card"
+        },
+        {
+            "id":4,
+            "document_name":"Municipal Trade License",
+            "workflow_id":129,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":7,
+            "document_name":"Holding No",
+            "workflow_id":129,
+            "relative_name":"HOLDING",
+            "docCode":"HORDING_NO",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Hording No"
+        },
+        {
+            "id":11,
+            "document_name":"GPS",
+            "workflow_id":129,
+            "relative_name":"GPS",
+            "docCode":"GPS",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Gps"
+        },
+        {
+            "id":16,
+            "document_name":"GST No Document",
+            "workflow_id":129,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Gst"
+        }
+    ],
+    "MovableVehicle":[
+        {
+            "id":17,
+            "document_name":"Aadhar Document",
+            "workflow_id":131,
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Aadhar Card"
+        },
+        {
+            "id":18,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":131,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":19,
+            "document_name":"Vehicle Photograph",
+            "workflow_id":131,
+            "relative_name":"VEHICLE",
+            "docCode":"VEHICLE_PHOTOGRAPH",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Vehicle Photograph"
+        },
+        {
+            "id":20,
+            "document_name":"Owner Book",
+            "workflow_id":131,
+            "relative_name":"OWNERBOOK",
+            "docCode":"OWNERBOOK",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Ownerbook"
+        },
+        {
+            "id":21,
+            "document_name":"Driving License",
+            "workflow_id":131,
+            "relative_name":"DRIVINGLICENSE",
+            "docCode":"DRIVING_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Driving License"
+        },
+        {
+            "id":22,
+            "document_name":"Insurance Photo",
+            "workflow_id":131,
+            "relative_name":"INSURANCE",
+            "docCode":"INSURANCE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Insurance"
+        },
+        {
+            "id":23,
+            "document_name":"GST No Document",
+            "workflow_id":131,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Gst"
+        }
+    ],
+    "Agency":[  
+        {
+            "id":24,
+            "document_name":"GST No Document",
+            "workflow_id":132,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Gst"
+        },
+        {
+            "id":25,
+            "document_name":"IT Return Last Year",
+            "workflow_id":132,
+            "relative_name":"IT RETURN LAST YEAR",
+            "docCode":"IT_RETURN_LAST_YEAR",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"IT Return Last Year"
+        },
+        {
+            "id":26,
+            "document_name":"IT Return Previous Last Year",
+            "workflow_id":132,
+            "relative_name":"IT RETURN PREVIOUS LAST YEAR",
+            "docCode":"IT_RETURN_PREVIOUS_LAST_YEAR",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"IT Return Previous Last Year"
+        },
+        {
+            "id":27,
+            "document_name":"Office Address Photograph",
+            "workflow_id":132,
+            "relative_name":"OFFICE ADDRESS",
+            "docCode":"OFFICE_ADDRESS",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Office Address"
+        },
+        {
+            "id":28,
+            "document_name":"PAN No Document",
+            "workflow_id":132,
+            "relative_name":"PAN",
+            "docCode":"PAN",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Pan"
+        },
+        {
+            "id":29,
+            "document_name":"Affidavit Photograph",
+            "workflow_id":132,
+            "relative_name":"AFFIDAVIT",
+            "docCode":"AFFIDAVIT_PHOTOGRAPH",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Affidavit Photograph"
+        }
+    ],
+    "PrivateLands":[
+        {
+            "id":30,
+            "document_name":"Aadhar Document",
+            "workflow_id":133,
+            "relative_name":"AADHAR",
+            "docCode":"AADHAR_CARD",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Aadhar Card"
+        },
+        {
+            "id":31,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":133,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":32,
+            "document_name":"GPS Map Camera Photograph",
+            "workflow_id":133,
+            "relative_name":"GPS MAP CAMERA",
+            "docCode":"GPS_MAP_CAMERA",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gps Map Camera"
+        },
+        {
+            "id":33,
+            "document_name":"Holding No Document",
+            "workflow_id":133,
+            "relative_name":"HOLDING",
+            "docCode":"HOLDING_NO",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Holding No"
+        },
+        {
+            "id":34,
+            "document_name":"GST No Document",
+            "workflow_id":133,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gst"
+        },
+        {
+            "id":35,
+            "document_name":"Brand Display Permission",
+            "workflow_id":133,
+            "relative_name":"BRAND DISPLAY",
+            "docCode":"BRAND_DISPLAY",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Brand Display"
+        }
+    ],
+    "AgencyHordingLicense":[
+        {
+            "id":36,
+            "document_name":"Certificate of Structural Engineer Ownership Details",
+            "workflow_id":134,
+            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS",
+            "docCode":"CERTIFICATE_OF_STRUCTURAL_ENGINEER_OWNERSHIP_DETAILS",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Certificate of Structural Engineer Ownership Details"
+        },
+        {
+            "id":37,
+            "document_name":"Building Permit/Property Tax",
+            "workflow_id":134,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"BUILDING_PERMIT/PROPERTY_TAX",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Building Permit/Property Tax"
+        },
+        {
+            "id":38,
+            "document_name":"Pan No Document",
+            "workflow_id":134,
+            "relative_name":"PAN NO",
+            "docCode":"PAN_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pan No Document"
+        },
+        {
+            "id":39,
+            "document_name":"Service Tax No",
+            "workflow_id":134,
+            "relative_name":"SERVICE TAX NO",
+            "docCode":"SERVICE_TAX_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Service Tax No"
+        },
+        {
+            "id":40,
+            "document_name":"Certificate of Structural Engineer Ownership Details",
+            "workflow_id":134,
+            "relative_name":"CERTIFICATE OF STRUCTURAL ENGINEER OWNERSHIP DETAILS",
+            "docCode":"CERTIFICATE_OF_STRUCTURAL_ENGINEER_OWNERSHIP_DETAILS",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Certificate of Structural Engineer Ownership Details"
+        },
+        {
+            "id":41,
+            "document_name":"Agreement Between The Building Owner And Advertising Agency",
+            "workflow_id":134,
+            "relative_name":"AGREEMENT BETWEEN THE AGENCY AND BUILDING OWNER",
+            "docCode":"AGREEMENT_BETWEEN_THE_BUILDING_OWNER_AND_ADVERTISING_AGENCY",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Agreement Between The Building Owner And Advertising Agency"
+        },
+        {
+            "id":42,
+            "document_name":"Coordinates of OMD with GPS Location",
+            "workflow_id":134,
+            "relative_name":"COORDINATE OF OMD WITH GPS LOCATION",
+            "docCode":"COORDINATE_OF_OMD_WITH_GPS_LOCATION",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Coordinates of OMD with GPS Location"
+        },
+        {
+            "id":43,
+            "document_name":"Site Photograph Document",
+            "workflow_id":134,
+            "relative_name":"SITE PHOTOGRAPH",
+            "docCode":"SITE_PHOTOGRAPH",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Site Photograph"
+        },
+        {
+            "id":44,
+            "document_name":"Sketch Plan of The Site",
+            "workflow_id":134,
+            "relative_name":"SKTECH PLAN OF SITE",
+            "docCode":"SKTECH_PLAN_OF_SITE",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Sketch Plan of The Site"
+        },
+        {
+            "id":45,
+            "document_name":"Pending Dues Document",
+            "workflow_id":134,
+            "relative_name":"PENDING DUES",
+            "docCode":"PENDING_DUES",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pending Dues"
+        },
+        {
+            "id":46,
+            "document_name":"Architectural Drawing",
+            "workflow_id":134,
+            "relative_name":"ARCHITECTURAL DRAWING",
+            "docCode":"ARCHITECTURAL_DRAWING",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Architectural Drawing"
+        }
+    ],
+    "BanquteMarrigeHall":[
+        {
+            "id":47,
+            "document_name":"Banquet-Marriage Hall Frontage Photograph",
+            "workflow_id":350,
+            "relative_name":"BANQUET-MARRIAGE HALL FRONTAGE",
+            "docCode":"BANQUET-MARRIAGE_HALL_FRONTAGE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Banquet-Marriage Hall Frontage"
+        },
+        {
+            "id":48,
+            "document_name":"Aadhar Document",
+            "workflow_id":350,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"AADHAR_CARD",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Aadhar Card"
+        },
+        {
+            "id":49,
+            "document_name":"Fire Extinguisher Photograph",
+            "workflow_id":350,
+            "relative_name":"FIRE EXTINGUISHER",
+            "docCode":"FIRE_EXTINGUISHER",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Fire Extinguisher"
+        },
+        {
+            "id":50,
+            "document_name":"Composting Machine Photograph",
+            "workflow_id":350,
+            "relative_name":"COMPOSTING MACHINE",
+            "docCode":"COMPOSTING_MACHINE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Composting Machine"
+        },
+        {
+            "id":51,
+            "document_name":"Building Plan Photograph",
+            "workflow_id":350,
+            "relative_name":"BUILDING PLAN",
+            "docCode":"BUILDING_PLAN",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Building Plan"
+        },
+        {
+            "id":52,
+            "document_name":"CCTV Camera(s) Photograph",
+            "workflow_id":350,
+            "relative_name":"CCTV CAMERA",
+            "docCode":"CCTV_CAMERA",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"CCTV Camera"
+        },
+        {
+            "id":53,
+            "document_name":"Name-plate with mobile Photograph",
+            "workflow_id":350,
+            "relative_name":"NAME PLATE WITH MOBILE",
+            "docCode":"NAME-PLAT_ WITH_MOBILE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Name-plate with mobile"
+        },
+        {
+            "id":54,
+            "document_name":"Parking Photograph",
+            "workflow_id":350,
+            "relative_name":"PARKING PHOTOGRAPH",
+            "docCode":"PARKING_PHOTOGRAPH",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Parking Photograph"
+        },
+        {
+            "id":55,
+            "document_name":"Site Photograph Document",
+            "workflow_id":350,
+            "relative_name":"SITE PHOTOGRAPH",
+            "docCode":"SITE_PHOTOGRAPH",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Site Photograph"
+        },
+        {
+            "id":56,
+            "document_name":"Input Out report of Composting Machine",
+            "workflow_id":350,
+            "relative_name":"INPUT OUT REPORT OF COMPOSTING MACHINE",
+            "docCode":"INPUT_OUT_REPORT_OF_COMPOSTING_MACHINE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Input Out report of Composting Machine"
+        },
+        {
+            "id":57,
+            "document_name":"Holding Tax Receipt Photo",
+            "workflow_id":350,
+            "relative_name":"HOLDING TAX RECIEPT",
+            "docCode":"HOLDING_TAX_RECIEPT",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Holding Tax Receipt"
+        },
+        {
+            "id":58,
+            "document_name":"Solid Waste Usage Charge Photo",
+            "workflow_id":350,
+            "relative_name":"SOLID WASTE USASE CHARGE",
+            "docCode":"SOLID_WASTE_USASE_CHARGE",
+            "code":"BANQUTE_MARRIGE_HALL",
+            "module_id":6,
+            "docVal":"Solid Waste Usage Charge"
+        }
+    ],
+    "Hostel":[
+        {
+            "id":59,
+            "document_name":"Hostel Frontage Photograph",
+            "workflow_id":398,
+            "relative_name":"HOSTEL FRONTAGE PHOTOGRAPH",
+            "docCode":"HOSTEL_FRONTAGE_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Hostel Frontage Photograph"
+        },
+        {
+            "id":60,
+            "document_name":"Aadhar No Photograph",
+            "workflow_id":398,
+            "relative_name":"AADHAR NO PHOTOGRAPH",
+            "docCode":"AADHAR_NO_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Aadhar No Photograph"
+        },
+        {
+            "id":61,
+            "document_name":"Fire Extinguisher Photograph",
+            "workflow_id":398,
+            "relative_name":"FIRE EXTINGUISHER PHOTOGRAPH",
+            "docCode":"FIRE_EXTINGUISHER_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Fire Extinguisher Photograph"
+        },
+        {
+            "id":62,
+            "document_name":"Name Plate with Mobile No Photograph",
+            "workflow_id":398,
+            "relative_name":"NAME PLATE WITH MOBILE NO PHOTOGRAPH",
+            "docCode":"NAME_PLATE_WITH_MOBILE_NO_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Name Plate with Mobile No Photograph"
+        },
+        {
+            "id":63,
+            "document_name":"Building Plan Photograph",
+            "workflow_id":398,
+            "relative_name":"BUILDING PLAN PHOTOGRAPH",
+            "docCode":"BUILDING_PLAN_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Building Plan Photograph"
+        },
+        {
+            "id":64,
+            "document_name":"CCTV Camera Photograph",
+            "workflow_id":398,
+            "relative_name":"CCTV CAMERA PHOTOGRAPH",
+            "docCode":"CCTV_CAMERA_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"CCTV Camera Photograph"
+        },
+        {
+            "id":65,
+            "document_name":"Holding Tax Receipt Photograph",
+            "workflow_id":398,
+            "relative_name":"HOLDING TAX RECIEPT PHOTOGRAPH",
+            "docCode":"HOLDING_TAX_RECIEPT_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Holding Tax Receipt Photograph"
+        },
+        {
+            "id":66,
+            "document_name":"Solid Waste Photograph",
+            "workflow_id":398,
+            "relative_name":"SOLID WASTE PHOTOGRAPH",
+            "docCode":"SOLID_WASTE_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Solid Waste Photograph"
+        },
+        {
+            "id":67,
+            "document_name":"Entry and Exit Photograph",
+            "workflow_id":398,
+            "relative_name":"ENTRY AND EXIT PHOTOGRAPH",
+            "docCode":"ENTRY_AND_PEXIT_PHOTOGRAPH",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Entry and Exit Photograph"
+        },
+        {
+            "id":104,
+            "document_name":"Certificate of Approval If State Or Indian Govt",
+            "workflow_id":398,
+            "relative_name":"CERTIFICATE OF APPROVAL IF STATE OR INDIAN GOVT",
+            "docCode":"CERTIFICATE_OF_APPROVAL_IF_STATE_OR_INDIAN_GOVT",
+            "code":"HOSTEL",
+            "module_id":6,
+            "docVal":"Certificate of Approval If State Or Indian Govt"
+        }
+    ],
+    "Lodge":[
+        {
+            "id":68,
+            "document_name":"Lodge Frontage Photograph",
+            "workflow_id":399,
+            "relative_name":"LODGE FRONTAGE PHOTOGRAPH",
+            "docCode":"LODGE_FRONTAGE_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Lodge Frontage Photograph"
+        },
+        {
+            "id":69,
+            "document_name":"Aadhar No Photograph",
+            "workflow_id":399,
+            "relative_name":"AADHAR NO PHOTOGRAPH",
+            "docCode":"AADHAR_NO_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Aadhar No Photograph"
+        },
+        {
+            "id":70,
+            "document_name":"Fire Extinguisher Photograph",
+            "workflow_id":399,
+            "relative_name":"FIRE EXTINGUISHER PHOTOGRAPH",
+            "docCode":"FIRE_EXTINGUISHER_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Fire Extinguisher Photograph"
+        },
+        {
+            "id":71,
+            "document_name":"Name Plate with Mobile No Photograph",
+            "workflow_id":399,
+            "relative_name":"NAME PLATE WITH MOBILE NO PHOTOGRAPH",
+            "docCode":"NAME_PLATE_WITH_MOBILE_NO_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Name Plate with Mobile No Photograph"
+        },
+        {
+            "id":72,
+            "document_name":"Building Plan Photograph",
+            "workflow_id":399,
+            "relative_name":"BUILDING PLAN PHOTOGRAPH",
+            "docCode":"BUILDING_PLAN_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Building Plan Photograph"
+        },
+        {
+            "id":73,
+            "document_name":"CCTV Camera Photograph",
+            "workflow_id":399,
+            "relative_name":"CCTV CAMERA PHOTOGRAPH",
+            "docCode":"CCTV_CAMERA_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"CCTV Camera Photograph"
+        },
+        {
+            "id":74,
+            "document_name":"Holding Tax Receipt Photograph",
+            "workflow_id":399,
+            "relative_name":"HOLDING TAX RECIEPT PHOTOGRAPH",
+            "docCode":"HOLDING_TAX_RECIEPT_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Holding Tax Receipt Photograph"
+        },
+        {
+            "id":75,
+            "document_name":"Solid Waste Photograph",
+            "workflow_id":399,
+            "relative_name":"SOLID WASTE PHOTOGRAPH",
+            "docCode":"SOLID_WASTE_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Solid Waste Photograph"
+        },
+        {
+            "id":76,
+            "document_name":"Entry and Exit Photograph",
+            "workflow_id":399,
+            "relative_name":"ENTRY AND EXIT PHOTOGRAPH",
+            "docCode":"ENTRY_AND_PEXIT_PHOTOGRAPH",
+            "code":"LODGE",
+            "module_id":6,
+            "docVal":"Entry and Exit Photograph"
+        }
+    ],
+    "Dharamshala":[
+        {
+            "id":77,
+            "document_name":"Dharamshala Frontage Photograph",
+            "workflow_id":399,
+            "relative_name":"DHARAMSHALA FRONTAGE PHOTOGRAPH",
+            "docCode":"DHARAMSHALA_FRONTAGE_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Dharamshala Frontage Photograph"
+        },
+        {
+            "id":78,
+            "document_name":"Aadhar No Photograph",
+            "workflow_id":399,
+            "relative_name":"AADHAR NO PHOTOGRAPH",
+            "docCode":"AADHAR_NO_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Aadhar No Photograph"
+        },
+        {
+            "id":79,
+            "document_name":"Fire Extinguisher Photograph",
+            "workflow_id":399,
+            "relative_name":"FIRE EXTINGUISHER PHOTOGRAPH",
+            "docCode":"FIRE_EXTINGUISHER_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Fire Extinguisher Photograph"
+        },
+        {
+            "id":80,
+            "document_name":"Name Plate with Mobile No Photograph",
+            "workflow_id":399,
+            "relative_name":"NAME PLATE WITH MOBILE NO PHOTOGRAPH",
+            "docCode":"NAME_PLATE_WITH_MOBILE_NO_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Name Plate with Mobile No Photograph"
+        },
+        {
+            "id":81,
+            "document_name":"Building Plan Photograph",
+            "workflow_id":399,
+            "relative_name":"BUILDING PLAN PHOTOGRAPH",
+            "docCode":"BUILDING_PLAN_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Building Plan Photograph"
+        },
+        {
+            "id":82,
+            "document_name":"CCTV Camera Photograph",
+            "workflow_id":399,
+            "relative_name":"CCTV CAMERA PHOTOGRAPH",
+            "docCode":"CCTV_CAMERA_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"CCTV Camera Photograph"
+        },
+        {
+            "id":83,
+            "document_name":"Holding Tax Receipt Photograph",
+            "workflow_id":399,
+            "relative_name":"HOLDING TAX RECIEPT PHOTOGRAPH",
+            "docCode":"HOLDING_TAX_RECIEPT_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Holding Tax Receipt Photograph"
+        },
+        {
+            "id":84,
+            "document_name":"Solid Waste Photograph",
+            "workflow_id":399,
+            "relative_name":"SOLID WASTE PHOTOGRAPH",
+            "docCode":"SOLID_WASTE_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Solid Waste Photograph"
+        },
+        {
+            "id":85,
+            "document_name":"Entry and Exit Photograph",
+            "workflow_id":399,
+            "relative_name":"ENTRY AND EXIT PHOTOGRAPH",
+            "docCode":"ENTRY_AND_PEXIT_PHOTOGRAPH",
+            "code":"DHARAMSHALA",
+            "module_id":6,
+            "docVal":"Entry and Exit Photograph"
+        }
+    ],
+    "AgencyRenew":[ 
+        {
+            "id":86,
+            "document_name":"ITR",
+            "workflow_id":132,
+            "relative_name":"ITR",
+            "docCode":"ITR",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"ITR"
+        },
+        {
+            "id":87,
+            "document_name":"Experience",
+            "workflow_id":132,
+            "relative_name":"EXPERIENCE",
+            "docCode":"EXPERIENCE",
+            "code":"AGENCY",
+            "module_id":5,
+            "docVal":"Experience"
+        }
+    ],
+    "SelfAdvertRenew":[ 
+        {
+            "id":88,
+            "document_name":"Municipal Trade License",
+            "workflow_id":129,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":89,
+            "document_name":"Holding No",
+            "workflow_id":129,
+            "relative_name":"HOLDING",
+            "docCode":"HORDING_NO",
+            "code":"SELF_ADVERT",
+            "module_id":5,
+            "docVal":"Hording No"
+        }
+    ],
+    "PrivateLandsRenew":[ 
+        {
+            "id":90,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":133,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":91,
+            "document_name":"GPS Map Camera Photograph",
+            "workflow_id":133,
+            "relative_name":"GPS MAP CAMERA",
+            "docCode":"GPS_MAP_CAMERA",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gps Map Camera"
+        },
+        {
+            "id":92,
+            "document_name":"Holding No Document",
+            "workflow_id":133,
+            "relative_name":"HOLDING",
+            "docCode":"HOLDING_NO",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Holding No"
+        },
+        {
+            "id":93,
+            "document_name":"GST No Document",
+            "workflow_id":133,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"PRIVATE_LAND",
+            "module_id":5,
+            "docVal":"Gst"
+        }
+    ],
+    "VehicleRenew":[ 
+        {
+            "id":94,
+            "document_name":"Municipal Trade License Document",
+            "workflow_id":131,
+            "relative_name":"TRADE",
+            "docCode":"TRADE_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Trade License"
+        },
+        {
+            "id":95,
+            "document_name":"Vehicle Photograph",
+            "workflow_id":131,
+            "relative_name":"VEHICLE",
+            "docCode":"VEHICLE_PHOTOGRAPH",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Vehicle Photograph"
+        },
+        {
+            "id":96,
+            "document_name":"Owner Book",
+            "workflow_id":131,
+            "relative_name":"OWNERBOOK",
+            "docCode":"OWNERBOOK",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Ownerbook"
+        },
+        {
+            "id":97,
+            "document_name":"Driving License",
+            "workflow_id":131,
+            "relative_name":"DRIVINGLICENSE",
+            "docCode":"DRIVING_LICENSE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Driving License"
+        },
+        {
+            "id":98,
+            "document_name":"Insurance Photo",
+            "workflow_id":131,
+            "relative_name":"INSURANCE",
+            "docCode":"INSURANCE",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Insurance"
+        },
+        {
+            "id":99,
+            "document_name":"GST No Document",
+            "workflow_id":131,
+            "relative_name":"GST",
+            "docCode":"GST",
+            "code":"MOVABLE_VEHICLE",
+            "module_id":5,
+            "docVal":"Gst"
+        }
+    ],
+    "HordingRenew":[
+        
+        {
+            "id":100,
+            "document_name":"Building Permit/Property Tax",
+            "workflow_id":134,
+            "relative_name":"BUILDING PERMIT/PROPERTY TAX",
+            "docCode":"BUILDING_PERMIT/PROPERTY_TAX",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Building Permit/Property Tax"
+        },
+        {
+            "id":101,
+            "document_name":"Pan No Document",
+            "workflow_id":134,
+            "relative_name":"PAN NO",
+            "docCode":"PAN_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pan No Document"
+        },
+        {
+            "id":102,
+            "document_name":"Service Tax No",
+            "workflow_id":134,
+            "relative_name":"SERVICE TAX NO",
+            "docCode":"SERVICE_TAX_NO",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Service Tax No"
+        },
+        {
+            "id":103,
+            "document_name":"Pending Dues Document",
+            "workflow_id":134,
+            "relative_name":"PENDING DUES",
+            "docCode":"PENDING_DUES",
+            "code":"AGENCY_HORDING_LICENSE",
+            "module_id":5,
+            "docVal":"Pending Dues"
+        }
+    ]
+}

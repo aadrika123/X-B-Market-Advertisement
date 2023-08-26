@@ -1,0 +1,28 @@
+{
+    "Jharkhand":[
+        { "id": "Bokaro","name": "Bokaro"},
+        { "id": "Chatra","name": "Chatra"},
+        { "id": "Deoghar","name": "Deoghar" },
+        { "id": "Dhanbad","name": "Dhanbad" },
+        { "id": "Dumka","name": "Dumka"},
+        { "id": "East Singhbhum","name": "East Singhbhum"},
+        { "id": "Garhwa","name": "Garhwa" },
+        { "id": "Giridih","name": "Giridih" },
+        { "id": "Godda","name": "Godda" },
+        { "id": "Gumla","name": "Gumla" },
+        { "id": "Hazaribagh","name": "Hazaribagh" },
+        { "id": "Jamtara","name": "Jamtara" },
+        { "id": "Khunti","name": "Khunti" },
+        { "id": "Koderma","name": "Koderma" },
+        { "id": "Latehar","name": "Latehar" },
+        { "id": "Lohardaga","name": "Lohardaga" },
+        { "id": "Pakur","name": "Pakur" },
+        { "id": "Palamu","name": "Palamu" },
+        { "id": "Ramgarh","name": "Ramgarh" },
+        { "id": "Ranchi","name": "Ranchi" },
+        { "id": "Sahibganj","name": "Sahibganj" },
+        { "id": "Seraikela-Kharsawan","name": "Seraikela-Kharsawan" },
+        { "id": "Simdega","name": "Simdega" },
+        { "id": "West Singhbhum","name": "West Singhbhum"}
+    ]
+}
