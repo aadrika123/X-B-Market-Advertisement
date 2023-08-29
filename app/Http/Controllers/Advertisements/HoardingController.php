@@ -1741,10 +1741,12 @@ class HoardingController extends Controller
                 throw new Exception("You Are Not Advertisement Agency");
             // Variable initialization
             $citizenId = $req->auth['id'];
+            $paymentStatus=DB::table('adv_agencies')->select('payment_status')->where('email',$req->auth['email'])->first()->payment_status;
             $licenseYear = getFinancialYear(date('Y-m-d'));
             $licenseYearId = DB::table('ref_adv_paramstrings')->select('id')->where('string_parameter', $licenseYear)->first()->id;
             $mAdvHoarding = new AdvHoarding();
             $agencyDashboard = $mAdvHoarding->agencyDashboard($citizenId, $licenseYearId);
+            $agencyDashboard['paymentStatus'] = $paymentStatus;
             if (empty($agencyDashboard)) {
                 throw new Exception("You Have Not Agency !!");
             } else {

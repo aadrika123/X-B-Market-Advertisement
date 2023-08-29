@@ -193,7 +193,7 @@ class AdvActiveSelfadvertisement extends Model
             // $mWfActiveDocument->postDocuments($a,$auth);
             $metaReqs = new Request($metaReqs);
             $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
-            $mWfActiveDocument->create($metaReqs);
+            // $mWfActiveDocument->create($metaReqs);
             foreach($metaReqs as $key=>$val)
             {
                 $mWfActiveDocument->$key = $val;

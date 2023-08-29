@@ -608,9 +608,9 @@ class AgencyController extends Controller
                     "paramId" => $this->_paramId,
                     'ulbId' => $mAdvActiveAgency->ulb_id
                 ];
-                
+
                 $idGeneration = new PrefixIdGenerator($this->_paramId, $mAdvActiveAgency->ulb_id);               // Generate Application No
-                $generatedId = $idGeneration->generate(); 
+                $generatedId = $idGeneration->generate();
                 // approved Vehicle Application replication
                 $mAdvActiveAgency = AdvActiveAgency::find($req->applicationId);
                 if ($mAdvActiveAgency->renew_no == NULL) {
@@ -722,7 +722,7 @@ class AgencyController extends Controller
             remove_null($applications);
             $data1['data'] = $applications;
             $data1['arrayCount'] =  $totalApplication;
-            
+
             return responseMsgs(true, "Approved Application List", $data1, "050515", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050515", "1.0", "", 'POST', $req->deviceId ?? "");
@@ -737,7 +737,7 @@ class AgencyController extends Controller
      * | API - 16
      */
     public function listRejected(Request $req)
-    { 
+    {
         try {
             // Variable initialization
             $citizenId = $req->auth['id'];
