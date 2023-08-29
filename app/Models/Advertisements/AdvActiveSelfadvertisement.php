@@ -28,6 +28,8 @@ class AdvActiveSelfadvertisement extends Model
             'applicant' => $req->applicantName,
             'application_no' => $req->application_no,
             'license_year' => $req->licenseYear,
+            'license_from' => $req->licenseFrom,
+            'license_to' => $req->licenseTo,
             'father' => $req->fatherName,
             'email' => $req->email,
             'residence_address' => $req->residenceAddress,

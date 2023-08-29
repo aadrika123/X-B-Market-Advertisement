@@ -1212,9 +1212,9 @@ class HostelController extends Controller
             $mMarActiveLodge = $this->_modelObj;
             $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
-
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);                          // Generate Id No
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
 
             // $mWfWorkflow=new WfWorkflow();

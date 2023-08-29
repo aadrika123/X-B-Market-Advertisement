@@ -36,6 +36,7 @@ use Symfony\Component\Process\ExecutableFinder;
 
 use App\BLL\Advert\CalculateRate;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
+use App\Models\Advertisements\AdvTypologyMstr;
 use App\Models\Param\AdvMarTransaction;
 use App\Models\Param\AdvMartransactions;
 
@@ -202,7 +203,7 @@ class SelfAdvetController extends Controller
      */
     public function listSelfAdvtCategory()
     {
-        $list = AdvSelfadvCategory::select('id', 'type', 'descriptions')
+        $list = AdvTypologyMstr::select('id', 'descriptions')
             ->where('status', '1')
             ->orderBy('id', 'ASC')
             ->get();
@@ -716,11 +717,15 @@ class SelfAdvetController extends Controller
      */
     public function approvalOrRejection(Request $req)
     {
-        $req->validate([
+        $validator = Validator::make($req->all(), [
             'roleId' => 'required',
             'applicationId' => 'required|integer',
             'status' => 'required|integer',
         ]);
+        if ($validator->fails()) {
+            // return responseMsgs(false, $validator->errors(), "", "050115", "1.0", "", "POST", $req->deviceId ?? "");
+            // return $validator->errors();
+        }
         try {
             // Variable initialization
             // Check if the Current User is Finisher or Not         
@@ -735,15 +740,11 @@ class SelfAdvetController extends Controller
             // Approval
             if ($req->status == 1) {
                 $mCalculateRate = new CalculateRate;
-                $data['payment_amount'] = ['payment_amount' => 0];
-                $data['payment_status'] = ['payment_status' => 1];
-                $data['demand_amount'] = ['demand_amount' => 0];
-                if ($mAdvActiveSelfadvertisement->advt_category > 10) {
-                    $payment_amount = $mCalculateRate->getAdvertisementPayment($mAdvActiveSelfadvertisement->display_area, $mAdvActiveSelfadvertisement->ulb_id);   // Calculate Price
-                    $data['payment_status'] = ['payment_status' => 0];
-                    $data['payment_amount'] = ['payment_amount' => round($payment_amount)];
-                    $data['demand_amount'] = ['demand_amount' => $payment_amount];
-                }
+                 $payment_amount = $mCalculateRate->getPrice($mAdvActiveSelfadvertisement->display_area, $mAdvActiveSelfadvertisement->ulb_id, $mAdvActiveSelfadvertisement->advt_category, $mAdvActiveSelfadvertisement->license_from, $mAdvActiveSelfadvertisement->license_to);   // Calculate Price
+                $data['payment_status'] = ['payment_status' => 0];
+                $data['payment_amount'] = ['payment_amount' => ceil($payment_amount)];
+                $data['demand_amount'] = ['demand_amount' => $payment_amount];
+                
                 $req->request->add($data['payment_amount']);
                 $req->request->add($data['payment_status']);
                 $req->request->add($data['demand_amount']);
@@ -756,7 +757,7 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                    $approvedSelfadvertisement->payment_amount = round($req->payment_amount);
+                    $approvedSelfadvertisement->payment_amount = ceil($req->payment_amount);
                     $approvedSelfadvertisement->demand_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
                     $approvedSelfadvertisement->demand_amount = $req->demand_amount;
@@ -788,7 +789,7 @@ class SelfAdvetController extends Controller
                     $approvedSelfadvertisement = $mAdvActiveSelfadvertisement->replicate();
                     $approvedSelfadvertisement->setTable('adv_selfadvertisements');
                     $temp_id = $approvedSelfadvertisement->id = $mAdvActiveSelfadvertisement->id;
-                    $approvedSelfadvertisement->payment_amount = round($req->payment_amount);
+                    $approvedSelfadvertisement->payment_amount = ceil($req->payment_amount);
                     $approvedSelfadvertisement->demand_amount = $req->payment_amount;
                     $approvedSelfadvertisement->payment_status = $req->payment_status;
                     $approvedSelfadvertisement->demand_amount = $req->demand_amount;

@@ -634,12 +634,13 @@ class VehicleAdvetController extends Controller
             // Approval
             if ($req->status == 1) {
                 $typology = $mAdvActiveVehicle->typology;
-                $zone = $mAdvActiveVehicle->zone;
-                if ($zone == NULL) {
-                    throw new Exception("Zone Not Selected !!!");
-                }
+                // $zone = $mAdvActiveVehicle->zone;
+                // if ($zone == NULL) {
+                //     throw new Exception("Zone Not Selected !!!");
+                // }
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getMovableVehiclePayment($typology, $zone, $mAdvActiveVehicle->license_from, $mAdvActiveVehicle->license_to);
+                $area=$mAdvActiveVehicle->front_area+$mAdvActiveVehicle->rear_area+$mAdvActiveVehicle->side_area+$mAdvActiveVehicle->top_area;
+                $amount = $mCalculateRate->getPrice($area,$mAdvActiveVehicle->ulb_id,$typology, $mAdvActiveVehicle->license_from, $mAdvActiveVehicle->license_to);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
 
@@ -652,11 +653,11 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->setTable('adv_vehicles');
                     $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
-                    $approvedVehicle->payment_amount = round($req->payment_amount);
+                    $approvedVehicle->payment_amount = ceil($req->payment_amount);
                     $approvedVehicle->demand_amount = $req->payment_amount;
                     $approvedVehicle->license_no = $generatedId;
                     $approvedVehicle->approve_date = Carbon::now();
-                    $approvedVehicle->zone = $zone;
+                    // $approvedVehicle->zone = $zone;
                     $approvedVehicle->save();
 
                     // Save in vehicle Advertisement Renewal
@@ -665,7 +666,7 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle->setTable('adv_vehicle_renewals');
                     $approvedVehicle->license_no = $generatedId;
                     $approvedVehicle->id = $temp_id;
-                    $approvedVehicle->zone = $zone;
+                    // $approvedVehicle->zone = $zone;
                     $approvedVehicle->save();
 
 
@@ -687,7 +688,7 @@ class VehicleAdvetController extends Controller
                     $approvedVehicle = $mAdvActiveVehicle->replicate();
                     $approvedVehicle->setTable('adv_vehicles');
                     $temp_id = $approvedVehicle->id = $mAdvActiveVehicle->id;
-                    $approvedVehicle->payment_amount = round($req->payment_amount);
+                    $approvedVehicle->payment_amount = ceil($req->payment_amount);
                     $approvedVehicle->demand_amount = $req->payment_amount;
                     $approvedVehicle->approve_date = Carbon::now();
                     $approvedVehicle->save();

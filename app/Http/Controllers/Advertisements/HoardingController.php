@@ -107,15 +107,7 @@ class HoardingController extends Controller
             // Variable initialization
             $mAdvTypologyMstr = new AdvTypologyMstr();
             $typologyList = $mAdvTypologyMstr->listTypology1($req->ulbId);
-            $typologyList = $typologyList->groupBy('type');
-            foreach ($typologyList as $key => $data) {
-                $type = [
-                    'Type' => "Type " . $key,
-                    'data' => $typologyList[$key]
-                ];
-                $fData[] = $type;
-            }
-            $fullData['typology'] = $fData;
+            $fullData['typology']['data'] = $typologyList;
 
 
             return responseMsgs(true, "Typology Data Fetch Successfully!!", remove_null($fullData), "050602", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -601,7 +593,7 @@ class HoardingController extends Controller
             // Approval
             if ($req->status == 1) {
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getHordingPrice($mAdvActiveHoarding->typology, $mAdvActiveHoarding->zone_id);
+                $amount = $mCalculateRate->getPrice($mAdvActiveHoarding->display_area,$mAdvActiveHoarding->ulb_id,$mAdvActiveHoarding->typology, $mAdvActiveHoarding->license_from, $mAdvActiveHoarding->license_to);
                 $payment_amount = ['payment_amount' => $amount];
                 $req->request->add($payment_amount);
                 
@@ -613,7 +605,7 @@ class HoardingController extends Controller
                     $approvedHoarding->setTable('adv_hoardings');
                     $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
                     $approvedHoarding->license_no = $generatedId;
-                    $approvedHoarding->payment_amount = round($req->payment_amount);
+                    $approvedHoarding->payment_amount = ceil($req->payment_amount);
                     $approvedHoarding->demand_amount = $req->payment_amount;
                     $approvedHoarding->approve_date = Carbon::now();
                     $approvedHoarding->save();
@@ -645,7 +637,7 @@ class HoardingController extends Controller
                     $approvedHoarding = $mAdvActiveHoarding->replicate();
                     $approvedHoarding->setTable('adv_hoardings');
                     $temp_id = $approvedHoarding->id = $mAdvActiveHoarding->id;
-                    $approvedHoarding->payment_amount = round($req->payment_amount);
+                    $approvedHoarding->payment_amount = ceil($req->payment_amount);
                     $approvedHoarding->demand_amount = $req->payment_amount;
                     $approvedHoarding->payment_status = $req->payment_status;
                     $approvedHoarding->license_no = $license_no;

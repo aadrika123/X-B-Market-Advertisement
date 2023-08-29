@@ -631,7 +631,8 @@ class PrivateLandController extends Controller
                     throw new Exception("Zone Not Selected !!!");
                 }
                 $mCalculateRate = new CalculateRate();
-                $amount = $mCalculateRate->getPrivateLandPayment($typology, $zone, $mAdvActivePrivateland->license_from, $mAdvActivePrivateland->license_to);
+
+                $amount = $mCalculateRate->getPrice($mAdvActivePrivateland->display_area,$mAdvActivePrivateland->ulb_id, $typology, $mAdvActivePrivateland->license_from, $mAdvActivePrivateland->license_to);
                 $payment_amount = ['payment_amount' => $amount];
 
                 // $payment_amount = ['payment_amount' =>1000];
@@ -646,7 +647,7 @@ class PrivateLandController extends Controller
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                    $approvedPrivateland->payment_amount = round($req->payment_amount);
+                    $approvedPrivateland->payment_amount = ceil($req->payment_amount);
                     $approvedPrivateland->demand_amount = $req->payment_amount;
                     $approvedPrivateland->license_no =  $generatedId;
                     $approvedPrivateland->approve_date = Carbon::now();
@@ -678,7 +679,7 @@ class PrivateLandController extends Controller
                     $approvedPrivateland = $mAdvActivePrivateland->replicate();
                     $approvedPrivateland->setTable('adv_privatelands');
                     $temp_id = $approvedPrivateland->id = $mAdvActivePrivateland->id;
-                    $approvedPrivateland->payment_amount = round($req->payment_amount);
+                    $approvedPrivateland->payment_amount = ceil($req->payment_amount);
                     $approvedPrivateland->demand_amount = $req->payment_amount;
                     $approvedPrivateland->payment_status = $req->payment_status;
                     $approvedPrivateland->approve_date = Carbon::now();

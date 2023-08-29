@@ -1201,11 +1201,10 @@ class LodgeController extends Controller
         try {
             // Variable initialization
             $mMarActiveLodge = $this->_modelObj;
-            $citizenId = ['citizenId' => authUser()->id];
+            $citizenId = ['citizenId' => $req->auth['id']];
             $req->request->add($citizenId);
-
-            $mCalculateRate = new CalculateRate;
-            $generatedId = $mCalculateRate->generateId($req->bearerToken(), $this->_tempParamId, $req->ulbId); // Generate Application No
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $req->ulbId);          // Generate Application No
+            $generatedId = $idGeneration->generate();
             $applicationNo = ['application_no' => $generatedId];
             $req->request->add($applicationNo);
 

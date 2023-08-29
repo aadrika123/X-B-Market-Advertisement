@@ -60,12 +60,12 @@ class AdvTypologyMstr extends Model
         $typology = AdvTypologyMstr::where('status', '1')
             ->select(
                 'id',
-                'type',
-                'type_inner as subtype',
+                // 'type',
+                // 'type_inner as subtype',
                 'descriptions'
             )
             ->where('ulb_id',$ulbId)
-            ->orderBy('type_inner')
+            ->orderBy('id')
             ->get();
 
         return  $typology;

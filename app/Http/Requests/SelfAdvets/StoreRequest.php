@@ -26,6 +26,8 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'licenseFrom' => 'required|date_format:Y-m-d',
+            'licenseTo' => 'required|date_format:Y-m-d',
             'ulbId' => 'required|integer',
             'applicantName' => 'required|string',
             'licenseYear' => 'required',

@@ -100,4 +100,25 @@ class CalculateRate
         return ($amount*$perAmt)/100;
     }
 
+    /**
+     * | Get All Types of Advertisement payment Amount
+     */
+    public function getPrice($area,$ulbId,$category,$licenseFrom,$licenseTO){
+      $typology=DB::table('adv_typology_mstrs')
+        ->select('per_day','is_sq_ft')
+        ->where('id', $category)
+        ->where('ulb_id', $ulbId)
+        ->first();
+
+        $toDate = Carbon::parse($licenseFrom);
+        $fromDate = Carbon::parse($licenseTO);
+        $noOfDays = $toDate->diffInDays($fromDate);                // Get Difference b/w no of Days or No. of Days for License
+
+        $amount=$typology->per_day*$noOfDays;                       // Get Amount Without Square feet 
+        if($typology->is_sq_ft == '1'){
+            $amount=$amount*$area;                                 // Get Amount With Square feet
+        }
+        return $amount;
+    }
+
 }
