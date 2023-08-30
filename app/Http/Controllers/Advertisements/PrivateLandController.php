@@ -626,10 +626,10 @@ class PrivateLandController extends Controller
             // Approval
             if ($req->status == 1) {
                 $typology = $mAdvActivePrivateland->typology;
-                $zone = $mAdvActivePrivateland->zone;
-                if ($zone == NULL) {
-                    throw new Exception("Zone Not Selected !!!");
-                }
+                // $zone = $mAdvActivePrivateland->zone;
+                // if ($zone == NULL) {
+                //     throw new Exception("Zone Not Selected !!!");
+                // }
                 $mCalculateRate = new CalculateRate();
 
                 $amount = $mCalculateRate->getPrice($mAdvActivePrivateland->display_area,$mAdvActivePrivateland->ulb_id, $typology, $mAdvActivePrivateland->license_from, $mAdvActivePrivateland->license_to);
