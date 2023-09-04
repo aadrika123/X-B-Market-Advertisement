@@ -119,4 +119,24 @@ class Shop extends Model
       ->where('mar_shops.id', $id)
       ->first();
   }
+
+  public function getReciept($shopId){
+    $shop= Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'sc.construction_type',    
+      // 'msp.payment_date as last_payment_date',
+      DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      'msp.amount as last_payment_amount'
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->where('mar_shops.id', $shopId)
+      ->where('mar_shops.status', '1')
+      ->get();
+      return $shop;
+  }
 }

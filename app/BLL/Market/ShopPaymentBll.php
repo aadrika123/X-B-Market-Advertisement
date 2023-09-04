@@ -72,5 +72,6 @@ class ShopPaymentBll
             'last_tran_id' => $createdPayment->id,
             'arrear' => $arrear
         ]);
+        return $amount;
     }
 }

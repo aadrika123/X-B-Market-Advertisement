@@ -53,9 +53,9 @@ class ShopController extends Controller
             return $validator->errors();
         // Business Logics
         try {
-            $shopPmtBll->shopPayment($req);
+            $amount=$shopPmtBll->shopPayment($req);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount'=> $amount], 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
@@ -541,6 +541,26 @@ class ShopController extends Controller
             $mshopDetails->save();
             return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get Payment Reciept
+     */
+    public function getPaymentReciept(Request $req){
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try{
+            $mShop=new Shop();
+            $reciept=$mShop->getReciept($req->shopId);
+            return responseMsgs(true, "Payment Reciept Fetch Successfully !!!",$reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }

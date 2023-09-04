@@ -34,6 +34,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         // Route::post('rental/abc', 'abc');
         Route::post('rental/pay', 'shopPayment');
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
+        Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
     });
 
     /**
@@ -53,6 +54,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
         Route::post('rental/get-toll-price-list', 'getTollPriceList');
+        Route::post('rental/get-payment-reciept', 'getPaymentReciept');
     });
 
 
