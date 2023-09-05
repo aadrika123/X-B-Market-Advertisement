@@ -441,8 +441,8 @@ class VehicleAdvetController extends Controller
                 throw new Exception("Document Are Not Re-upload By Citizen !!!");
             if ($mAdvActiveVehicle->doc_verify_status == '0' && $mAdvActiveVehicle->parked == NULL)
                 throw new Exception("Please Verify All Documents To Forward The Application !!!");
-            if ($mAdvActiveVehicle->zone == NULL)
-                throw new Exception("Zone Not Selected !!!");
+            // if ($mAdvActiveVehicle->zone == NULL)
+            //     throw new Exception("Zone Not Selected !!!");
             $mAdvActiveVehicle->last_role_id = $request->current_roles;
             $mAdvActiveVehicle->current_roles = $request->receiverRoleId;
             $mAdvActiveVehicle->save();

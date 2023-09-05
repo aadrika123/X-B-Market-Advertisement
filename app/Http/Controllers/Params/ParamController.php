@@ -635,7 +635,6 @@ class ParamController extends Controller
         $ulbId = $userDetails['ulb_id'];
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $mAdvActiveSelfadvertisement = new AdvActiveSelfadvertisement();
             $pendingList = $mAdvActiveSelfadvertisement->allPendingList()->where('ulb_id', $ulbId)->values();              // Find Self Advertisement Approve Applications
@@ -697,10 +696,8 @@ class ParamController extends Controller
             $hoardingRejectList = $mAdvRejectedHoarding->rejectedApplication()->where('ulb_id', $ulbId)->values();  // Find Hoarding Rejected Applications
             $advert['hoardingRejectedApplications'] = $hoardingRejectList;
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
 
-            return responseMsgs(true, 'Data Fetched',  $advert, "050207", "1.0", "$executionTime Sec", "POST");
+            return responseMsgs(true, 'Data Fetched',  $advert, "050207", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", '050207', 01, "", 'POST', '');
         }
@@ -785,7 +782,7 @@ class ParamController extends Controller
         try {
             $dashboardReport['date']=Carbon::now()->format('d-m-Y');
             $advert = $this->advertDashboard($req)->original['data'];
-            $market = $this->marketDashboard($req)->original['data'];
+            // $market = $this->marketDashboard($req)->original['data'];
             $dashboardReport['selfApproved']=$advert['selfApprovedApplications']->where('date',$dashboardReport['date'])->count();
             $dashboardReport['selfPending']=$advert['selfPendingApplications']->where('date',$dashboardReport['date'])->count();
             $dashboardReport['selfRejected']=$advert['selfRejectedApplications']->where('date',$dashboardReport['date'])->count();
@@ -806,31 +803,31 @@ class ParamController extends Controller
             $dashboardReport['horPending']=$advert['hoardingPendingApplications']->where('date',$dashboardReport['date'])->count();
             $dashboardReport['horRejected']=$advert['hoardingRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['bqApproved']=$market['banquetApprovedApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['bqPending']=$market['banquetPendingApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['bqRejected']=$market['banquetRejectedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['bqApproved']=$market['banquetApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['bqPending']=$market['banquetPendingApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['bqRejected']=$market['banquetRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['hsApproved']=$market['hostelApprovedApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['hsPending']=$market['hostelPendingApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['hsRejected']=$market['hostelRejectedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['hsApproved']=$market['hostelApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['hsPending']=$market['hostelPendingApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['hsRejected']=$market['hostelRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['ldApproved']=$market['lodgeApprovedApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['ldPending']=$market['lodgePendingApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['ldRejected']=$market['lodgeRejectedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['ldApproved']=$market['lodgeApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['ldPending']=$market['lodgePendingApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['ldRejected']=$market['lodgeRejectedApplications']->where('date',$dashboardReport['date'])->count();
             
-            $dashboardReport['dsApproved']=$market['dharamshalaApprovedApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['dsPending']=$market['dharamshalaPendingApplications']->where('date',$dashboardReport['date'])->count();
-            $dashboardReport['dsRejected']=$market['dharamshalaRejectedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['dsApproved']=$market['dharamshalaApprovedApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['dsPending']=$market['dharamshalaPendingApplications']->where('date',$dashboardReport['date'])->count();
+            // $dashboardReport['dsRejected']=$market['dharamshalaRejectedApplications']->where('date',$dashboardReport['date'])->count();
 
             $dashboardReport['totalAdvertApproved']=$dashboardReport['selfApproved'] + $dashboardReport['plApproved'] + $dashboardReport['vclApproved'] + $dashboardReport['agApproved'] + $dashboardReport['horApproved'];
             $dashboardReport['totalAdvertPending']=$dashboardReport['selfPending'] + $dashboardReport['plPending'] + $dashboardReport['vclPending'] + $dashboardReport['agPending'] + $dashboardReport['horPending'];
             $dashboardReport['totalAdvertRejected']=$dashboardReport['selfRejected'] + $dashboardReport['plRejected'] + $dashboardReport['vclRejected'] + $dashboardReport['agRejected'] + $dashboardReport['horRejected'];
             $dashboardReport['totalAdvertApplication']=$dashboardReport['totalAdvertApproved'] + $dashboardReport['totalAdvertPending'] + $dashboardReport['totalAdvertRejected'];
 
-            $dashboardReport['totalMarketApproved']=$dashboardReport['bqApproved'] + $dashboardReport['hsApproved'] + $dashboardReport['ldApproved'] + $dashboardReport['dsApproved'];
-            $dashboardReport['totalMarketPending']=$dashboardReport['bqPending'] + $dashboardReport['hsPending'] + $dashboardReport['ldPending'] + $dashboardReport['dsPending'];
-            $dashboardReport['totalMarketRejected']=$dashboardReport['bqRejected'] + $dashboardReport['hsRejected'] + $dashboardReport['ldRejected'] + $dashboardReport['dsRejected'];
-            $dashboardReport['totalMarketApplication']=$dashboardReport['totalMarketApproved'] + $dashboardReport['totalMarketPending'] + $dashboardReport['totalMarketRejected'];
+            // $dashboardReport['totalMarketApproved']=$dashboardReport['bqApproved'] + $dashboardReport['hsApproved'] + $dashboardReport['ldApproved'] + $dashboardReport['dsApproved'];
+            // $dashboardReport['totalMarketPending']=$dashboardReport['bqPending'] + $dashboardReport['hsPending'] + $dashboardReport['ldPending'] + $dashboardReport['dsPending'];
+            // $dashboardReport['totalMarketRejected']=$dashboardReport['bqRejected'] + $dashboardReport['hsRejected'] + $dashboardReport['ldRejected'] + $dashboardReport['dsRejected'];
+            // $dashboardReport['totalMarketApplication']=$dashboardReport['totalMarketApproved'] + $dashboardReport['totalMarketPending'] + $dashboardReport['totalMarketRejected'];
 
             $dashboardReport['date']=Carbon::now()->format('d-m-Y');
 
@@ -857,7 +854,6 @@ class ParamController extends Controller
         }
         try {
             // Variable initialization
-            $startTime = microtime(true);
 
             $madvSelfAdvertisement = new AdvSelfadvertisement();
             $approveList = collect($madvSelfAdvertisement->allApproveList());              // Find Self Advertisement Approve Applications
@@ -880,21 +876,21 @@ class ParamController extends Controller
             $hoardingApproveList = $mAdvHoarding->allApproveList();              // Find Hoarding Approve Applications
             $merged = $merged->merge($hoardingApproveList);
 
-            $mMarBanquteHall = new MarBanquteHall();
-            $banquetApproveList = $mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
-            $merged = $merged->merge($banquetApproveList);
+            // $mMarBanquteHall = new MarBanquteHall();
+            // $banquetApproveList = $mMarBanquteHall->allApproveList();              // Find Banquet Hall Approve Applications
+            // $merged = $merged->merge($banquetApproveList);
 
-            $mMarLodge = new MarLodge();
-            $lodgeApproveList = $mMarLodge->allApproveList();              // Find Lodge Approve Applications
-            $merged = $merged->merge($lodgeApproveList);
+            // $mMarLodge = new MarLodge();
+            // $lodgeApproveList = $mMarLodge->allApproveList();              // Find Lodge Approve Applications
+            // $merged = $merged->merge($lodgeApproveList);
 
-            $mMarHostel = new MarHostel();
-            $hostelApproveList = $mMarHostel->allApproveList();              // Find Hostel Approve Applications
-            $merged = $merged->merge($hostelApproveList);
+            // $mMarHostel = new MarHostel();
+            // $hostelApproveList = $mMarHostel->allApproveList();              // Find Hostel Approve Applications
+            // $merged = $merged->merge($hostelApproveList);
 
-            $mMarDharamshala = new MarDharamshala();
-            $dharamshalaApproveList = $mMarDharamshala->allApproveList();              // Find Dharamshala Approve Applications
-            $merged = $merged->merge($dharamshalaApproveList);
+            // $mMarDharamshala = new MarDharamshala();
+            // $dharamshalaApproveList = $mMarDharamshala->allApproveList();              // Find Dharamshala Approve Applications
+            // $merged = $merged->merge($dharamshalaApproveList);
 
 
             // $merged = $merged->where('payment_staus', '0');
@@ -908,10 +904,7 @@ class ParamController extends Controller
                 $merged = $merged->where('owner_name', $req->parameter);
             }
 
-            $endTime = microtime(true);
-            $executionTime = $endTime - $startTime;
-
-            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050210", 1.0, "$executionTime Sec", "POST", "", "");
+            return responseMsgs(true, "Application Fetched Successfully", $merged->values(), "050210", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             return responseMsgs(false, "Application Not Fetched", $e->getMessage(), "050210", 1.0, "", "POST", "", "");
         }
