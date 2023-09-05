@@ -13,6 +13,6 @@ class MarTollPriceList extends Model
      * | Get Market Toll price List From Model
      */
     public function getTollPriceList(){
-        return self::select('id','toll_type','rate')->where('status','1')->get();
+        return self::select('id','toll_type','rate')->where('status','1')->orderBy('id')->get();
     }
 }
