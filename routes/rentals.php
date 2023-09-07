@@ -54,7 +54,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
         Route::post('rental/get-toll-price-list', 'getTollPriceList');
-        Route::post('rental/get-payment-reciept', 'getPaymentReciept');
+        Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');
     });
 
 

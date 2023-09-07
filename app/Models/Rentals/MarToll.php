@@ -124,4 +124,23 @@ class MarToll extends Model
         ->where('mar_tolls.id', $id)
         ->first();
     }
+
+
+    public function getReciept($id){
+        return MarToll::select(
+            'mar_tolls.*',
+            'mc.circle_name',
+            'mm.market_name',
+            'u.name as tcName',
+            'u.mobile as tcMobile',
+            'u.user_name as tcUserName',
+            // DB::raw("TO_CHAR(mar_tolls.last_payment_date, 'DD-MM-YYYY') as last_payment_date"),
+            // 'mar_tolls.last_amount as last_payment_amount',      
+          )
+            ->join('m_circle as mc', 'mar_tolls.circle_id', '=', 'mc.id')
+            ->join('m_market as mm', 'mar_tolls.market_id', '=', 'mm.id')
+            ->join('users as u', 'mar_tolls.user_id', '=', 'u.id')
+            ->where('mar_tolls.id', $id)
+            ->get();
+    }
 }

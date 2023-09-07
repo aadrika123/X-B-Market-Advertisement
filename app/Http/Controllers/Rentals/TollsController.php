@@ -460,7 +460,7 @@ class TollsController extends Controller
         try{
             $mMarToll=new MarToll();
             // $reciept=$mMarToll->getReciept($req->tollId);
-            $reciept=$mMarToll->getTallDetailById($req->tollId);
+            $reciept=$mMarToll->getReciept($req->tollId);
             return responseMsgs(true, "Payment Reciept Fetch Successfully !!!",$reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
