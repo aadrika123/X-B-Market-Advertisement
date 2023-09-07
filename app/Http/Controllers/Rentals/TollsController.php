@@ -445,4 +445,25 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+     /**
+     * | Get Payment Reciept
+     */
+    public function getPaymentReciept(Request $req){
+        $validator = Validator::make($req->all(), [
+            'tollId' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try{
+            $mMarToll=new MarToll();
+            // $reciept=$mMarToll->getReciept($req->tollId);
+            $reciept=$mMarToll->getTallDetailById($req->tollId);
+            return responseMsgs(true, "Payment Reciept Fetch Successfully !!!",$reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }

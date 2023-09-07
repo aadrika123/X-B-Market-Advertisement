@@ -128,12 +128,18 @@ class Shop extends Model
       'sc.construction_type',    
       // 'msp.payment_date as last_payment_date',
       DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
-      'msp.amount as last_payment_amount'
+      'msp.amount as last_payment_amount',
+      'msp.paid_from as payment_from',
+      'msp.paid_to as payment_upto',
+      'u.name as tcName',
+      'u.mobile as tcMobile',
+      'u.user_name as tcUserName',
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->join('users as u', 'msp.user_id', '=', 'u.id')
       ->where('mar_shops.id', $shopId)
       ->where('mar_shops.status', '1')
       ->get();
