@@ -127,11 +127,12 @@ class ShopController extends Controller
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
             $reciept['amount'] = $data->amount;
-            $reciept['paymentDate'] = $data->payment_date;
+            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d',$data->payment_date)->format('d-m-Y');;
             $reciept['paymentMode'] = $data->pmt_mode;
             $reciept['transactionNo'] = $data->transaction_id;
             $reciept['allottee'] = $shopDetails->allottee;
             $reciept['market'] = $shopDetails->market_name;
+            $reciept['shopType'] = $shopDetails->shop_type;
             $reciept['ulbName'] = $ulbDetails->ulb_name;
             $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
             $reciept['website'] = $ulbDetails->current_website;
