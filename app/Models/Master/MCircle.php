@@ -17,6 +17,7 @@ class MCircle extends Model
         return MCircle::select('*')
             ->where('ulb_id', $ulbId)
             ->where('circle_name', $circleName)
+            ->where('is_active','1')
             ->get();
     }
 
@@ -24,6 +25,7 @@ class MCircle extends Model
     {
         return MCircle::select('*')
             ->where('ulb_id', $ulbId)
+            ->where('is_active','1')
             ->get();
     }
 

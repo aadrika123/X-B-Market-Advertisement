@@ -34,12 +34,12 @@ class ShopRequest extends FormRequest
             'allottee'                 =>   'required|regex:/^[A-Za-z ]+$/',
             // 'shopNo'                   =>   'required|regex:/^[A-Za-z0-9 ]+$/',
             'address'                  =>   'nullable|regex:/^[A-Za-z0-9, ]+$/',
-            'rate'                     =>   'required|numeric',
-            'arrear'                   =>   'required|numeric',
-            'allottedLength'           =>   'nullable|numeric',
-            'allottedBreadth'          =>   'nullable|numeric',
-            'allottedHeight'           =>   'nullable|numeric',
-            'area'                     =>   'nullable|numeric',
+            // 'rate'                     =>   'required|numeric',
+            // 'arrear'                   =>   'required|numeric',
+            'allottedLength'           =>   'required|numeric',
+            'allottedBreadth'          =>   'required|numeric',
+            'allottedHeight'           =>   'required|numeric',
+            // 'area'                     =>   'nullable|numeric',
             'presentLength'            =>   'nullable|numeric',
             'presentBreadth'           =>   'nullable|numeric',
             'presentHeight'            =>   'nullable|numeric',
@@ -50,13 +50,15 @@ class ShopRequest extends FormRequest
             'electricity'              =>   'required|string',
             'water'                    =>   'required|string',
             'salePurchase'             =>   'nullable|string',
-            'contactNo'                =>   'nullable|numeric|digits:10',
-            'longitude'                =>   'nullable|string',
-            'latitude'                 =>   'nullable|string',
+            'contactNo'                =>   'required|numeric|digits:10',
+            // 'longitude'                =>   'nullable|string',
+            // 'latitude'                 =>   'nullable|string',
             'photo1Path'               =>   'nullable|image|mimes:jpg,jpeg,png',
             'photo2Path'               =>   'nullable|image|mimes:jpg,jpeg,png',
-            'remarks'                  =>   'nullable|string',
+            // 'remarks'                  =>   'nullable|string',
             'lastTranId'               =>   'nullable|numeric',
+            'shopCategoryId'           =>   'required|numeric',
+            'rate'                     =>   $this->shopCategoryId==3?'required|numeric':'nullable|numeric',
 
         ];
     }
@@ -67,6 +69,6 @@ class ShopRequest extends FormRequest
             'success'   => false,
             'message'   => 'Validation errors',
             'data'      => $validator->errors()
-        ], 422),);
+        ], 200),);
     }
 }

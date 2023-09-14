@@ -33,17 +33,19 @@ class Shop extends Model
   public function retrieveAll()
   {
     return Shop::select(
-      '*',
+      'mar_shops.*',
+      'mst.shop_type',
       DB::raw("
           CASE 
-          WHEN status = '0' THEN 'Deactivated'  
-          WHEN status = '1' THEN 'Active'
+          WHEN mar_shops.status = '0' THEN 'Deactivated'  
+          WHEN mar_shops.status = '1' THEN 'Active'
         END as status,
-        TO_CHAR(created_at::date,'dd-mm-yyyy') as date,
-        TO_CHAR(created_at,'HH12:MI:SS AM') as time
+        TO_CHAR(mar_shops.created_at::date,'dd-mm-yyyy') as date,
+        TO_CHAR(mar_shops.created_at,'HH12:MI:SS AM') as time
           ")
     )
-      ->orderBy('id', 'desc')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->orderBy('mar_shops.id', 'desc')
       ->get();
   }
 
@@ -51,18 +53,20 @@ class Shop extends Model
   public function retrieveActive()
   {
     return Shop::select(
-      '*',
+      'mar_shops.*',
+      'mst.shop_type',
       DB::raw("
           CASE 
-          WHEN status = '0' THEN 'Deactivated'  
-          WHEN status = '1' THEN 'Active'
+          WHEN mar_shops.status = '0' THEN 'Deactivated'  
+          WHEN mar_shops.status = '1' THEN 'Active'
         END as status,
-        TO_CHAR(created_at::date,'dd-mm-yyyy') as date,
-        TO_CHAR(created_at,'HH12:MI:SS AM') as time
+        TO_CHAR(mar_shops.created_at::date,'dd-mm-yyyy') as date,
+        TO_CHAR(mar_shops.created_at,'HH12:MI:SS AM') as time
           ")
     )
-      ->where('status', 1)
-      ->orderBy('id', 'desc')
+      ->where('mar_shops.status', 1)
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->orderBy('mar_shops.id', 'desc')
       ->get();
   }
 
@@ -74,12 +78,14 @@ class Shop extends Model
       'mar_shops.*',
       'mc.circle_name',
       'mm.market_name',
+      'mst.shop_type',
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->orderByDesc('id')
-      ->where('mar_shops.ulb_id', $ulbId)
-      ->where('mar_shops.status', '1');
+      ->where('mar_shops.ulb_id', $ulbId);
+    // ->where('mar_shops.status', '1');
     // ->get();
   }
 
@@ -89,12 +95,14 @@ class Shop extends Model
       'mar_shops.*',
       'mc.circle_name',
       'mm.market_name',
+      'mst.shop_type',
       // 'msp.payment_date as last_payment_date',
-      DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount'
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.market_id', $marketid)
       ->where('mar_shops.status', '1');
@@ -106,43 +114,73 @@ class Shop extends Model
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
-      'mm.market_name',  
-      'sc.construction_type',    
-      DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
+      'mm.market_name',
+      'sc.construction_type',
+      'mst.shop_type',
+      // DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
-      DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
+      // DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.id', $id)
       ->first();
   }
 
-  public function getReciept($shopId){
-    $shop= Shop::select(
+  public function getReciept($shopId)
+  {
+    $shop = Shop::select(
       'mar_shops.*',
       'mc.circle_name',
       'mm.market_name',
-      'sc.construction_type',    
+      'sc.construction_type',
       // 'msp.payment_date as last_payment_date',
-      DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
       'msp.paid_from as payment_from',
       'msp.paid_to as payment_upto',
       'u.name as tcName',
       'u.mobile as tcMobile',
       'u.user_name as tcUserName',
+      // 'mst.shop_type',
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      // ->join('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
       ->join('users as u', 'msp.user_id', '=', 'u.id')
       ->where('mar_shops.id', $shopId)
       ->where('mar_shops.status', '1')
       ->get();
-      return $shop;
+    return $shop;
+  }
+
+  /**
+   * | Search Shop for Payment
+   */
+  public function searchShopForPayment($shopCategoryId, $circleId, $marketId)
+  {
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'sc.construction_type',
+      'mst.shop_type',
+      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
+      'msp.amount as last_payment_amount',
+      // DB::raw("TO_CHAR(msp.paid_to, 'DD-MM-YYYY') as payment_upto")
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
+      ->orderByDesc('mar_shops.id')
+      ->get();
   }
 }

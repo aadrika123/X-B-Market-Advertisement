@@ -17,6 +17,7 @@ class MMarket extends Model
         return MMarket::select('*')
             ->where('circle_id', $circleId)
             ->where('market_name', $marketName)
+            ->where('is_active', '1')
             ->get();
     }
 
@@ -24,6 +25,7 @@ class MMarket extends Model
     {
         return MMarket::select('*')
             ->where('circle_id', $circleId)
+            ->where('is_active', '1')
             ->get();
     }
 

@@ -28,13 +28,20 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');
         Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');
         Route::post('rental/list-shop', 'listShop');
-        Route::post('rental/get-shop-detail-by-id', 'getShopDetailtId');
+        Route::post('rental/get-shop-detail-by-id', 'getShopDetailById');
         Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');
         Route::post('rental/get-tc-collection', 'getTcCollection');
         // Route::post('rental/abc', 'abc');
         Route::post('rental/pay', 'shopPayment');
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
         Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
+        Route::post('rental/list-shop-type', 'listShopType');
+        Route::post('rental/shop-master', 'shopMaster');
+        Route::post('rental/test', 'test');
+        Route::post('rental/get-financial-year', 'getFinancialYear');
+        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');
+        Route::post('rental/calculate-shop-rate-financial-wise', 'calculateShopRateFinancialwise');
+        Route::post('rental/shop-payment-reciept', 'shopPaymentReciept');
     });
 
     /**
@@ -77,7 +84,6 @@ Route::group(['middleware' => ['checkToken']], function () {
     /**
      * |Market(53)
      */
-
     Route::controller(MarketController::class)->group(function () {
         Route::post('v1/crud/market/insert', 'store');                                //01
         Route::post('v1/crud/market/update', 'edit');                                 //02

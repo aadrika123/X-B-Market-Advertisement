@@ -390,4 +390,47 @@ if (!function_exists('getClientIpAddress')) {
             });
         }
     }
+
+    
+if (!function_exists("FyListasoc")) {
+    function FyListasoc($date = null)
+    {
+        $data = [];
+        $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+        $y = date('Y', $strtotime);
+        $m = date('m', $strtotime);
+        $year = $y;
+        if ($m > 3)
+            $year = $y + 1;
+        while (true) {
+            $data[] = ($year - 1) . '-' . $year;
+            if ($year >= date('Y') + 1)
+                break;
+            ++$year;
+        }
+        // print_var($data);die;
+        return ($data);
+    }
+}
+
+if (!function_exists('FyListdesc')) {
+    function FyListdesc($date = null)
+    {
+        $data = [];
+        $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+        $y = date('Y', $strtotime);
+        $m = date('m', $strtotime);
+        $year = $y;
+        if ($m > 3)
+            $year = $y + 1;
+        while (true) {
+            $data[] = ($year - 1) . '-' . $year;
+            if ($year == '2015')
+                break;
+            --$year;
+        }
+        // print_var($data);die;
+        return ($data);
+    }
+}
 }
