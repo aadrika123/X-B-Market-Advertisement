@@ -122,12 +122,12 @@ class ShopController extends Controller
             if (!$data)
                 throw new Exception("Transaction Id Not Valid !!!");
             $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
-            $ulbDetails = DB::table('ulb_masters')->where('id',$shopDetails->ulb_id)->first();
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
             $reciept['amount'] = $data->amount;
-            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d',$data->payment_date)->format('d-m-Y');;
+            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d', $data->payment_date)->format('d-m-Y');;
             $reciept['paymentMode'] = $data->pmt_mode;
             $reciept['transactionNo'] = $data->transaction_id;
             $reciept['allottee'] = $shopDetails->allottee;
@@ -136,8 +136,8 @@ class ShopController extends Controller
             $reciept['ulbName'] = $ulbDetails->ulb_name;
             $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
             $reciept['website'] = $ulbDetails->current_website;
-            $reciept['ulbLogo'] =  $this->_ulbLogoUrl .$ulbDetails->logo;
-            $reciept['amountInWords'] = getIndianCurrency($data->amount)." Only /-";
+            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $reciept['amountInWords'] = getIndianCurrency($data->amount) . " Only /-";
             return responseMsgs(true, "Shop Reciept Fetch Successfully !!!", $reciept, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
@@ -783,6 +783,41 @@ class ShopController extends Controller
         try {
             $amount = $shopPmtBll->calculateRateFinancialYearWiae($req);
             return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function entryCheckOrDD(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
+            'bankName' => 'required|string',
+            'branchName' => 'required|string',
+            'chequeNo' => 'required|integer',
+            "fromFYear" => 'required|string',
+            "toFYear" => 'required|string',
+            "paymentMode" => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mMarShopPayment = new MarShopPayment();
+            $res = $mMarShopPayment->entryCheckDD($req);
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function listEntryCheckorDD(Request $req)
+    {
+        try {
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->listUnclearedCheckDD($req);
+            $list = paginator($data, $req);
+            return responseMsgs(true, "List Uncleared Check Or DD", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
         }

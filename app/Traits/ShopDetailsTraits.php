@@ -23,7 +23,7 @@ trait ShopDetailsTraits
             ['displayString' => 'Shop No', 'key' => 'shopeNo', 'value' => $data['shop_no']],
             ['displayString' => 'Present Occupier', 'key' => 'presentOccupier', 'value' => $data['present_occupier']],
             ['displayString' => 'Shop Type', 'key' => 'shopType', 'value' => $data['shop_type']],
-            ['displayString' => 'Construction Type', 'key' => 'ConstructionType', 'value' => $data['construction_type']],
+            // ['displayString' => 'Construction Type', 'key' => 'ConstructionType', 'value' => $data['construction_type']],
             // ['displayString' => 'Rule', 'key' => 'rule', 'value' => $data['rule']],
             // ['displayString' => 'Entity Name', 'key' => 'entityName', 'value' => $data['entity_name']],
             // ['displayString' => 'Entity Address', 'key' => 'entityAddress', 'value' => $data['entity_address']],
