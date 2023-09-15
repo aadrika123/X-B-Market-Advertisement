@@ -363,7 +363,7 @@ class ShopController extends Controller
             $mMarShopPayment = new MarShopPayment();
             $payments = $mMarShopPayment->getPaidListByShopId($req->id);
             $totalPaid = $payments->pluck('amount')->sum();
-            $shop['payments'] = $payments;
+            // $shop['payments'] = $payments;
             $shop['totalPaid'] = $totalPaid;
             $shop['pendingAmount'] = $total - $totalPaid;
             return responseMsgs(true, "", $shop, 050204, "1.0", responseTime(), "POST", $req->deviceId);

@@ -113,7 +113,11 @@ class ShopPaymentBll
         $mshop->last_tran_id = $createdPayment->id;
         $mshop->save();
 
-        $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)->where('financial_year', '>=', $req->fromFYear)->where('financial_year', '<=', $req->toFYear)->get();
+        $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)
+                                        ->where('financial_year', '>=', $req->fromFYear)
+                                        ->where('financial_year', '<=', $req->toFYear)
+                                        ->where('amount', '>', '0')
+                                        ->get();
         foreach ($UpdateDetails as $updateData) {
             // return $updateData->id; die;
             $updateRow = MarShopDemand::find($updateData->id);
