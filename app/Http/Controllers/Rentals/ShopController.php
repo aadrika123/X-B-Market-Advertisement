@@ -742,7 +742,7 @@ class ShopController extends Controller
     public function getFinancialYear(Request $req)
     {
         try {
-            $fylist = FyListdesc();
+            $fylist = FyListdescForShop();
             return responseMsgs(true, "Financial Year List !!!", $fylist, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
