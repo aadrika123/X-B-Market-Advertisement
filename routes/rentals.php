@@ -44,6 +44,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-payment-reciept', 'shopPaymentReciept');
         Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');
         Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');
+        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');
+        Route::post('rental/list-shop-collection', 'listShopCollection');
+        Route::post('rental/edit-shop-data', 'editShopData');                                     // 03
     });
 
     /**

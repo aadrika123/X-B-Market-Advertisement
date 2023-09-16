@@ -117,9 +117,7 @@ class Shop extends Model
       'mm.market_name',
       'sc.construction_type',
       'mst.shop_type',
-      // DB::raw("TO_CHAR(msp.payment_date, 'DD/MM/YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
-      // DB::raw("TO_CHAR(msp.paid_to, 'DD/MM/YYYY') as payment_upto")
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')

@@ -337,6 +337,31 @@ class ShopController extends Controller
         }
     }
 
+
+    /**
+     * | Edit Shop Data
+     */
+    public function editShopData(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|numeric',
+            'contactNo' => 'required|numeric',
+            'remarks' => 'nullable|string'
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+
+        try {
+            $shopDetails = Shop::find($req->shopId);
+            $shopDetails->contact_no=$req->contactNo;
+            $shopDetails->remarks=$req->remarks;
+            $shopDetails->save();
+            return responseMsgs(true, "Update Shop Successfully !!!", '', 050204, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 050204, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Get Shop Details By Id
      */
@@ -818,6 +843,88 @@ class ShopController extends Controller
             $data = $mMarShopPayment->listUnclearedCheckDD($req);
             $list = paginator($data, $req);
             return responseMsgs(true, "List Uncleared Check Or DD", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Clear or Bounce Cheque or DD
+     */
+    public function clearOrBounceChequeOrDD(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'chequeId' => 'required|integer',
+            'status' => 'required|integer',
+            'remarks' => $req->status == 2 ? 'required|string' : 'nullable|string',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);
+            $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
+            $mMarShopPayment->payment_status = $req->status;
+            $mMarShopPayment->save();
+            if ($req->status == 1) {
+                $UpdateDetails = MarShopDemand::where('shop_id',  $shopPayment->shop_id)
+                    ->where('financial_year', '>=', $shopPayment->paid_from)
+                    ->where('financial_year', '<=', $shopPayment->paid_to)
+                    ->where('amount', '>', 0)
+                    ->get();
+                foreach ($UpdateDetails as $updateData) {
+                    $updateRow = MarShopDemand::find($updateData->id);
+                    $updateRow->payment_date = Carbon::now()->format('Y-m-d');
+                    $updateRow->payment_status = 1;
+                    $updateRow->tran_id = $req->chequeId;
+                    $updateRow->save();
+                }
+            }
+            if ($req->status)
+                $msg = "Cheque Cleared Successfully !!!";
+            else
+                $msg = "Cheque Bounced !!!";
+            return responseMsgs(true, $msg, '', 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | List shop Collection
+     */
+    public function listShopCollection(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if (!isset($req->fromDate))
+                $fromDate = Carbon::now()->format('Y-m-d');
+            else
+                $fromDate = $req->fromDate;
+            if (!isset($req->toDate))
+                $toDate = Carbon::now()->format('Y-m-d');
+            else
+                $toDate = $req->toDate;
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
+            // $data = $mMarShopPayment->listShopCollection($req);
+            if ($req->shopCategoryId != 0)
+                $data = $data->where('shop_category_id', $req->shopCategoryId);
+            if ($req->marketId != 0)
+                $data = $data->where('market_id', $req->marketId);
+            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
+                $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+            $list = paginator($data, $req);
+            $list['collectAmount'] = $data->sum('amount');
+            return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
         }
