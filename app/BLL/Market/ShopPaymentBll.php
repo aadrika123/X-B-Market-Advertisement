@@ -101,12 +101,13 @@ class ShopPaymentBll
             'paid_from' => $req->fromFYear,
             'paid_to' => $req->toFYear,
             'payment_date' => Carbon::now(),
+            'payment_status' => '1',
             'user_id' => $req->auth['id'] ?? 0,
             'ulb_id' => $shopDetails->ulb_id,
             'remarks' => $req->remarks,
             'pmt_mode' => $req->paymentMode,
             'shop_category_id' => $shopDetails->shop_category_id,
-            'transaction_id' => time().$shopDetails->ulb_id.$req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
+            'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
         ];
         DB::beginTransaction();
         $createdPayment = $this->_mShopPayments::create($paymentReqs);
@@ -115,10 +116,10 @@ class ShopPaymentBll
         $mshop->save();
 
         $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)
-                                        ->where('financial_year', '>=', $req->fromFYear)
-                                        ->where('financial_year', '<=', $req->toFYear)
-                                        ->where('amount', '>', '0')
-                                        ->get();
+            ->where('financial_year', '>=', $req->fromFYear)
+            ->where('financial_year', '<=', $req->toFYear)
+            ->where('amount', '>', '0')
+            ->get();
         foreach ($UpdateDetails as $updateData) {
             // return $updateData->id; die;
             $updateRow = MarShopDemand::find($updateData->id);
@@ -130,9 +131,9 @@ class ShopPaymentBll
         return $amount;
     }
 
-/**
- * | 
- */
+    /**
+     * | 
+     */
     public function calculateRateFinancialYearWiae($req)
     {
         return  DB::table('mar_shop_demands')

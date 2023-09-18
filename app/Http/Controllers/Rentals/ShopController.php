@@ -936,6 +936,7 @@ class ShopController extends Controller
     public function dcbReports(Request $req){
         try{
             $shopType=MarShopType::select('shop_type','id')->where('status','1')->get();
+            
             return responseMsgs(true, "DCB Reports !!!", $shopType, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         }catch(Exception $e){
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
