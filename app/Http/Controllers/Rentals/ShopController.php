@@ -353,8 +353,8 @@ class ShopController extends Controller
 
         try {
             $shopDetails = Shop::find($req->shopId);
-            $shopDetails->contact_no=$req->contactNo;
-            $shopDetails->remarks=$req->remarks;
+            $shopDetails->contact_no = $req->contactNo;
+            $shopDetails->remarks = $req->remarks;
             $shopDetails->save();
             return responseMsgs(true, "Update Shop Successfully !!!", '', 050204, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -740,7 +740,9 @@ class ShopController extends Controller
         }
     }
 
-
+    /**
+     * | get Shop Master Data
+     */
     public function shopMaster(Request $req)
     {
         try {
@@ -764,6 +766,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | get List of Financial year 
+     */
     public function getFinancialYear(Request $req)
     {
         try {
@@ -774,6 +779,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Search Shop For Payment
+     */
     public function searchShopForPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -794,6 +802,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Calculate Shop rate financial Wise (Given Two Financial Year)
+     */
     public function calculateShopRateFinancialwise(Request $req)
     {
         $shopPmtBll = new ShopPaymentBll();
@@ -813,6 +824,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Entry Cheque or DD For Payment
+     */
     public function entryCheckOrDD(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -836,6 +850,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | List cheque or DD For Clearance
+     */
     public function listEntryCheckorDD(Request $req)
     {
         try {
@@ -933,12 +950,88 @@ class ShopController extends Controller
     /**
      * | DCB Reports of All Shops
      */
-    public function dcbReports(Request $req){
-        try{
-            $shopType=MarShopType::select('shop_type','id')->where('status','1')->get();
-            
-            return responseMsgs(true, "DCB Reports !!!", $shopType, 055001, "1.0", responseTime(), "POST", $req->deviceId);
-        }catch(Exception $e){
+    public function dcbReports(Request $req)
+    {
+        try {
+            $shopType = MarShopType::select('shop_type', 'id')->where('status', '1')->orderBy('id')->get();
+            $mMarShopDemand = new MarShopDemand();
+            $mMarShopPayment = new MarShopPayment();
+            $mShop = new Shop();
+            $total = array();
+            foreach ($shopType as $key => $st) {
+                $sType = str_replace(" ", "_", $st['shop_type']);
+                $total[$sType]['shopCategoryId'] = $st['id'];
+                $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
+                $total[$sType]['totalDemand'] = $mMarShopDemand->totalDemand($st['id']);
+                $total[$sType]['totalCollection'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalBalance'] = $total[$sType]['totalDemand'] - $total[$sType]['totalCollection'];
+                $total[$sType]['totalCollectInPercent'] = number_format(($total[$sType]['totalCollection'] / $total[$sType]['totalDemand']) * 100, 2);
+            }
+            return responseMsgs(true, "DCB Reports !!!", $total, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Calculate Shop wise DCB
+     */
+    public function shopWiseDcb(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $shopIds = Shop::select(
+                'mar_shops.id',
+                'mar_shops.shop_no',
+                'mar_shops.allottee',
+                'mar_shops.allottee',
+                'mar_shops.contact_no',
+                'mc.circle_name',
+                'mm.market_name',
+                'mst.shop_type',
+            )
+                ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+                ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+                ->join("mar_shop_types as mst", "mst.id", "mar_shops.shop_category_id");
+            if ($req->shopCategoryId) {
+                $shopIds =  $shopIds->where('mar_shops.shop_category_id', $req->shopCategoryId);
+            }
+            if ($req->marketId) {
+                $shopIds =  $shopIds->where('mar_shops.market_id', $req->marketId);
+            }
+            $shopIds =  $shopIds->orderBy('mar_shops.id', 'ASC')->orderBy('mar_shops.shop_category_id', 'ASC');
+
+            $mMarShopDemand = new MarShopDemand();
+            $mMarShopPayment = new MarShopPayment();
+            $marketDemand = collect();
+            $marketCollection = collect();
+            $totalMarketDCB = collect($shopIds->get())->map(function ($shop) use ($mMarShopDemand, $mMarShopPayment, $marketDemand, $marketCollection) {
+                $marketDemand->push($mMarShopDemand->shopDemand($shop->id));
+                $marketCollection->push($mMarShopPayment->shopCollectoion($shop->id));
+            });
+            DB::enableQueryLog();
+            $list = paginator($shopIds, $req); #return(DB::getQueryLog());
+            $shops = array();
+            $shops = collect($list['data'])->map(function ($val) use ($mMarShopDemand, $mMarShopPayment) {
+                $val->totalDemand = $mMarShopDemand->shopDemand($val->id);
+                $val->totalCollection = $mMarShopPayment->shopCollectoion($val->id);
+                $val->balance =  $val->totalDemand - $val->totalCollection;
+                // $val->$val;
+                return $val;
+            });
+            $list["data"] = $shops->toArray();
+            $list['totalMarketDemand'] = $marketDemand->sum();
+            $list['totalMarketCollection'] = $marketCollection->sum();
+            $list['totalMarketBalance'] = $list['totalMarketDemand'] - $list['totalMarketCollection'];
+            return responseMsgs(true, "DCB Reports !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }

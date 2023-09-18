@@ -47,7 +47,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');
         Route::post('rental/list-shop-collection', 'listShopCollection');
         Route::post('rental/edit-shop-data', 'editShopData'); 
-        Route::post('rental/dcb-reports', 'dcbReports');                                     
+        Route::post('rental/dcb-reports', 'dcbReports');   
+        Route::post('rental/shop-wise-dcb', 'shopWiseDcb');                                     
     });
 
     /**

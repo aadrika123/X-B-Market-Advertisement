@@ -84,21 +84,51 @@ class MarShopPayment extends Model
    /**
     * | update payment status for clear or bounce cheque
     */
-   public function clearBounceCheque(){
-      
+   public function clearBounceCheque()
+   {
    }
 
 
-   public function listShopCollection($fromDate,$toDate){
+   public function listShopCollection($fromDate, $toDate)
+   {
       return DB::table('mar_shop_payments')
-            ->select('mar_shop_payments.amount','mar_shop_payments.user_id as collected_by',DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),'mar_shop_payments.paid_from',
-            'mar_shop_payments.paid_to','t2.shop_category_id','t2.shop_no','t2.allottee','t2.market_id','mst.shop_type','mkt.market_name','mc.circle_name')
-            ->leftjoin('mar_shops as t2','t2.id','=','mar_shop_payments.shop_id')
-            ->leftjoin('mar_shop_types as mst','mst.id','=','t2.shop_category_id')
-            ->leftjoin('m_circle as mc','mc.id','=','t2.circle_id')
-            ->leftjoin('m_market as mkt','mkt.id','=','t2.market_id')
-            ->where('mar_shop_payments.payment_date','>=',$fromDate)
-            ->where('mar_shop_payments.payment_date','<=',$toDate)
-            ->where('mar_shop_payments.payment_status','1');
+         ->select(
+            'mar_shop_payments.amount',
+            'mar_shop_payments.user_id as collected_by',
+            DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+            'mar_shop_payments.paid_from',
+            'mar_shop_payments.paid_to',
+            't2.shop_category_id',
+            't2.shop_no',
+            't2.allottee',
+            't2.market_id',
+            'mst.shop_type',
+            'mkt.market_name',
+            'mc.circle_name'
+         )
+         ->leftjoin('mar_shops as t2', 't2.id', '=', 'mar_shop_payments.shop_id')
+         ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
+         ->leftjoin('m_circle as mc', 'mc.id', '=', 't2.circle_id')
+         ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
+         ->where('mar_shop_payments.payment_date', '>=', $fromDate)
+         ->where('mar_shop_payments.payment_date', '<=', $toDate)
+         ->where('mar_shop_payments.payment_status', '1');
+   }
+
+
+   /**
+    * | find total collection shop type wise
+    */
+   public function totalCollectoion($shopType)
+   {
+      return MarShopPayment::select('*')->where('payment_status','1')->where('shop_category_id',$shopType)->sum('amount');
+   }
+
+  /**
+     * | Get Shop Wise All Payments details For DCB Reports 
+     */
+   public function shopCollectoion($shopId){
+      return MarShopPayment::select('*')->where('payment_status','1')->where('shop_id',$shopId)->sum('amount');
+
    }
 }

@@ -128,6 +128,7 @@ class ShopPaymentBll
             $updateRow->tran_id = $createdPayment->id;
             $updateRow->save();
         }
+        $mShop=Shop::find($req->shopId);
         return $amount;
     }
 

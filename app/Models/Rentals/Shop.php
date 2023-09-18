@@ -181,4 +181,36 @@ class Shop extends Model
       ->orderByDesc('mar_shops.id')
       ->get();
   }
+
+  /**
+   * | Count Total No of Shop (Shop Type Wise)
+   */
+  public function totalShop($shopType)
+  {
+    return Shop::where('shop_category_id', $shopType)->count();
+  }
+
+  /**
+   * | Get Shop Details By ID FOr DCB Reports
+   */
+  public function getShopDetailByIdForDCB($id)
+  {
+    return Shop::select(
+      'mar_shops.shop_no',
+      'mar_shops.allottee',
+      'mar_shops.contact_no',
+      'mc.circle_name',
+      'mm.market_name',
+      // 'sc.construction_type',
+      // 'mst.shop_type',
+      // 'msp.amount as last_payment_amount',
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      // ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      // ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      // ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->where('mar_shops.id', $id)
+      ->first();
+  }
 }
