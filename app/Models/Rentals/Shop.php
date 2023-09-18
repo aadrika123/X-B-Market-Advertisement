@@ -29,7 +29,9 @@ class Shop extends Model
       ->first();
   }
 
-
+/**
+ * | Get All Shop list
+ */
   public function retrieveAll()
   {
     return Shop::select(
@@ -49,7 +51,9 @@ class Shop extends Model
       ->get();
   }
 
-
+  /**
+   * | Lis Of All Active Shop
+   */
   public function retrieveActive()
   {
     return Shop::select(
@@ -70,7 +74,9 @@ class Shop extends Model
       ->get();
   }
 
-
+  /**
+   * | Get All Shop List By Ulb Id 
+   */
   public function getAllShopUlbWise($ulbId)
   {
     // return Shop::all();
@@ -89,6 +95,10 @@ class Shop extends Model
     // ->get();
   }
 
+
+  /**
+   * | Get Shop List By Market Id
+   */
   public function getShop($marketid)
   {
     return Shop::select(
@@ -109,6 +119,9 @@ class Shop extends Model
     // ->get();
   }
 
+  /**
+   * | Get Shop Details By Market  Id
+   */
   public function getShopDetailById($id)
   {
     return Shop::select(
@@ -128,6 +141,9 @@ class Shop extends Model
       ->first();
   }
 
+  /**
+   * | Get Payment Reciept by Shop Id
+   */
   public function getReciept($shopId)
   {
     $shop = Shop::select(

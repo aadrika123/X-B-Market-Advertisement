@@ -11,7 +11,9 @@ class MMarket extends Model
     protected $guarded = [];
     protected $table = 'm_market';
 
-
+    /**
+     * | Get Market Name By Circle ID
+     */
     public function getMarketNameByCircleId($marketName, $circleId)
     {
         return MMarket::select('*')
@@ -21,6 +23,9 @@ class MMarket extends Model
             ->get();
     }
 
+    /**
+     * | Get List of Market By Circle Id
+     */
     public function getMarketByCircleId($circleId)
     {
         return MMarket::select('*')
@@ -30,6 +35,9 @@ class MMarket extends Model
             ->get();
     }
 
+    /**
+     * | Get All Active Market
+     */
     public function getAllActive()
     {
         return MMarket::select('*')
