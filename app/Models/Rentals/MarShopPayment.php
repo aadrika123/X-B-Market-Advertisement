@@ -47,6 +47,7 @@ class MarShopPayment extends Model
          'cheque_no' => $req->chequeNo,
          'user_id' => $req->auth['id'] ?? 0,
          'ulb_id' => $shopDetails->ulb_id,
+         'shop_category_id' => $shopDetails->shop_category_id,
          'remarks' => $req->remarks,
          'payment_status' => 0,
          'pmt_mode' => $req->paymentMode,

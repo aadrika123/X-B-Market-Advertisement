@@ -46,7 +46,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');
         Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');
         Route::post('rental/list-shop-collection', 'listShopCollection');
-        Route::post('rental/edit-shop-data', 'editShopData');                                     // 03
+        Route::post('rental/edit-shop-data', 'editShopData'); 
+        Route::post('rental/dcb-reports', 'dcbReports');                                     
     });
 
     /**
@@ -55,6 +56,7 @@ Route::group(['middleware' => ['checkToken']], function () {
     Route::controller(TollsController::class)->group(function () {
         Route::post('toll-payments', 'tollPayments');                            //01
         Route::post('crud/toll/insert', 'store');                                //02
+        Route::post('crud/toll/list-toll', 'listToll');                                //02
         Route::post('crud/toll/edit', 'edit');                                   //03
         Route::post('crud/toll/show-by-id', 'show');                             //04 
         Route::post('crud/toll/retrieve-all', 'retrieve');                       //05 
@@ -63,6 +65,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');
         Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');
         // Route::post('rental/list-shop', 'listShop');
+        Route::post('rental/search-toll-by-name-or-mobile', 'searchTollByNameOrMobile');
         Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
         Route::post('rental/get-toll-price-list', 'getTollPriceList');

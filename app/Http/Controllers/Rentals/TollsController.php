@@ -76,7 +76,7 @@ class TollsController extends Controller
                 'last_amount' => $payableAmt,
                 'last_tran_id' => $createdTran->id
             ]);
-            return responseMsgs(true, "Payment Successfully Done", ['paymentAmount'=> $payableAmt], 055101, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Successfully Done", ['paymentAmount' => $payableAmt], 055101, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055101, "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -97,42 +97,43 @@ class TollsController extends Controller
                 $imageName1Absolute = $absolutePath;
             }
 
-            if (isset($request->photograph2)) {
-                $image = $request->file('photograph2');
-                $refImageName = 'Toll-Photo-2' . '-' . $request->vendorName;
-                $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-                $absolutePath = $relativePath;
-                $imageName2Absolute = $absolutePath;
-            }
+            // if (isset($request->photograph2)) {
+            //     $image = $request->file('photograph2');
+            //     $refImageName = 'Toll-Photo-2' . '-' . $request->vendorName;
+            //     $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
+            //     $absolutePath = $relativePath;
+            //     $imageName2Absolute = $absolutePath;
+            // }
             $tollNo = $this->tollIdGeneration($request->marketId);
-           $marToll = [
+            $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
                 // 'toll_type'               => $request->tollType,
                 'vendor_name'             => $request->vendorName,
                 'address'                 => $request->address,
                 'rate'                    => $request->rate,
-                'last_payment_date'       => $request->lastPaymentDate,
-                'last_amount'             => $request->lastAmount,
+                // 'last_payment_date'       => $request->lastPaymentDate,
+                // 'last_amount'             => $request->lastAmount,
                 'market_id'               => $request->marketId,
-                'present_length'          => $request->presentLength,
-                'present_breadth'         => $request->presentBreadth,
-                'present_height'          => $request->presentHeight,
-                'no_of_floors'            => $request->noOfFloors,
-                'trade_license'           => $request->tradeLicense,
-                'construction'            => $request->construction,
-                'utility'                 => $request->utility,
+                // 'present_length'          => $request->presentLength,
+                // 'present_breadth'         => $request->presentBreadth,
+                // 'present_height'          => $request->presentHeight,
+                // 'no_of_floors'            => $request->noOfFloors,
+                // 'trade_license'           => $request->tradeLicense,
+                // 'construction'            => $request->construction,
+                // 'utility'                 => $request->utility,
                 'mobile'                  => $request->mobile,
                 'remarks'                 => $request->remarks,
                 'photograph1'             => $imageName1 ?? null,
                 'photo1_absolute_path'    => $imageName1Absolute ?? null,
-                'photograph2'             => $imageName2 ?? null,
-                'photo2_absolute_path'    => $imageName2Absolute ?? null,
-                'longitude'               => $request->longitude,
-                'latitude'                => $request->latitude,
+                // 'photograph2'             => $imageName2 ?? null,
+                // 'photo2_absolute_path'    => $imageName2Absolute ?? null,
+                // 'longitude'               => $request->longitude,
+                // 'latitude'                => $request->latitude,
                 'user_id'                 => $request->auth['id'],
                 'ulb_id'                  => $request->auth['ulb_id'],
-                'last_tran_id'            => $request->lastTranId,
+                'vendor_type'             => $request->vendorType,
+                // 'last_tran_id'            => $request->lastTranId,
             ];
             // return $marToll;
             $this->_mToll->create($marToll);
@@ -242,10 +243,9 @@ class TollsController extends Controller
         }
         try {
 
-            $toll = $this->_mToll::findOrFail($request->id);
-
-            if (collect($toll)->isEmpty())
-                throw new Exception("Toll not Exist");
+            $toll = $this->_mToll::find($request->id);
+            if (!$toll)
+                throw new Exception("No Data FOund !!!");
             return responseMsgs(true, "record found", $toll, 055105, "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055105, "1.0", responseTime(), "POST", $request->deviceId);
@@ -436,20 +436,22 @@ class TollsController extends Controller
     /**
      * | Get Market Toll Price List
      */
-    public function getTollPriceList(Request $req){
+    public function getTollPriceList(Request $req)
+    {
         try {
             $mMarTollPriceList = new MarTollPriceList();
-            $list=$mMarTollPriceList->getTollPriceList();
+            $list = $mMarTollPriceList->getTollPriceList();
             return responseMsgs(true, "Price List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
-     /**
+    /**
      * | Get Payment Reciept
      */
-    public function getPaymentReciept(Request $req){
+    public function getPaymentReciept(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'tollId' => 'required|integer',
         ]);
@@ -457,13 +459,43 @@ class TollsController extends Controller
         if ($validator->fails()) {
             return  $validator->errors();
         }
-        try{
-            $mMarToll=new MarToll();
+        try {
+            $mMarToll = new MarToll();
             // $reciept=$mMarToll->getReciept($req->tollId);
-            $reciept=$mMarToll->getReciept($req->tollId);
-            return responseMsgs(true, "Payment Reciept Fetch Successfully !!!",$reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }catch (Exception $e) {
+            $reciept = $mMarToll->getReciept($req->tollId);
+            return responseMsgs(true, "Payment Reciept Fetch Successfully !!!", $reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function listToll(Request $req)
+    {
+        try {
+            $mMarToll = new MarToll();
+            $list = $mMarToll->getUlbWiseToll($req->auth['ulb_id']);
+            $list = paginator($list, $req);
+            return responseMsgs(true, "List Fetch Successfully !!!", $list, 055102, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function searchTollByNameOrMobile(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'vendorName' => 'nullable|string',
+            'mobileNo' => 'nullable|numeric|digits:10'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            return responseMsgs(true, "List Fetch Successfully !!!", '', 055102, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

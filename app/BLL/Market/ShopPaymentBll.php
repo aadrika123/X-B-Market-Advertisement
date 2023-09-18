@@ -105,6 +105,7 @@ class ShopPaymentBll
             'ulb_id' => $shopDetails->ulb_id,
             'remarks' => $req->remarks,
             'pmt_mode' => $req->paymentMode,
+            'shop_category_id' => $shopDetails->shop_category_id,
             'transaction_id' => time().$shopDetails->ulb_id.$req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
         ];
         DB::beginTransaction();
