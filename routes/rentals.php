@@ -11,7 +11,9 @@ use App\Http\Controllers\Master\MarketController;
 use App\Http\Controllers\Rentals\ShopController;
 use App\Http\Controllers\Rentals\TollsController;
 use Illuminate\Support\Facades\Route;
-
+Route::controller(ShopController::class)->group(function () {
+    Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');
+});
 Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Shops (50)
@@ -33,14 +35,14 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-tc-collection', 'getTcCollection');
         Route::post('rental/pay', 'shopPayment');
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
-        Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
+        // Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
         Route::post('rental/list-shop-type', 'listShopType');
         Route::post('rental/shop-master', 'shopMaster');
         Route::post('rental/test', 'test');
         Route::post('rental/get-financial-year', 'getFinancialYear');
         Route::post('rental/search-shop-for-payment', 'searchShopForPayment');
         Route::post('rental/calculate-shop-rate-financial-wise', 'calculateShopRateFinancialwise');
-        Route::post('rental/shop-payment-reciept', 'shopPaymentReciept');
+        // Route::get('rental/shop-payment-reciept', 'shopPaymentReciept');
         Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');
         Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');
         Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');

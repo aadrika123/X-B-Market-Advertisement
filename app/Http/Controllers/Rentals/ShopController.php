@@ -110,15 +110,11 @@ class ShopController extends Controller
     /**
      * | Get Shop Payment Reciept By Demand ID
      */
-    public function shopPaymentReciept(Request $req)
+    public function shopPaymentReciept($tranId,Request $req)
     {
-        $validator = Validator::make($req->all(), [
-            "tranId" => "required|integer",
-        ]);
-        if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
+        
         try {
-            $data = MarShopPayment::find($req->tranId);
+            $data = MarShopPayment::find($tranId);
             if (!$data)
                 throw new Exception("Transaction Id Not Valid !!!");
             $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
