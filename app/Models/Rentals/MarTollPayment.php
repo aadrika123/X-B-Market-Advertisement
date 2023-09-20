@@ -11,6 +11,9 @@ class MarTollPayment extends Model
   use HasFactory;
   protected $guarded = [];
 
+  /**
+   * | Get Toll Payment List ULB Wise
+   */
   public function paymentList($ulbId)
   {
     return self::select(
@@ -26,12 +29,17 @@ class MarTollPayment extends Model
       ->where('mar_toll_payments.ulb_id', $ulbId);
   }
 
+  /**
+   * | Get All Payment List ULB wise
+   */
   public function paymentListForTcCollection($ulbId)
   {
     return self::select('user_id', 'payment_date', 'amount')->where('ulb_id', $ulbId);
   }
 
-
+  /**
+   * | Get Today Payment List
+   */
   public function todayTallCollection($ulbId, $date)
   {
     return self::select('amount')
@@ -39,8 +47,6 @@ class MarTollPayment extends Model
       ->where('payment_date', $date);
     //  ->sum('amount');
   }
-
-
 
   /**
    * | Payment Accept By Admin
@@ -51,7 +57,10 @@ class MarTollPayment extends Model
     // dd($metaReqs);
     return self::create($metaReqs)->id;
   }
-
+  
+  /**
+   * | Make Meta Request For Payment By Admin
+   */
   public function metaReqs($req, $tollId)
   {
     return [

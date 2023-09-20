@@ -9,9 +9,12 @@ class MarShopTpye extends Model
 {
     use HasFactory;
 
-    protected $guarded=[];
-
-    public function listShopType(){
-        return self::where('status','1')->get();
+    protected $guarded = [];
+    /**
+     * | Get Shop Type List
+     */
+    public function listShopType()
+    {
+        return self::where('status', '1')->get();
     }
 }

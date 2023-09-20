@@ -9,7 +9,9 @@ class MarShopType extends Model
 {
     use HasFactory;
     protected $guarded=[];
-
+    /**
+     * | Get Shop Type List
+     */
     public function listShopType(){
         return self::select('id','shop_type')->where('status','1')->orderBy('id')->get();
     }

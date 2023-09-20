@@ -21,7 +21,6 @@ class MarShopPayment extends Model
       return self::select('shop_id', 'amount', 'pmt_mode as payment_mode', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"))->where('shop_id', $shopId)->get();
    }
 
-
    /**
     * | Entry Check or DD
     */
@@ -30,16 +29,24 @@ class MarShopPayment extends Model
       $amount = DB::table('mar_shop_demands')
          ->where('shop_id', $req->shopId)
          ->where('payment_status', 0)
-         ->where('financial_year', '>=', $req->fromFYear)
+         // ->where('financial_year', '>=', $req->fromFYear)
          ->where('financial_year', '<=', $req->toFYear)
+         ->orderBy('financial_year', 'ASC')
          ->sum('amount');
       if ($amount < 1)
          throw new Exception("No Any Due Amount !!!");
       $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();
+
+      $financialYear = DB::table('mar_shop_demands')
+         ->where('shop_id', $req->shopId)
+         ->where('payment_status', 0)
+         ->where('financial_year', '<=', $req->toFYear)
+         ->orderBy('financial_year', 'ASC')
+         ->first('financial_year');
       $paymentReqs = [
          'shop_id' => $req->shopId,
          'amount' => $amount,
-         'paid_from' => $req->fromFYear,
+         'paid_from' => $financialYear->financial_year,
          'paid_to' => $req->toFYear,
          'cheque_date' => Carbon::now(),
          'bank_name' => $req->bankName,
@@ -88,7 +95,9 @@ class MarShopPayment extends Model
    {
    }
 
-
+   /**
+    * | List of shop collection between two given date
+    */
    public function listShopCollection($fromDate, $toDate)
    {
       return DB::table('mar_shop_payments')
@@ -115,20 +124,19 @@ class MarShopPayment extends Model
          ->where('mar_shop_payments.payment_status', '1');
    }
 
-
    /**
     * | find total collection shop type wise
     */
    public function totalCollectoion($shopType)
    {
-      return MarShopPayment::select('*')->where('payment_status','1')->where('shop_category_id',$shopType)->sum('amount');
+      return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->sum('amount');
    }
 
-  /**
-     * | Get Shop Wise All Payments details For DCB Reports 
-     */
-   public function shopCollectoion($shopId){
-      return MarShopPayment::select('*')->where('payment_status','1')->where('shop_id',$shopId)->sum('amount');
-
+   /**
+    * | Get Shop Wise All Payments details For DCB Reports 
+    */
+   public function shopCollectoion($shopId)
+   {
+      return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_id', $shopId)->sum('amount');
    }
 }

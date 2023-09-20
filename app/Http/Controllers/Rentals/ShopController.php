@@ -85,7 +85,7 @@ class ShopController extends Controller
             "shopId" => "required|integer",
             // "amount" => 'required|numeric',
             "paymentMode" => 'required|string',
-            "fromFYear" => 'required|string',
+            // "fromFYear" => 'required|string',
             "toFYear" => 'required|string',
         ]);
         // $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
@@ -382,6 +382,14 @@ class ShopController extends Controller
             $mMarShopDemand = new MarShopDemand();
             $demands = $mMarShopDemand->getDemandByShopId($req->id);
             $total = $demands->pluck('amount')->sum();
+            $financialYear=$demands->where('payment_status','0')->pluck('financial_year');
+            $f_y = array();
+            foreach ($financialYear as $key => $fy) {
+                $f_y[$key]['id'] = $fy;
+                $f_y[$key]['financialYear'] = $fy;
+            }
+            // return $f_y;
+            $shop['fYear'] = $f_y;
             $shop['demands'] = $demands;
             $shop['total'] = $total;
 
@@ -391,6 +399,7 @@ class ShopController extends Controller
             // $shop['payments'] = $payments;
             $shop['totalPaid'] = $totalPaid;
             $shop['pendingAmount'] = $total - $totalPaid;
+
             return responseMsgs(true, "", $shop, 050204, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050204, "1.0", responseTime(), "POST", $req->deviceId);
@@ -753,7 +762,7 @@ class ShopController extends Controller
             $list['shopType'] = $mMarShopType->listShopType();
             $list['circleList'] = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);
             $list['listConstruction'] = $mShopConstruction->listConstruction();
-            $fYear = FyListdesc();
+            $fYear = FyListdescForShop();
             $f_y = array();
             foreach ($fYear as $key => $fy) {
                 $f_y[$key]['id'] = $fy;
@@ -810,7 +819,7 @@ class ShopController extends Controller
         $shopPmtBll = new ShopPaymentBll();
         $validator = Validator::make($req->all(), [
             "shopId" => "required|integer",
-            "fromFYear" => 'required|string',
+            // "fromFYear" => 'required|string',
             "toFYear" => 'required|string',
         ]);
         if ($validator->fails())
@@ -834,7 +843,7 @@ class ShopController extends Controller
             'bankName' => 'required|string',
             'branchName' => 'required|string',
             'chequeNo' => 'required|integer',
-            "fromFYear" => 'required|string',
+            // "fromFYear" => 'required|string',
             "toFYear" => 'required|string',
             "paymentMode" => 'required|string',
         ]);
@@ -1027,9 +1036,9 @@ class ShopController extends Controller
                 return $val;
             });
             $list["data"] = $shops->toArray();
-            $list['totalMarketDemand'] = $marketDemand->sum();
-            $list['totalMarketCollection'] = $marketCollection->sum();
-            $list['totalMarketBalance'] = $list['totalMarketDemand'] - $list['totalMarketCollection'];
+            $list['totalMarketDemand'] = number_format($marketDemand->sum(),2);
+            $list['totalMarketCollection'] = number_format($marketCollection->sum(),2);
+            $list['totalMarketBalance'] = number_format($list['totalMarketDemand'] - $list['totalMarketCollection'],2);
             return responseMsgs(true, "DCB Reports !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);

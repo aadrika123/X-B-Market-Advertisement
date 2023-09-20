@@ -341,7 +341,7 @@ class TollsController extends Controller
         }
         try {
             $mMarToll = new MarToll();
-            $list = $mMarToll->getTallDetailById($req->tollId);
+            $list = $mMarToll->getTollDetailById($req->tollId);
             return responseMsgs(true, "Toll Details Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);

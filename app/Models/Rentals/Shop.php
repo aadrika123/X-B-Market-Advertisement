@@ -95,7 +95,6 @@ class Shop extends Model
     // ->get();
   }
 
-
   /**
    * | Get Shop List By Market Id
    */

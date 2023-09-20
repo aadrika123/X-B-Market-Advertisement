@@ -85,20 +85,27 @@ class ShopPaymentBll
         $amount = DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
-            ->where('financial_year', '>=', $req->fromFYear)
+            // ->where('financial_year', '>=', $req->fromFYear)
             ->where('financial_year', '<=', $req->toFYear)
+            ->orderBy('financial_year', 'ASC')
             ->sum('amount');
         if ($amount < 1)
             throw new Exception("No Any Due Amount !!!");
         $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();
         // $payableAmt = $req->amount;
         // $amount = $payableAmt;
-
+        $financialYear = DB::table('mar_shop_demands')
+            ->where('shop_id', $req->shopId)
+            ->where('payment_status', 0)
+            ->where('financial_year', '<=', $req->toFYear)
+            ->orderBy('financial_year', 'ASC')
+            ->first('financial_year');
+            
         // Insert Payment 
         $paymentReqs = [
             'shop_id' => $req->shopId,
             'amount' => $amount,
-            'paid_from' => $req->fromFYear,
+            'paid_from' => $financialYear->financial_year,
             'paid_to' => $req->toFYear,
             'payment_date' => Carbon::now(),
             'payment_status' => '1',
@@ -116,8 +123,9 @@ class ShopPaymentBll
         $mshop->save();
 
         $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)
-            ->where('financial_year', '>=', $req->fromFYear)
+            ->where('financial_year', '>=', $financialYear->financial_year)
             ->where('financial_year', '<=', $req->toFYear)
+            ->orderBy('financial_year', 'ASC')
             ->where('amount', '>', '0')
             ->get();
         foreach ($UpdateDetails as $updateData) {
@@ -128,19 +136,19 @@ class ShopPaymentBll
             $updateRow->tran_id = $createdPayment->id;
             $updateRow->save();
         }
-        $mShop=Shop::find($req->shopId);
+        $mShop = Shop::find($req->shopId);
         return $amount;
     }
 
     /**
-     * | 
+     * | Calculate rate between two financial year 
      */
     public function calculateRateFinancialYearWiae($req)
     {
         return  DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
-            ->where('financial_year', '>=', $req->fromFYear)
+            // ->where('financial_year', '>=', $req->fromFYear)
             ->where('financial_year', '<=', $req->toFYear)
             ->sum('amount');
     }

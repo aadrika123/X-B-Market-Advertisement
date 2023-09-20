@@ -31,7 +31,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-shop-detail-by-id', 'getShopDetailById');
         Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');
         Route::post('rental/get-tc-collection', 'getTcCollection');
-        // Route::post('rental/abc', 'abc');
         Route::post('rental/pay', 'shopPayment');
         Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
         Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
