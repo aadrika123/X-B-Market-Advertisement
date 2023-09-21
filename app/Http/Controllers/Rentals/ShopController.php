@@ -120,6 +120,7 @@ class ShopController extends Controller
             $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
+            $reciept['shopNo'] = $shopDetails->shop_no;
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
             $reciept['amount'] = $data->amount;
