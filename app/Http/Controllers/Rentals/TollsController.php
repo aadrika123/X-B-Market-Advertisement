@@ -28,6 +28,9 @@ class TollsController extends Controller
         $this->_mToll = new MarToll();
     }
 
+    /**
+     * | Toll Payments
+     */
     public function tollPayments(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -469,7 +472,9 @@ class TollsController extends Controller
         }
     }
 
-
+    /**
+     * | Get List All Toll
+     */
     public function listToll(Request $req)
     {
         try {
@@ -482,18 +487,25 @@ class TollsController extends Controller
         }
     }
 
+    /**
+     * | search applocation by Mobile No., Name or , Toll No
+     */
     public function searchTollByNameOrMobile(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'vendorName' => 'nullable|string',
-            'mobileNo' => 'nullable|numeric|digits:10'
+            'key' => 'required'
         ]);
 
         if ($validator->fails()) {
             return  $validator->errors();
         }
+        $mMarToll = new MarToll();
+        $list = $mMarToll->getUlbWiseToll($req->auth['ulb_id']);
+        if ($req->key)
+            $list = searchTollRentalFilter($list, $req);
+        $list = paginator($list, $req);
         try {
-            return responseMsgs(true, "List Fetch Successfully !!!", '', 055102, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "List Fetch Successfully !!!", $list, 055102, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $req->deviceId);
         }

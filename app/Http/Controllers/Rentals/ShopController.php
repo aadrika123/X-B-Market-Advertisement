@@ -992,10 +992,10 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            $shopIds = Shop::select(
+           $shopIds = Shop::select(
                 'mar_shops.id',
                 'mar_shops.shop_no',
-                'mar_shops.allottee',
+                'mar_shops.shop_category_id',
                 'mar_shops.allottee',
                 'mar_shops.contact_no',
                 'mc.circle_name',
@@ -1011,7 +1011,7 @@ class ShopController extends Controller
             if ($req->marketId) {
                 $shopIds =  $shopIds->where('mar_shops.market_id', $req->marketId);
             }
-            $shopIds =  $shopIds->orderBy('mar_shops.id', 'ASC')->orderBy('mar_shops.shop_category_id', 'ASC');
+           $shopIds =  $shopIds->orderBy('mar_shops.id', 'ASC')->orderBy('mar_shops.shop_category_id', 'ASC');
 
             $mMarShopDemand = new MarShopDemand();
             $mMarShopPayment = new MarShopPayment();
@@ -1021,6 +1021,8 @@ class ShopController extends Controller
                 $marketDemand->push($mMarShopDemand->shopDemand($shop->id));
                 $marketCollection->push($mMarShopPayment->shopCollectoion($shop->id));
             });
+            $totalDemand=$marketDemand->sum() > 0 ? $marketDemand->sum():0;
+            $totalCollection=$marketCollection->sum() > 0 ? $marketCollection->sum():0;
             DB::enableQueryLog();
             $list = paginator($shopIds, $req); #return(DB::getQueryLog());
             $shops = array();
@@ -1032,9 +1034,9 @@ class ShopController extends Controller
                 return $val;
             });
             $list["data"] = $shops->toArray();
-            $list['totalMarketDemand'] = number_format($marketDemand->sum(),2);
-            $list['totalMarketCollection'] = number_format($marketCollection->sum(),2);
-            $list['totalMarketBalance'] = number_format($list['totalMarketDemand'] - $list['totalMarketCollection'],2);
+            $list['totalMarketDemand'] = number_format($totalDemand,2);
+            $list['totalMarketCollection'] = number_format($totalCollection,2);
+            $list['totalMarketBalance'] = number_format($totalDemand - $totalCollection);
             return responseMsgs(true, "DCB Reports !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);

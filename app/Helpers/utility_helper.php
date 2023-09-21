@@ -386,7 +386,8 @@ if (!function_exists('getClientIpAddress')) {
                 // $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
                 // ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
                 $query->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
-                    ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+                ->orwhere("toll_no", 'ILIKE', '%' . $key . '%')
+                ->orwhere("mobile", 'ILIKE', '%' . $key . '%');
             });
         }
     }
