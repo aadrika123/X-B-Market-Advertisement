@@ -172,4 +172,11 @@ class MarShopPayment extends Model
    {
       return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_id', $shopId)->sum('amount');
    }
+
+   /**
+    * | Find Request Details By Request Refferal Number
+    */
+   public function findByReqRefNo($reqRefNo){
+      return self::where('req_ref_no',$reqRefNo)->first();
+   }
 }

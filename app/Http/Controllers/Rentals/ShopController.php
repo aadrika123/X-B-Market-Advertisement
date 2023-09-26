@@ -963,9 +963,9 @@ class ShopController extends Controller
             $mMarShopPayment = new MarShopPayment();
             $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
             if ($req->shopCategoryId != 0)
-                $data = $data->where('shop_category_id', $req->shopCategoryId);
+                $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->marketId != 0)
-                $data = $data->where('market_id', $req->marketId);
+                $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             $list = paginator($data, $req);
@@ -1085,7 +1085,7 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $amount = DB::table('mar_shop_demands')
+            $amount = DB::table('mar_shop_demands')                                         // Calculate Amount For Selected Financial Year
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
@@ -1104,7 +1104,7 @@ class ShopController extends Controller
                 ->orderBy('financial_year', 'ASC')
                 ->first('financial_year');
 
-           $refReq = new Request([
+            $refReq = new Request([
                 'userId' => $req->auth['id'] ?? 0,
                 'amount' => $amount,
                 'applicationId' => $req->shopId,
@@ -1115,37 +1115,36 @@ class ShopController extends Controller
             // $moduleRefUrl->getReferalUrl($refReq);                                       // HTTP Call For generate referal Url
 
             $paymentUrl = Config::get('constants.PAYMENT_URL');                            // Get Payment Url From .env via constant page
-           $refResponse = Http::withHeaders([
+            $refResponse = Http::withHeaders([
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
             ])
                 ->withToken($req->token)
                 ->post($paymentUrl . 'api/payment/v1/get-referal-url', $refReq);
 
-           return $data = json_decode($refResponse);
-            $data = $data->data;
-            if (!$data)
+            $data = json_decode($refResponse);
+            if ($data->status == false)
                 throw new Exception("Payment Referal Url Not Generate");
 
-            // $refurl = $moduleRefUrl->_refUrl;
             // Insert Payment Details in Shop Payment
             $paymentReqs = [
-                "req_ref_no" => $data->refNo,
+                "req_ref_no" => (string)$data->message->req_ref_no,
                 'shop_id' => $req->shopId,
                 'amount' => $amount,
                 'paid_from' => $financialYear->financial_year,
                 'paid_to' => $req->toFYear,
                 'payment_date' => Carbon::now(),
-                'payment_status' => '1',
+                'payment_status' => '0',
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $shopDetails->ulb_id,
                 'remarks' => $req->remarks,
                 'pmt_mode' => $req->paymentMode,
                 'shop_category_id' => $shopDetails->shop_category_id,
+                'referal_url' => $data->data,
                 'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
             ];
             $createdPayment = MarShopPayment::create($paymentReqs);
             DB::commit();
-            return responseMsgs(true, "", $refurl);
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data]);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), []);
@@ -1159,38 +1158,42 @@ class ShopController extends Controller
     {
         try {
             DB::beginTransaction();
-            $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
-                ->where('financial_year', '>=', $financialYear->financial_year)
-                ->where('financial_year', '<=',  $req->toFYear)
-                ->where('amount', '>', 0)
-                ->orderBy('financial_year', 'ASC')
-                ->get();
-            foreach ($UpdateDetails as $updateData) {
-                $updateRow = MarShopDemand::find($updateData->id);
-                $updateRow->payment_date = Carbon::now()->format('Y-m-d');
-                $updateRow->payment_status = 1;
-                $updateRow->tran_id = $createdPayment->id;
-                $updateRow->save();
-            }
-
             $data = $req->all();
             $reqRefNo = $req->reqRefNo;
             if ($req->Status == 'Success') {
+                $mMarShopPayment = new MarShopPayment();
                 $resRefNo = $req->resRefNo;
-                $paymentReqsData = $mIciciPaymentReq->findByReqRefNo($reqRefNo);
+                $paymentReqsData = $mMarShopPayment->findByReqRefNo($reqRefNo);
                 $updReqs = [
                     'res_ref_no' => $resRefNo,
-                    'payment_status' => 1
+                    'payment_status' => 1,
+                    'payment_details' => json_encode($req->all()),
                 ];
-                $paymentReqsData->update($updReqs);                 // Payment Table Updation after payment is done.
-                $resPayReqs = [
-                    "payment_req_id" => $paymentReqsData->id,
-                    "req_ref_id" => $reqRefNo,
-                    "res_ref_id" => $resRefNo,
-                    "icici_signature" => $req->signature,
-                    "payment_status" => 1
-                ];
-                $mIciciPaymentRes->create($resPayReqs);             // Resonse Data 
+                $mMarShopPayment->update($updReqs);                 // Payment Table Updation after payment is done.
+                // $resPayReqs = [
+                //     "payment_req_id" => $paymentReqsData->id,
+                //     "req_ref_id" => $reqRefNo,
+                //     "res_ref_id" => $resRefNo,
+                //     "icici_signature" => $req->signature,
+                //     "payment_status" => 1
+                // ];
+                // $mIciciPaymentRes->create($resPayReqs);             // Resonse Data 
+                $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
+                    ->where('financial_year', '>=', $paymentReqsData->financial_year)
+                    ->where('financial_year', '<=',  $req->toFYear)
+                    ->where('amount', '>', 0)
+                    ->orderBy('financial_year', 'ASC')
+                    ->get();
+                foreach ($UpdateDetails as $updateData) {
+                    $updateRow = MarShopDemand::find($updateData->id);
+                    $updateRow->payment_date = Carbon::now()->format('Y-m-d');
+                    $updateRow->payment_status = 1;
+                    $updateRow->tran_id = $paymentReqsData->id;
+                    $updateRow->save();
+                }
+                $mshop = Shop::find($paymentReqsData->shop_id);
+                $mshop->last_tran_id = $paymentReqsData->id;
+                $mshop->save();
             }
             // ❗❗ Pending for Module Specific Table Updation ❗❗
             DB::commit();

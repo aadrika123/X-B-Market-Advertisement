@@ -13,6 +13,7 @@ use App\Http\Controllers\Rentals\TollsController;
 use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
     Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 21 Get Shop Payment Receipt
+    Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 22 Update webhook Data After Payment is Success
 });
 
 // Route::controller(TollsController::class)->group(function () {
