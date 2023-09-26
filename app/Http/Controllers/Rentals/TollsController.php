@@ -29,7 +29,7 @@ class TollsController extends Controller
     }
 
     /**
-     * | Toll Payments
+     * | Toll Payments between given two dates
      */
     public function tollPayments(Request $req)
     {
@@ -37,6 +37,7 @@ class TollsController extends Controller
             "tollId" => "required|integer",
             "dateUpto" => "required|date|date_format:Y-m-d",
             "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
+            "paymentMode" => "required|string",
             "remarks" => "nullable|string"
         ]);
 
@@ -63,12 +64,13 @@ class TollsController extends Controller
             // Payment
             $reqTollPayment = [
                 'toll_id' => $toll->id,
-                'from_date' => $req->fromDate,
-                'to_date' => $req->toDate,
+                'from_date' => $req->dateFrom,
+                'to_date' => $req->dateUpto,
                 'amount' => $payableAmt,
                 'rate' => $rate,
                 'days' => $noOfDays,
                 'payment_date' => $todayDate,
+                'pmt_mode' => $req->paymentMode,
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
                 'remarks' => $req->remarks
@@ -451,7 +453,7 @@ class TollsController extends Controller
     }
 
     /**
-     * | Get Payment Reciept
+     * | Get Toll Payment Reciept
      */
     public function getPaymentReciept(Request $req)
     {
@@ -464,13 +466,33 @@ class TollsController extends Controller
         }
         try {
             $mMarToll = new MarToll();
-            // $reciept=$mMarToll->getReciept($req->tollId);
             $reciept = $mMarToll->getReciept($req->tollId);
             return responseMsgs(true, "Payment Reciept Fetch Successfully !!!", $reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+
+    /**
+     * | Get All payment Receipt By Toll Id
+     */
+    // public function getAllPaymentReciept(Request $req)
+    // {
+    //     $validator = Validator::make($req->all(), [
+    //         'tollId' => 'required|integer',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return  $validator->errors();
+    //     }
+    //     try {
+    //         $mMarTollPayment = new MarTollPayment();
+    //         $reciept = $mMarTollPayment->getReciept($req->tollId);
+    //         return responseMsgs(true, "Payment Reciept Fetch Successfully !!!", $reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
+    // }
 
     /**
      * | Get List All Toll

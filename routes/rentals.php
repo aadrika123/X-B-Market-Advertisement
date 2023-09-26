@@ -12,44 +12,47 @@ use App\Http\Controllers\Rentals\ShopController;
 use App\Http\Controllers\Rentals\TollsController;
 use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
-    Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');
+    Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 21 Get Shop Payment Receipt
 });
+
+// Route::controller(TollsController::class)->group(function () {
+//     Route::get('rental/get-toll-payment-reciept', 'getPaymentReciept');
+// });
 Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Shops (50)
      */
     Route::controller(ShopController::class)->group(function () {
-        Route::post('shop-payments', 'shopPayment');                               // 01
-        Route::post('crud/shop/store', 'store');                                   // 02
-        Route::post('crud/shop/edit', 'edit');                                     // 03
-        Route::post('crud/shop/show-by-id', 'show');                               // 04
-        Route::post('crud/shop/retrieve-all', 'retrieve');                         // 05
-        Route::post('crud/shop/retrieve-all-active', 'retrieveAllActive');         // 06
-        Route::post('crud/shop/delete', 'delete');
-        Route::post('rental/list-ulb-wise-circle', 'listUlbWiseCircle');
-        Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');
-        Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');
-        Route::post('rental/list-shop', 'listShop');
-        Route::post('rental/get-shop-detail-by-id', 'getShopDetailById');
-        Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');
-        Route::post('rental/get-tc-collection', 'getTcCollection');
-        Route::post('rental/pay', 'shopPayment');
-        Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
-        // Route::post('rental/get-shop-payment-reciept', 'getPaymentReciept');
-        Route::post('rental/list-shop-type', 'listShopType');
-        Route::post('rental/shop-master', 'shopMaster');
-        Route::post('rental/test', 'test');
-        Route::post('rental/get-financial-year', 'getFinancialYear');
-        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');
-        Route::post('rental/calculate-shop-rate-financial-wise', 'calculateShopRateFinancialwise');
-        // Route::get('rental/shop-payment-reciept', 'shopPaymentReciept');
-        Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');
-        Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');
-        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');
-        Route::post('rental/list-shop-collection', 'listShopCollection');
-        Route::post('rental/edit-shop-data', 'editShopData'); 
-        Route::post('rental/dcb-reports', 'dcbReports');   
-        Route::post('rental/shop-wise-dcb', 'shopWiseDcb');                                     
+        Route::post('shop-payments', 'shopPayment');                                                            // 01  Shop Payments
+        Route::post('crud/shop/store', 'store');                                                                // 02  Store Shop Data
+        Route::post('crud/shop/edit', 'edit');                                                                  // 03  Edit Shop Details
+        Route::post('crud/shop/show-by-id', 'show');                                                            // 04  Get Shop Details By Id 
+        Route::post('crud/shop/delete', 'delete');                                                              // 05  Active or De-Active Shop
+        Route::post('rental/list-ulb-wise-circle', 'listUlbWiseCircle');                                        // 06  List All Circle ULB wise ( Circle i.e. Zone )
+        Route::post('rental/list-circle-wise-market', 'listCircleWiseMarket');                                  // 07  List Circle Wise Market
+        Route::post('rental/list-shop', 'listShop');                                                            // 08  List All Shop
+        Route::post('rental/get-shop-collection-summary', 'getShopCollectionSummary');                          // 09  Get List of Shop Collection
+        Route::post('rental/get-tc-collection', 'getTcCollection');                                             // 10  Get TC Collection
+        Route::post('rental/shop-master', 'shopMaster');                                                        // 11  Get Shop Master Data
+        Route::post('rental/search-shop-for-payment', 'searchShopForPayment');                                  // 12  Search Shop Data For Payment
+        Route::post('rental/calculate-shop-rate-financial-wise', 'calculateShopRateFinancialwise');             // 13  Calculate Shop Amount According to Financial Year Wise
+        Route::post('rental/entry-check-or-dd', 'entryCheckOrDD');                                              // 14  Entry Cheque or DD Details
+        Route::post('rental/list-uncleared-check-dd', 'listEntryCheckorDD');                                    // 15  List Entry Cheque/DD Details Data  
+        Route::post('rental/clear-bounce-cheque-or-dd', 'clearOrBounceChequeOrDD');                             // 16  Update Data After Cheque is clear or bounce 
+        Route::post('rental/list-shop-collection', 'listShopCollection');                                       // 17  List Shop Collection 
+        Route::post('rental/edit-shop-data', 'editShopData');                                                   // 18  Edit Shop Details Data
+        Route::post('rental/dcb-reports', 'dcbReports');                                                        // 19  List DCB Reports 
+        Route::post('rental/shop-wise-dcb', 'shopWiseDcb');                                                     // 20  List Shop wise DCB Reports    
+        Route::post('rental/generate-referal-url-for-payment', 'generateReferalUrlForPayment');                 // 21  Generate Referal Url For Payment    
+        // Route::post('crud/shop/retrieve-all', 'retrieve');                         // 05
+        // Route::post('crud/shop/retrieve-all-active', 'retrieveAllActive');         // 06   
+        // Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');        
+        // Route::post('rental/get-shop-detail-by-id', 'getShopDetailById');  
+        // Route::post('rental/pay', 'shopPayment');
+        // Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
+        // Route::post('rental/list-shop-type', 'listShopType');       
+        // Route::post('rental/test', 'test');
+        // Route::post('rental/get-financial-year', 'getFinancialYear');           
     });
 
     /**
@@ -72,6 +75,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
         Route::post('rental/get-toll-price-list', 'getTollPriceList');
         Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');
+        // Route::post('rental/get-all-toll-payment-reciept', 'getAllPaymentReciept');
     });
 
 
@@ -84,23 +88,22 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Author-Ashutosh Kumar
      */
     Route::controller(CircleController::class)->group(function () {
-        Route::post('v1/crud/circle/insert', 'store');                            //01
-        Route::post('v1/crud/circle/update', 'edit');                             //02
-        Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     //03
-        Route::post('v1/crud/circle/list-all-circle', 'retireveAll');             //04
-        Route::post('v1/crud/circle/delete', 'delete');                           //05
+        Route::post('v1/crud/circle/insert', 'store');                            // 01  Add Circle 
+        Route::post('v1/crud/circle/update', 'edit');                             // 02  Update Circle Name 
+        Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     // 03  Get Circle List By Ulb ID
+        Route::post('v1/crud/circle/list-all-circle', 'retireveAll');             // 04  Get All Circle List
+        Route::post('v1/crud/circle/delete', 'delete');                           // 05  Delete Circle
     });
 
     /**
      * |Market(53)
      */
     Route::controller(MarketController::class)->group(function () {
-        Route::post('v1/crud/market/insert', 'store');                                //01
-        Route::post('v1/crud/market/update', 'edit');                                 //02
-        Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); //03
-        Route::post('v1/crud/market/list-all-market', 'retireveAll');                 //04
-        Route::post('v1/crud/market/delete', 'delete');                               //05
-        Route::post('rental/list-construction', 'listConstruction');                               //05
-
+        Route::post('v1/crud/market/insert', 'store');                                // 01  Add Market
+        Route::post('v1/crud/market/update', 'edit');                                 // 02  Update Market
+        Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); // 03  List Market By Circle Id
+        Route::post('v1/crud/market/list-all-market', 'retireveAll');                 // 04  List All Market
+        Route::post('v1/crud/market/delete', 'delete');                               // 05  Delete Market
+        Route::post('rental/list-construction', 'listConstruction');                  // 06  List Construction
     });
 });

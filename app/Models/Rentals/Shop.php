@@ -79,7 +79,6 @@ class Shop extends Model
    */
   public function getAllShopUlbWise($ulbId)
   {
-    // return Shop::all();
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
@@ -92,7 +91,6 @@ class Shop extends Model
       ->orderByDesc('id')
       ->where('mar_shops.ulb_id', $ulbId);
     // ->where('mar_shops.status', '1');
-    // ->get();
   }
 
   /**
@@ -105,8 +103,6 @@ class Shop extends Model
       'mc.circle_name',
       'mm.market_name',
       'mst.shop_type',
-      // 'msp.payment_date as last_payment_date',
-      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount'
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
@@ -115,7 +111,6 @@ class Shop extends Model
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.market_id', $marketid)
       ->where('mar_shops.status', '1');
-    // ->get();
   }
 
   /**
@@ -150,8 +145,6 @@ class Shop extends Model
       'mc.circle_name',
       'mm.market_name',
       'sc.construction_type',
-      // 'msp.payment_date as last_payment_date',
-      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
       'msp.paid_from as payment_from',
       'msp.paid_to as payment_upto',
@@ -183,9 +176,7 @@ class Shop extends Model
       'mm.market_name',
       'sc.construction_type',
       'mst.shop_type',
-      // DB::raw("TO_CHAR(msp.payment_date, 'DD-MM-YYYY') as last_payment_date"),
       'msp.amount as last_payment_amount',
-      // DB::raw("TO_CHAR(msp.paid_to, 'DD-MM-YYYY') as payment_upto")
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
@@ -208,24 +199,24 @@ class Shop extends Model
   /**
    * | Get Shop Details By ID FOr DCB Reports
    */
-  public function getShopDetailByIdForDCB($id)
-  {
-    return Shop::select(
-      'mar_shops.shop_no',
-      'mar_shops.allottee',
-      'mar_shops.contact_no',
-      'mc.circle_name',
-      'mm.market_name',
-      // 'sc.construction_type',
-      // 'mst.shop_type',
-      // 'msp.amount as last_payment_amount',
-    )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
-      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
-      // ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
-      // ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
-      // ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
-      ->where('mar_shops.id', $id)
-      ->first();
-  }
+  // public function getShopDetailByIdForDCB($id)
+  // {
+  //   return Shop::select(
+  //     'mar_shops.shop_no',
+  //     'mar_shops.allottee',
+  //     'mar_shops.contact_no',
+  //     'mc.circle_name',
+  //     'mm.market_name',
+  //     // 'sc.construction_type',
+  //     // 'mst.shop_type',
+  //     // 'msp.amount as last_payment_amount',
+  //   )
+  //     ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+  //     ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+  //     // ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+  //     // ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+  //     // ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+  //     ->where('mar_shops.id', $id)
+  //     ->first();
+  // }
 }

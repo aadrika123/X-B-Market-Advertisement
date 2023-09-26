@@ -5,16 +5,16 @@
  */
 return [
     // Live URL
-    "AUTH_URL" => 'http://192.168.0.92:8005/',        
-    "PAYMENT_URL" => '',
-    "BASE_URL" => 'http://192.168.0.92:8005/',     
+    "AUTH_URL" => env("AUTH_URL", "http://localhost/"),     
+    "PAYMENT_URL" => env("PAYMENT_URL", "http://localhost/"),
+    "BASE_URL" => env("BASE_URL", "http://localhost/"),     
 
     // Local URL
     // "AUTH_URL" => 'http://192.168.0.21:8005/',    
     // "BASE_URL" => 'http://192.168.0.21:8005',         
     // "PAYMENT_URL" => 'http://192.168.0.202:8006/',  
 
-    "ULB_LOGO_URL" => 'http://203.129.217.244:8010/',
+    "ULB_LOGO_URL" =>  env("ULB_LOGO_URL", "http://localhost/"),
 
     "AADHAR_RELATIVE_NAME" => "AADHAR",
     "TRADE_RELATIVE_NAME" => "TRADE",

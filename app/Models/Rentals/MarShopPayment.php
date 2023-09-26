@@ -18,7 +18,16 @@ class MarShopPayment extends Model
     */
    public function getPaidListByShopId($shopId)
    {
-      return self::select('shop_id', 'amount', 'pmt_mode as payment_mode', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"))->where('shop_id', $shopId)->get();
+      return self::select('shop_id', 'amount', 'pmt_mode as payment_mode', 
+         DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date")
+         )
+         ->where('shop_id', $shopId)
+         ->whereIN('payment_status',[1,2])
+         // ->where(function($where){
+         //    $where->Orwhere("payment_status",1)
+         //    ->Orwhere("payment_status",2);
+         // })
+         ->get();
    }
 
    /**
@@ -48,19 +57,43 @@ class MarShopPayment extends Model
          'amount' => $amount,
          'paid_from' => $financialYear->financial_year,
          'paid_to' => $req->toFYear,
-         'cheque_date' => Carbon::now(),
+         'cheque_date' => $req->chequeDdDate,
+         'payment_date' => Carbon::now()->format('Y-m-d'),
          'bank_name' => $req->bankName,
          'branch_name' => $req->branchName,
          'cheque_no' => $req->chequeNo,
+         'dd_no' => $req->ddNo,
          'user_id' => $req->auth['id'] ?? 0,
          'ulb_id' => $shopDetails->ulb_id,
          'shop_category_id' => $shopDetails->shop_category_id,
          'remarks' => $req->remarks,
-         'payment_status' => 0,
+         'payment_status' => 2,
          'pmt_mode' => $req->paymentMode,
          'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
+         'photo_path_absolute' => $req->photo_path_absolute,
+         'photo_path' => $req->photo_path,
       ];
-      return $createdPayment = MarShopPayment::create($paymentReqs);
+      $createdPayment = MarShopPayment::create($paymentReqs);
+      // update shop table with payment transaction ID
+      $mshop = Shop::find($createdPayment->shop_id);
+      $mshop->last_tran_id = $createdPayment->id;
+      $mshop->save();
+      // Update All Demand for cheque Payment
+      $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
+         ->where('financial_year', '>=', $financialYear->financial_year)
+         ->where('financial_year', '<=',  $req->toFYear)
+         ->where('amount', '>', 0)
+         ->orderBy('financial_year', 'ASC')
+         ->get();
+      foreach ($UpdateDetails as $updateData) {
+         $updateRow = MarShopDemand::find($updateData->id);
+         $updateRow->payment_date = Carbon::now()->format('Y-m-d');
+         $updateRow->payment_status = 1;
+         $updateRow->tran_id = $createdPayment->id;
+         $updateRow->save();
+      }
+      //   }
+      return $createdPayment;
    }
 
    /**
@@ -84,7 +117,7 @@ class MarShopPayment extends Model
             't1.contact_no'
          )
          ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
-         ->where('payment_status', '0')
+         ->where('payment_status', '2')
          ->where('cheque_date', '!=', NULL);
    }
 
