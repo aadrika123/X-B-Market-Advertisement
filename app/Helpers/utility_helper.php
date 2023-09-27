@@ -180,7 +180,7 @@ if (!function_exists('getIndianCurrency')) {
         $Rupees = implode('', array_reverse($str));
         $paise = implode('', array_reverse($str2));
         $paise = ($decimal_part > 0) ? $paise . ' Paise' : '';
-        return ucfirst(('Rupees '.($Rupees ? $Rupees : ''))) . $paise;
+        return ucfirst(('Rupees ' . ($Rupees ? $Rupees : ''))) . $paise;
     }
 }
 
@@ -386,74 +386,73 @@ if (!function_exists('getClientIpAddress')) {
                 // $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
                 // ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
                 $query->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
-                ->orwhere("toll_no", 'ILIKE', '%' . $key . '%')
-                ->orwhere("mobile", 'ILIKE', '%' . $key . '%');
+                    ->orwhere("toll_no", 'ILIKE', '%' . $key . '%')
+                    ->orwhere("mobile", 'ILIKE', '%' . $key . '%');
             });
         }
     }
 
-    
-if (!function_exists("FyListasoc")) {
-    function FyListasoc($date = null)
-    {
-        $data = [];
-        $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
-        $y = date('Y', $strtotime);
-        $m = date('m', $strtotime);
-        $year = $y;
-        if ($m > 3)
-            $year = $y + 1;
-        while (true) {
-            $data[] = ($year - 1) . '-' . $year;
-            if ($year >= date('Y') + 1)
-                break;
-            ++$year;
-        }
-        // print_var($data);die;
-        return ($data);
-    }
-}
 
-if (!function_exists('FyListdesc')) {
-    function FyListdesc($date = null)
-    {
-        $data = [];
-        $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
-        $y = date('Y', $strtotime);
-        $m = date('m', $strtotime);
-        $year = $y;
-        if ($m > 3)
-            $year = $y + 1;
-        while (true) {
-            $data[] = ($year - 1) . '-' . $year;
-            if ($year == '2015')
-                break;
-            --$year;
+    if (!function_exists("FyListasoc")) {
+        function FyListasoc($date = null)
+        {
+            $data = [];
+            $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+            $y = date('Y', $strtotime);
+            $m = date('m', $strtotime);
+            $year = $y;
+            if ($m > 3)
+                $year = $y + 1;
+            while (true) {
+                $data[] = ($year - 1) . '-' . $year;
+                if ($year >= date('Y') + 1)
+                    break;
+                ++$year;
+            }
+            // print_var($data);die;
+            return ($data);
         }
-        // print_var($data);die;
-        return ($data);
     }
-}
 
-if (!function_exists('FyListdescForShop')) {
-    function FyListdescForShop($date = null)
-    {
-        $data = [];
-        $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
-        $y = date('Y', $strtotime);
-        $m = date('m', $strtotime);
-        $year = $y;
-        if ($m > 3)
-            $year = $y + 1;
-        while (true) {
-            $data[] = ($year - 1) . '-' . $year;
-            if ($year == '2017')
-                break;
-            --$year;
+    if (!function_exists('FyListdesc')) {
+        function FyListdesc($date = null)
+        {
+            $data = [];
+            $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+            $y = date('Y', $strtotime);
+            $m = date('m', $strtotime);
+            $year = $y;
+            if ($m > 3)
+                $year = $y + 1;
+            while (true) {
+                $data[] = ($year - 1) . '-' . $year;
+                if ($year == '2015')
+                    break;
+                --$year;
+            }
+            // print_var($data);die;
+            return ($data);
         }
-        // print_var($data);die;
-        return ($data);
     }
-}
 
+    if (!function_exists('FyListdescForShop')) {
+        function FyListdescForShop($date = null)
+        {
+            $data = [];
+            $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+            $y = date('Y', $strtotime);
+            $m = date('m', $strtotime);
+            $year = $y;
+            if ($m > 3)
+                $year = $y + 1;
+            while (true) {
+                $data[] = ($year - 1) . '-' . $year;
+                if ($year == '2017')
+                    break;
+                --$year;
+            }
+            // print_var($data);die;
+            return ($data);
+        }
+    }
 }

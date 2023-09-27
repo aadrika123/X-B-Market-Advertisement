@@ -387,7 +387,7 @@ class ShopController extends Controller
             $mMarShopDemand = new MarShopDemand();
             $demands = $mMarShopDemand->getDemandByShopId($req->id);
             $total = $demands->pluck('amount')->sum();
-            $financialYear = $demands->where('payment_status', '0')->pluck('financial_year');
+            $financialYear = $demands->where('payment_status', '0')->where('amount','>','0')->pluck('financial_year');
             $f_y = array();
             foreach ($financialYear as $key => $fy) {
                 $f_y[$key]['id'] = $fy;
@@ -943,8 +943,8 @@ class ShopController extends Controller
     public function listShopCollection(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'shopCategoryId' => 'nullable|integer',
-            'marketId' => 'nullable|integer',
+            'shopCategoryId' => 'required|integer',
+            'marketId' => 'required|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
         ]);
