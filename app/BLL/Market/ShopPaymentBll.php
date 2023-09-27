@@ -82,26 +82,25 @@ class ShopPaymentBll
     */
     public function shopPayment($req)
     {
+        // Calculate Amount For Payment
         $amount = DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
-            // ->where('financial_year', '>=', $req->fromFYear)
             ->where('financial_year', '<=', $req->toFYear)
             ->orderBy('financial_year', 'ASC')
             ->sum('amount');
         if ($amount < 1)
             throw new Exception("No Any Due Amount !!!");
-        $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();
-        // $payableAmt = $req->amount;
-        // $amount = $payableAmt;
+        $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();                                     // Get Shop Details
+        // Get All Financial Year For Payment
         $financialYear = DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
             ->where('financial_year', '<=', $req->toFYear)
             ->orderBy('financial_year', 'ASC')
             ->first('financial_year');
-            
-        // Insert Payment 
+
+        // Insert Payment Records 
         $paymentReqs = [
             'shop_id' => $req->shopId,
             'amount' => $amount,
@@ -114,20 +113,22 @@ class ShopPaymentBll
             'remarks' => $req->remarks,
             'pmt_mode' => $req->paymentMode,
             'shop_category_id' => $shopDetails->shop_category_id,
-            'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
+            'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,                   // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
         ];
         DB::beginTransaction();
-        $createdPayment = $this->_mShopPayments::create($paymentReqs);
+        $createdPayment = $this->_mShopPayments::create($paymentReqs);                          // Insert Payment Records in Payment Table
         $mshop = Shop::find($req->shopId);
         $mshop->last_tran_id = $createdPayment->id;
         $mshop->save();
 
-        $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)
+        $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)                         // Get All demand of Selected financial Year After Payment Success
             ->where('financial_year', '>=', $financialYear->financial_year)
             ->where('financial_year', '<=', $req->toFYear)
             ->orderBy('financial_year', 'ASC')
             ->where('amount', '>', '0')
             ->get();
+
+        // Update All Payment Demand After Payment Success
         foreach ($UpdateDetails as $updateData) {
             // return $updateData->id; die;
             $updateRow = MarShopDemand::find($updateData->id);
@@ -148,7 +149,6 @@ class ShopPaymentBll
         return  DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
-            // ->where('financial_year', '>=', $req->fromFYear)
             ->where('financial_year', '<=', $req->toFYear)
             ->sum('amount');
     }

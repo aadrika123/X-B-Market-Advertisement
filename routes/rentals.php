@@ -3,6 +3,7 @@
 /**
  * | Created On-14-06-2023 
  * | Author-Anshu Kumar
+ * | Change By - Bikash Kumar
  * | Created for the Shop and tolls collections routes
  */
 
@@ -12,8 +13,8 @@ use App\Http\Controllers\Rentals\ShopController;
 use App\Http\Controllers\Rentals\TollsController;
 use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
-    Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 21 Get Shop Payment Receipt
-    Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 22 Update webhook Data After Payment is Success
+    Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 22 Get Shop Payment Receipt
+    Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 23 Update webhook Data After Payment is Success
 });
 
 // Route::controller(TollsController::class)->group(function () {
@@ -22,6 +23,8 @@ Route::controller(ShopController::class)->group(function () {
 Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Shops (50)
+     * | Created By - Bikash Kumar
+     * | Status - closed (27 sep 2023)
      */
     Route::controller(ShopController::class)->group(function () {
         Route::post('shop-payments', 'shopPayment');                                                            // 01  Shop Payments
@@ -44,16 +47,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/edit-shop-data', 'editShopData');                                                   // 18  Edit Shop Details Data
         Route::post('rental/dcb-reports', 'dcbReports');                                                        // 19  List DCB Reports 
         Route::post('rental/shop-wise-dcb', 'shopWiseDcb');                                                     // 20  List Shop wise DCB Reports    
-        Route::post('rental/generate-referal-url-for-payment', 'generateReferalUrlForPayment');                 // 21  Generate Referal Url For Payment    
-        // Route::post('crud/shop/retrieve-all', 'retrieve');                         // 05
-        // Route::post('crud/shop/retrieve-all-active', 'retrieveAllActive');         // 06   
-        // Route::post('rental/list-shop-by-market-id', 'listShopByMarketId');        
-        // Route::post('rental/get-shop-detail-by-id', 'getShopDetailById');  
-        // Route::post('rental/pay', 'shopPayment');
-        // Route::post('rental/shop-payment-by-admin', 'shopPaymentByAdmin');
-        // Route::post('rental/list-shop-type', 'listShopType');       
-        // Route::post('rental/test', 'test');
-        // Route::post('rental/get-financial-year', 'getFinancialYear');           
+        Route::post('rental/generate-referal-url-for-payment', 'generateReferalUrlForPayment');                 // 21  Generate Referal Url For Payment           
     });
 
     /**

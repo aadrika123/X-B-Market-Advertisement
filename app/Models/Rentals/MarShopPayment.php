@@ -18,11 +18,14 @@ class MarShopPayment extends Model
     */
    public function getPaidListByShopId($shopId)
    {
-      return self::select('shop_id', 'amount', 'pmt_mode as payment_mode', 
+      return self::select(
+         'shop_id',
+         'amount',
+         'pmt_mode as payment_mode',
          DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date")
-         )
+      )
          ->where('shop_id', $shopId)
-         ->whereIN('payment_status',[1,2])
+         ->whereIN('payment_status', [1, 2])
          // ->where(function($where){
          //    $where->Orwhere("payment_status",1)
          //    ->Orwhere("payment_status",2);
@@ -35,23 +38,25 @@ class MarShopPayment extends Model
     */
    public function entryCheckDD($req)
    {
+      // Get Amount For Payment
       $amount = DB::table('mar_shop_demands')
          ->where('shop_id', $req->shopId)
          ->where('payment_status', 0)
-         // ->where('financial_year', '>=', $req->fromFYear)
          ->where('financial_year', '<=', $req->toFYear)
          ->orderBy('financial_year', 'ASC')
          ->sum('amount');
       if ($amount < 1)
          throw new Exception("No Any Due Amount !!!");
-      $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();
+      $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();                                       // Get Shop Details For Payment
 
-      $financialYear = DB::table('mar_shop_demands')
+      $financialYear = DB::table('mar_shop_demands')                                                                                // Get First Financial Year where Payment start
          ->where('shop_id', $req->shopId)
          ->where('payment_status', 0)
          ->where('financial_year', '<=', $req->toFYear)
          ->orderBy('financial_year', 'ASC')
          ->first('financial_year');
+
+      // Make payment Records for insert in pyment Table
       $paymentReqs = [
          'shop_id' => $req->shopId,
          'amount' => $amount,
@@ -74,17 +79,20 @@ class MarShopPayment extends Model
          'photo_path' => $req->photo_path,
       ];
       $createdPayment = MarShopPayment::create($paymentReqs);
+
       // update shop table with payment transaction ID
       $mshop = Shop::find($createdPayment->shop_id);
       $mshop->last_tran_id = $createdPayment->id;
       $mshop->save();
-      // Update All Demand for cheque Payment
+
+      // Get All Demand for cheque Payment
       $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
          ->where('financial_year', '>=', $financialYear->financial_year)
          ->where('financial_year', '<=',  $req->toFYear)
          ->where('amount', '>', 0)
          ->orderBy('financial_year', 'ASC')
          ->get();
+      // Update All Demand for cheque Payment
       foreach ($UpdateDetails as $updateData) {
          $updateRow = MarShopDemand::find($updateData->id);
          $updateRow->payment_date = Carbon::now()->format('Y-m-d');
@@ -92,7 +100,6 @@ class MarShopPayment extends Model
          $updateRow->tran_id = $createdPayment->id;
          $updateRow->save();
       }
-      //   }
       return $createdPayment;
    }
 
@@ -176,7 +183,8 @@ class MarShopPayment extends Model
    /**
     * | Find Request Details By Request Refferal Number
     */
-   public function findByReqRefNo($reqRefNo){
-      return self::where('req_ref_no',$reqRefNo)->first();
+   public function findByReqRefNo($reqRefNo)
+   {
+      return self::where('req_ref_no', $reqRefNo)->first();
    }
 }

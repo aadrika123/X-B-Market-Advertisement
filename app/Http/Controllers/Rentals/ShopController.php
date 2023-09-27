@@ -31,51 +31,24 @@ class ShopController extends Controller
 {
     use ShopDetailsTraits;
     /**
-     * | Created On-14-06-2023 
+     * | Created On - 14-06-2023 
      * | Created By - Bikash Kumar
+     * | Status - Closed (27 Sep 2023)
      */
     private $_mShops;
-    private $_tranId;
 
     protected $_ulbLogoUrl;
 
     public function __construct()
     {
-        $this->_mShops = new Shop();
-        $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');
+        $this->_mShops = new Shop();                                                                // Object Of Shop Model
+        $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                // Logo Url for Reciept
     }
 
     /**
      * | Shop Payments
-     */
-    // public function shopPaymentold(Request $req)
-    // {
-    //     $shopPmtBll = new ShopPaymentBll();
-    //     $validator = Validator::make($req->all(), [
-    //         "shopId" => "required|integer",
-    //         "paymentTo" => "required|date|date_format:Y-m-d",
-    //     ]);
-    //     $validator->sometimes("paymentFrom", "required|date|date_format:Y-m-d|before_or_equal:$req->paymentTo", function ($input) use ($shopPmtBll) {
-    //         $shopPmtBll->_shopDetails = $this->_mShops::findOrFail($input->shopId);
-    //         $shopPmtBll->_tranId = $shopPmtBll->_shopDetails->last_tran_id;
-    //         return !isset($shopPmtBll->_tranId);
-    //     });
-
-    //     if ($validator->fails())
-    //         return $validator->errors();
-    //     // Business Logics
-    //     try {
-    //         $amount = $shopPmtBll->shopPayment($req);
-    //         DB::commit();
-    //         return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $amount], 055001, "1.0", responseTime(), "POST", $req->deviceId);
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
-    //     }
-    // }
-
-    /**
-     * | Shop Payments
+     * | API - 01
+     * | Function - 01
      */
     public function shopPayment(Request $req)
     {
@@ -91,67 +64,17 @@ class ShopController extends Controller
         try {
             $amount = $shopPmtBll->shopPayment($req);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $amount], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $amount], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Get Shop Payment Reciept By Demand ID
-     */
-    public function shopPaymentReciept($tranId, Request $req)
-    {
-        try {
-            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
-                ->join('users', 'users.id', 'mar_shop_payments.user_id')
-                ->where('mar_shop_payments.id', $tranId)
-                ->first();
-            if (!$data)
-                throw new Exception("Transaction Id Not Valid !!!");
-            $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
-            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
-            $reciept = array();
-            $reciept['shopNo'] = $shopDetails->shop_no;
-            $reciept['paidFrom'] = $data->paid_from;
-            $reciept['paidTo'] = $data->paid_to;
-            $reciept['amount'] = $data->amount;
-            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d', $data->payment_date)->format('d-m-Y');
-            $reciept['paymentMode'] = $data->pmt_mode;
-            $reciept['transactionNo'] = $data->transaction_id;
-            $reciept['allottee'] = $shopDetails->allottee;
-            $reciept['market'] = $shopDetails->market_name;
-            $reciept['shopType'] = $shopDetails->shop_type;
-            $reciept['ulbName'] = $ulbDetails->ulb_name;
-            $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
-            $reciept['website'] = $ulbDetails->current_website;
-            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
-            $reciept['recieverName'] =  $data->reciever_name;
-            $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
-            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
-            $reciept['chequeDetails'] = array();
-            if (strtoupper($data->pmt_mode) == 'CHEQUE') {
-                $reciept['chequeDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
-                $reciept['chequeDetails']['cheque_no'] = $data->cheque_no;
-                $reciept['chequeDetails']['bank_name'] = $data->bank_name;
-                $reciept['chequeDetails']['branch_name'] = $data->branch_name;
-            }
-            $reciept['ddDetails'] = array();
-            if (strtoupper($data->pmt_mode) == 'DD') {
-                $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
-                $reciept['ddDetails']['dd_no'] = $data->dd_no;
-                $reciept['ddDetails']['bank_name'] = $data->bank_name;
-                $reciept['ddDetails']['branch_name'] = $data->branch_name;
-            }
-            return responseMsgs(true, "Shop Reciept Fetch Successfully !!!", $reciept, "055001", "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Add Shop Records
+     * | API - 02
+     * | Function - 02
      */
     public function store(ShopRequest $req)
     {
@@ -220,43 +143,17 @@ class ShopController extends Controller
 
             $this->_mShops->create($metaReqs);
 
-            return responseMsgs(true, "Successfully Saved", [$metaReqs], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "Successfully Saved", [$metaReqs], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
-            return responseMsgs(false, $e->getMessage(), [], "050202", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(false, $e->getMessage(), [], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
-    }
-
-    /**
-     * | Calculate Shop Rate At The Time of Shop Entry
-     */
-    public function calculateShopRate($shopCategoryId, $area, $financialYear)
-    {
-        $mMarShopRateList = new MarShopRateList();
-        $base_rate = $mMarShopRateList->getShopRate($shopCategoryId, $financialYear);
-        if ($shopCategoryId == 1) {
-            $base_rate = 5;                                   // Get Base rate of BOT Shop financial yearwise
-            return ($base_rate * $area * 12);                   // BOT Amount Calculation
-        } else {
-            $base_rate = 5;                                   // Get Base rate of City shop financial yearwise
-            return ($base_rate * $area * 12);                   // BOT Amount Calculation
-        }
-    }
-
-    /**
-     * | ID Generation For Shop
-     */
-    public function shopIdGeneration($marketId)
-    {
-        $idDetails = DB::table('m_market')->select('shop_counter', 'market_name')->where('id', $marketId)->first();
-        $market = strtoupper(substr($idDetails->market_name, 0, 3));
-        $counter = $idDetails->shop_counter + 1;
-        DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
-        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
     }
 
     /**
      * | Edit shop Records
+     * | API - 03
+     * | Function - 03
      */
     public function edit(Request $req)
     {
@@ -337,38 +234,16 @@ class ShopController extends Controller
             $Shops = $this->_mShops::findOrFail($req->id);
 
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Successfully Updated", [], "050203", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Successfully Updated", [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050203, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Edit Shop Data For Contact Number
-     */
-    public function editShopData(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'shopId' => 'required|numeric',
-            'contactNo' => 'required|numeric',
-            'remarks' => 'nullable|string'
-        ]);
-        if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
-
-        try {
-            $shopDetails = Shop::find($req->shopId);
-            $shopDetails->contact_no = $req->contactNo;
-            $shopDetails->remarks = $req->remarks;
-            $shopDetails->save();
-            return responseMsgs(true, "Update Shop Successfully !!!", '', 050204, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050204, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Shop Details By Id With Demand And Paid Amount
+     * | API - 04
+     * | Function - 04
      */
     public function show(Request $req)
     {
@@ -378,16 +253,16 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $details = $this->_mShops->getShopDetailById($req->id);
+            $details = $this->_mShops->getShopDetailById($req->id);                                             // Get Shop Details By ID
             if (collect($details)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
             // Basic Details
-            $basicDetails = $this->generateBasicDetails($details);
+            $basicDetails = $this->generateBasicDetails($details);                                              // Generate Basic Details of Shop
             $shop['shopDetails'] = $basicDetails;
             $mMarShopDemand = new MarShopDemand();
-            $demands = $mMarShopDemand->getDemandByShopId($req->id);
+            $demands = $mMarShopDemand->getDemandByShopId($req->id);                                            // Get List of Generated All Demands against SHop
             $total = $demands->pluck('amount')->sum();
-            $financialYear = $demands->where('payment_status', '0')->where('amount','>','0')->pluck('financial_year');
+            $financialYear = $demands->where('payment_status', '0')->where('amount', '>', '0')->pluck('financial_year');
             $f_y = array();
             foreach ($financialYear as $key => $fy) {
                 $f_y[$key]['id'] = $fy;
@@ -399,46 +274,22 @@ class ShopController extends Controller
             $shop['total'] = $total;
 
             $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
-            $payments = $mMarShopPayment->getPaidListByShopId($req->id);
+            $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
             $totalPaid = $payments->pluck('amount')->sum();
             // $shop['payments'] = $payments;
             $shop['totalPaid'] = $totalPaid;
             $shop['pendingAmount'] = $total - $totalPaid;
             // return([DB::getQueryLog(),$payments]);
-            return responseMsgs(true, "", $shop, 050204, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050204, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | View All Shop Data
-     */
-    public function retrieve(Request $req)
-    {
-        try {
-            $shops = $this->_mShops->retrieveAll();
-            return responseMsgs(true, "", $shops, 050205, "1.0", responseTime(), "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050205, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | View All Active Shops
-     */
-    public function retrieveAllActive(Request $req)
-    {
-        try {
-            $shops = $this->_mShops->retrieveActive();
-            return responseMsgs(true, "", $shops, 050206, "1.0", responseTime(), "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050206, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Activate or De-Activate Shop by Id
+     * | API - 05
+     * | Function - 05
      */
     public function delete(Request $req)
     {
@@ -451,7 +302,7 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-            if (isset($req->status)) { // In Case of Deactivation or Activation
+            if (isset($req->status)) {                                                          // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
                 $metaReqs = [
                     'status' => $status
@@ -462,33 +313,35 @@ class ShopController extends Controller
             } else {
                 $message = "Shop Activated Successfully !!!";
             }
-            // $metaReqs = [
-            //     'status' => '0',
-            // ];
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, $message, [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, $message, [], "055005", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055005", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
+
     /**
      * | List Ulb Wise Circle
+     * | API - 06
+     * | Function - 06
      */
     public function listUlbWiseCircle(Request $req)
     {
         try {
             $mMCircle = new MCircle();
             $list = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);
-            return responseMsgs(true, "Circle List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Circle List Featch Successfully !!!", $list, "055006", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055006", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Market list Circle wise
+     * | API - 07
+     * | Function - 07
      */
     public function listCircleWiseMarket(Request $req)
     {
@@ -502,40 +355,16 @@ class ShopController extends Controller
         try {
             $mMMarket = new MMarket();
             $list = $mMMarket->getMarketByCircleId($req->circleId);
-            return responseMsgs(true, "Market List Featch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Market List Featch Successfully !!!", $list, "055007", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-
-    /**
-     * | Get Shop list by Market Id
-     */
-    public function listShopByMarketId(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'marketId' => 'required|integer'
-        ]);
-
-        if ($validator->fails()) {
-            return  $validator->errors();
-        }
-        try {
-            $mShop = new Shop();
-            $list = $mShop->getShop($req->marketId);
-            if ($req->key)
-                $list = searchShopRentalFilter($list, $req);
-            //     $list = searchRentalFilter($list, $req);
-            $list = paginator($list, $req);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055007", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get list Shop 
+     * | API - 08
+     * | Function - 08
      */
     public function listShop(Request $req)
     {
@@ -546,45 +375,17 @@ class ShopController extends Controller
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $list, "055008", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Get Shop Details By ID
-     */
-    public function getShopDetailById(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'shopId' => 'required|integer'
-        ]);
-
-        if ($validator->fails()) {
-            return  $validator->errors();
-        }
-        try {
-            $details = $this->_mShops->getShopDetailById($req->id);
-            if (collect($details)->isEmpty())
-                throw new Exception("Shop Does Not Exists");
-            // Basic Details
-            $basicDetails = $this->generateBasicDetails($details);
-            $shop['shopDetails'] = $basicDetails;
-            $mMarShopDemand = new MarShopDemand();
-            $demands = $mMarShopDemand->getDemandByShopId($req->id);
-            $total = $demands->pluck('amount')->sum();
-            $shop['demands'] = $demands;
-            $shop['total'] = $total;
-            return responseMsgs(true, "Shop Details Fetch Successfully !!!", $shop, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055008", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
 
     /**
      * | Get Shop Collection Summery
+     * | API - 09
+     * | Function - 09
      */
     public function getShopCollectionSummary(Request $req)
     {
@@ -608,14 +409,16 @@ class ShopController extends Controller
             $list = $mShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
             $list = paginator($list, $req);
             $list['todayCollection'] = $mShopPayment->todayShopCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
-            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, "055009", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055009", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get TC Collection Datewise 
+     * | API - 10
+     * | Function - 10
      */
     public function getTcCollection(Request $req)
     {
@@ -650,111 +453,24 @@ class ShopController extends Controller
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
             $userDetails = json_decode($userDetails);
-            // $data=$data->data;
             $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
                 $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
                 $ref['userId'] = $values;
-                // $ref['tcName'] = "ANCTC";
                 $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
                 return $ref;
             });
             $list1['list'] = $list->values();
             $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
-            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055010", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Shop Payment By Admin
-     */
-    public function shopPaymentByAdmin(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'fromDate'      => 'required|date_format:Y-m-d',
-            'toDate'        => 'required|date_format:Y-m-d',
-            'shopNo'        => 'required|string',
-            'amount'        => 'required|numeric',
-            'due'           => 'required|numeric',
-            'rate'          =>   'required|numeric',
-            'paymentDate'   => 'required|date_format:Y-m-d',
-            'collectedBy'   => 'required|string',
-            'remarks'       => "required|string",
-            'image'         => 'nullable|image|mimes:jpg,jpeg,png',
-        ]);
-
-        if ($validator->fails()) {
-            return  $validator->errors();
-        }
-        try {
-            $docUpload = new DocumentUpload;
-            $relativePath = Config::get('constants.SHOP_PATH');
-            if (isset($req->image)) {
-                $image = $req->file('image');
-                $refImageName = 'reciept' . '-' . time();
-                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
-                $imageName1Absolute = $relativePath;
-                $req->merge(['reciepts' => $imageName1]);
-                $req->merge(['absolutePath' => $imageName1Absolute]);
-            }
-            $mShopPayment = new ShopPayment();
-            $details = DB::table('mar_shops')->select('*')->where('shop_no', $req->shopNo)->first();
-            if (!$details)
-                throw new Exception("Shop Not Found !!!");
-            $shopId = $details->id;
-            $months = monthDiff($req->toDate, $req->fromDate) + 1;
-            $req->merge(['months' => $months]);
-            $paymentId = $mShopPayment->addPaymentByAdmin($req, $shopId);
-            $mshop = new Shop();
-            $mshopDetails = $mshop->find($shopId);
-            $mshopDetails->last_tran_id = $paymentId;
-            $mshopDetails->arrear = $req->due;
-            $mshopDetails->save();
-            return responseMsgs(true, "Payment Accept Successfully !!!", '', 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | Get Payment Reciept
-     */
-    public function getPaymentReciept(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'shopId' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return  $validator->errors();
-        }
-        try {
-            $mShop = new Shop();
-            $reciept = $mShop->getReciept($req->shopId);
-            return responseMsgs(true, "Payment Reciept Fetch Successfully !!!", $reciept, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | list shop type
-     */
-    public function listShopType(Request $req)
-    {
-        try {
-            $mMarShopType = new MarShopType();
-            $list = $mMarShopType->listShopType($req);
-            return responseMsgs(true, "Shop Type List !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055010", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | get Shop Master Data
+     * | API - 11
+     * | Function - 11
      */
     public function shopMaster(Request $req)
     {
@@ -763,37 +479,26 @@ class ShopController extends Controller
             $mMCircle = new MCircle();
             $mShopConstruction = new ShopConstruction();
 
-            $list['shopType'] = $mMarShopType->listShopType();
-            $list['circleList'] = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);
-            $list['listConstruction'] = $mShopConstruction->listConstruction();
-            $fYear = FyListdescForShop();
+            $list['shopType'] = $mMarShopType->listShopType();                                                      // Get All Type of Shop
+            $list['circleList'] = $mMCircle->getCircleByUlbId($req->auth['ulb_id']);                                // Get Circle / Zone by ULB Id
+            $list['listConstruction'] = $mShopConstruction->listConstruction();                                     // Get List of Building Type
+            $fYear = FyListdescForShop();                                                                           // Get Financial Year
             $f_y = array();
             foreach ($fYear as $key => $fy) {
                 $f_y[$key]['id'] = $fy;
                 $f_y[$key]['financialYear'] = $fy;
             }
             $list['fYear'] = $f_y;
-            return responseMsgs(true, "Shop Type List !!!", $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Type List !!!", $list, "055011", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-
-    /**
-     * | get List of Financial year 
-     */
-    public function getFinancialYear(Request $req)
-    {
-        try {
-            $fylist = FyListdescForShop();
-            return responseMsgs(true, "Financial Year List !!!", $fylist, 050207, "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055011", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Search Shop For Payment
+     * | API - 12
+     * | Function - 12
      */
     public function searchShopForPayment(Request $req)
     {
@@ -809,14 +514,17 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 050207, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
+
     /**
      * | Calculate Shop rate financial Wise (Given Two Financial Year)
+     * | API - 13
+     * | Function - 13
      */
     public function calculateShopRateFinancialwise(Request $req)
     {
@@ -830,14 +538,16 @@ class ShopController extends Controller
         // Business Logics
         try {
             $amount = $shopPmtBll->calculateRateFinancialYearWiae($req);
-            return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], "055013", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Entry Cheque or DD For Payment
+     * | API - 14
+     * | Function - 14
      */
     public function entryCheckOrDD(Request $req)
     {
@@ -853,8 +563,7 @@ class ShopController extends Controller
             'photo'  =>   'required|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
-            // return  $validator->errors();
-            return responseMsgs(false, $validator->errors()->first(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
         try {
             $docUpload = new DocumentUpload;
@@ -863,21 +572,23 @@ class ShopController extends Controller
                 $image = $req->file('photo');
                 $refImageName = 'Shop-cheque-1' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
                 $imageName1Absolute = $relativePath;
             }
             $req->merge(['photo_path' => $imageName1 ?? ""]);
             $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
             $mMarShopPayment = new MarShopPayment();
             $res = $mMarShopPayment->entryCheckDD($req);
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
+
     /**
      * | List cheque or DD For Clearance
+     * | API - 15
+     * | Function - 15
      */
     public function listEntryCheckorDD(Request $req)
     {
@@ -885,14 +596,16 @@ class ShopController extends Controller
             $mMarShopPayment = new MarShopPayment();
             $data = $mMarShopPayment->listUnclearedCheckDD($req);
             $list = paginator($data, $req);
-            return responseMsgs(true, "List Uncleared Check Or DD", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "List Uncleared Check Or DD", $list, "055015", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055015", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Clear or Bounce Cheque or DD (i.e. After Bank Reconsile )
+     * | API - 16
+     * | Function - 16
      */
     public function clearOrBounceChequeOrDD(Request $req)
     {
@@ -906,7 +619,7 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);
+            $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                         
             $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
             $mMarShopPayment->bounce_amount = $req->amount;
@@ -931,14 +644,16 @@ class ShopController extends Controller
                 $msg = $shopPayment->pmt_mode . " Cleared Successfully !!!";
             else
                 $msg = $shopPayment->pmt_mode . " Has Been Bounced !!!";
-            return responseMsgs(true, $msg, '', 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | List shop Collection between two dates
+     * | API - 17
+     * | Function - 17
      */
     public function listShopCollection(Request $req)
     {
@@ -953,11 +668,11 @@ class ShopController extends Controller
         }
         try {
             if (!isset($req->fromDate))
-                $fromDate = Carbon::now()->format('Y-m-d');
+                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then take current Date
             else
                 $fromDate = $req->fromDate;
             if (!isset($req->toDate))
-                $toDate = Carbon::now()->format('Y-m-d');
+                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then take current Date
             else
                 $toDate = $req->toDate;
             $mMarShopPayment = new MarShopPayment();
@@ -970,14 +685,45 @@ class ShopController extends Controller
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
-            return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
+
+    /**
+     * | Edit Shop Data For Contact Number
+     * | API - 18
+     * | Function - 18
+     */
+    public function editShopData(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|numeric',
+            'contactNo' => 'required|numeric',
+            'remarks' => 'nullable|string'
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+
+        try {
+            $shopDetails = Shop::find($req->shopId);
+            $shopDetails->contact_no = $req->contactNo;
+            $shopDetails->remarks = $req->remarks;
+            $shopDetails->save();
+            return responseMsgs(true, "Update Shop Successfully !!!", '', "055018", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+
     /**
      * | DCB Reports of All Shops
+     * | API - 19
+     * | Function - 19
      */
     public function dcbReports(Request $req)
     {
@@ -1002,15 +748,18 @@ class ShopController extends Controller
                 $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
-            return responseMsgs(true, "DCB Reports !!!", $total, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "DCB Reports !!!", $total, "055019", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055019", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
 
+
     /**
      * | Calculate Shop wise DCB
+     * | API - 20
+     * | Function - 20
      */
     public function shopWiseDcb(Request $req)
     {
@@ -1066,14 +815,16 @@ class ShopController extends Controller
             $list['totalMarketDemand'] = number_format($totalDemand, 2);
             $list['totalMarketCollection'] = number_format($totalCollection, 2);
             $list['totalMarketBalance'] = number_format($totalDemand - $totalCollection);
-            return responseMsgs(true, "DCB Reports !!!", $list, 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "DCB Reports !!!", $list, "055020", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], 055001, "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055020", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Generate Refferal Url For Online Payment 
+     * | API - 21
+     * | Function - 21
      */
     public function generateReferalUrlForPayment(Request $req)
     {
@@ -1095,16 +846,16 @@ class ShopController extends Controller
             if ($amount < 1)
                 throw new Exception("No Any Due Amount !!!");
 
-            $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();
+            $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();      // Get Shop Details By Shop Id
 
-            $financialYear = DB::table('mar_shop_demands')
+            $financialYear = DB::table('mar_shop_demands')                                              // Get First Financial Year For Payment
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
                 ->orderBy('financial_year', 'ASC')
                 ->first('financial_year');
 
-            $refReq = new Request([
+            $refReq = new Request([                                                          // Make Payload For Online Payment
                 'userId' => $req->auth['id'] ?? 0,
                 'amount' => $amount,
                 'applicationId' => $req->shopId,
@@ -1112,10 +863,8 @@ class ShopController extends Controller
             ]);
 
             DB::beginTransaction();
-            // $moduleRefUrl->getReferalUrl($refReq);                                       // HTTP Call For generate referal Url
-
             $paymentUrl = Config::get('constants.PAYMENT_URL');                            // Get Payment Url From .env via constant page
-            $refResponse = Http::withHeaders([
+            $refResponse = Http::withHeaders([                                             // HTTP Call For generate referal Url
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
             ])
                 ->withToken($req->token)
@@ -1144,15 +893,75 @@ class ShopController extends Controller
             ];
             $createdPayment = MarShopPayment::create($paymentReqs);
             DB::commit();
-            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data]);
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data], "055021", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), []);
+            return responseMsgs(false, $e->getMessage(), [], "055021", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
-     * | Update webhook data when online payment is success
+     * | Get Shop Payment Reciept By Demand ID 
+     * | API - 22
+     * | Function - 22
+     */
+    public function shopPaymentReciept($tranId, Request $req)
+    {
+        try {
+            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
+                ->join('users', 'users.id', 'mar_shop_payments.user_id')
+                ->where('mar_shop_payments.id', $tranId)
+                ->first();
+            if (!$data)
+                throw new Exception("Transaction Id Not Valid !!!");
+            $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+            $reciept = array();
+            $reciept['shopNo'] = $shopDetails->shop_no;
+            $reciept['paidFrom'] = $data->paid_from;
+            $reciept['paidTo'] = $data->paid_to;
+            $reciept['amount'] = $data->amount;
+            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d', $data->payment_date)->format('d-m-Y');
+            $reciept['paymentMode'] = $data->pmt_mode;
+            $reciept['transactionNo'] = $data->transaction_id;
+            $reciept['allottee'] = $shopDetails->allottee;
+            $reciept['market'] = $shopDetails->market_name;
+            $reciept['shopType'] = $shopDetails->shop_type;
+            $reciept['ulbName'] = $ulbDetails->ulb_name;
+            $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
+            $reciept['website'] = $ulbDetails->current_website;
+            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $reciept['recieverName'] =  $data->reciever_name;
+            $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
+            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
+
+            // If Payment By Cheque
+            $reciept['chequeDetails'] = array();
+            if (strtoupper($data->pmt_mode) == 'CHEQUE') {
+                $reciept['chequeDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
+                $reciept['chequeDetails']['cheque_no'] = $data->cheque_no;
+                $reciept['chequeDetails']['bank_name'] = $data->bank_name;
+                $reciept['chequeDetails']['branch_name'] = $data->branch_name;
+            }
+              // If Payment By DD
+            $reciept['ddDetails'] = array();
+            if (strtoupper($data->pmt_mode) == 'DD') {
+                $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
+                $reciept['ddDetails']['dd_no'] = $data->dd_no;
+                $reciept['ddDetails']['bank_name'] = $data->bank_name;
+                $reciept['ddDetails']['branch_name'] = $data->branch_name;
+            }
+            return responseMsgs(true, "Shop Reciept Fetch Successfully !!!", $reciept, "055022", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055022", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Update webhook data when online payment is success 
+     * | API - 23
+     * | Function - 23
      */
     public function updateWebhookData(Request $req)
     {
@@ -1170,14 +979,6 @@ class ShopController extends Controller
                     'payment_details' => json_encode($req->all()),
                 ];
                 $mMarShopPayment->update($updReqs);                 // Payment Table Updation after payment is done.
-                // $resPayReqs = [
-                //     "payment_req_id" => $paymentReqsData->id,
-                //     "req_ref_id" => $reqRefNo,
-                //     "res_ref_id" => $resRefNo,
-                //     "icici_signature" => $req->signature,
-                //     "payment_status" => 1
-                // ];
-                // $mIciciPaymentRes->create($resPayReqs);             // Resonse Data 
                 $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
                     ->where('financial_year', '>=', $paymentReqsData->financial_year)
                     ->where('financial_year', '<=',  $req->toFYear)
@@ -1201,4 +1002,36 @@ class ShopController extends Controller
             DB::rollBack();
         }
     }
+
+
+    /**
+     * | Calculate Shop Rate At The Time of Shop Entry
+     * | Function - 24
+     */
+    public function calculateShopRate($shopCategoryId, $area, $financialYear)
+    {
+        $mMarShopRateList = new MarShopRateList();
+        $base_rate = $mMarShopRateList->getShopRate($shopCategoryId, $financialYear);
+        if ($shopCategoryId == 1) {
+            $base_rate = 5;                                   // Get Base rate of BOT Shop financial yearwise
+            return ($base_rate * $area * 12);                   // BOT Amount Calculation
+        } else {
+            $base_rate = 5;                                   // Get Base rate of City shop financial yearwise
+            return ($base_rate * $area * 12);                   // BOT Amount Calculation
+        }
+    }
+
+    /**
+     * | ID Generation For Shop
+     * | Function - 25
+     */
+    public function shopIdGeneration($marketId)
+    {
+        $idDetails = DB::table('m_market')->select('shop_counter', 'market_name')->where('id', $marketId)->first();
+        $market = strtoupper(substr($idDetails->market_name, 0, 3));
+        $counter = $idDetails->shop_counter + 1;
+        DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
+        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
+    }
+
 }
