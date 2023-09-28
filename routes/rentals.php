@@ -12,6 +12,8 @@ use App\Http\Controllers\Master\MarketController;
 use App\Http\Controllers\Rentals\ShopController;
 use App\Http\Controllers\Rentals\TollsController;
 use Illuminate\Support\Facades\Route;
+
+
 Route::controller(ShopController::class)->group(function () {
     Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 22 Get Shop Payment Receipt
     Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 23 Update webhook Data After Payment is Success
@@ -64,13 +66,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('crud/toll/delete', 'delete');
         Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');
         Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');
-        // Route::post('rental/list-shop', 'listShop');
         Route::post('rental/search-toll-by-name-or-mobile', 'searchTollByNameOrMobile');
         Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
         Route::post('rental/get-toll-price-list', 'getTollPriceList');
         Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');
-        // Route::post('rental/get-all-toll-payment-reciept', 'getAllPaymentReciept');
     });
 
 
@@ -91,7 +91,7 @@ Route::group(['middleware' => ['checkToken']], function () {
     });
 
     /**
-     * |Market(53)
+     * | Market(53)
      */
     Route::controller(MarketController::class)->group(function () {
         Route::post('v1/crud/market/insert', 'store');                                // 01  Add Market

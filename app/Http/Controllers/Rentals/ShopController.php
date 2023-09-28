@@ -271,14 +271,14 @@ class ShopController extends Controller
             // return $f_y;
             $shop['fYear'] = $f_y;
             $shop['demands'] = $demands;
-            $shop['total'] = $total;
+            $shop['total'] =  round($total,2);
 
             $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
             $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
             $totalPaid = $payments->pluck('amount')->sum();
             // $shop['payments'] = $payments;
-            $shop['totalPaid'] = $totalPaid;
-            $shop['pendingAmount'] = $total - $totalPaid;
+            $shop['totalPaid'] =   round($totalPaid,2);
+            $shop['pendingAmount'] =  round(($total - $totalPaid),2);
             // return([DB::getQueryLog(),$payments]);
             return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -302,6 +302,18 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
+            $mMarShopDemand=new MarShopDemand();
+            $demands = $mMarShopDemand->getDemandByShopId($req->id);                                            // Get List of Generated All Demands against SHop
+            $total = $demands->pluck('amount')->sum();
+          
+            $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
+            $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
+            $totalPaid = $payments->pluck('amount')->sum();
+            $pendingAmount =  round(($total - $totalPaid),2);
+
+            if($pendingAmount > 0)
+                throw new Exception("First Clear All Due Amount !!!");
+
             if (isset($req->status)) {                                                          // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
                 $metaReqs = [
@@ -852,6 +864,7 @@ class ShopController extends Controller
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
+                ->where('amount','>','0')
                 ->orderBy('financial_year', 'ASC')
                 ->first('financial_year');
 

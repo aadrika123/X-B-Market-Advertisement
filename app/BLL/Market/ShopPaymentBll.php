@@ -96,6 +96,7 @@ class ShopPaymentBll
         $financialYear = DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
+            ->where('amount', '>','0')
             ->where('financial_year', '<=', $req->toFYear)
             ->orderBy('financial_year', 'ASC')
             ->first('financial_year');
