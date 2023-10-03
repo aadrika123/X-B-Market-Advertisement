@@ -54,14 +54,14 @@ class TollsController extends Controller
                 throw new Exception("Toll Not Available for this ID");
             $dateFrom = Carbon::parse($req->dateFrom);
             $dateUpto = Carbon::parse($req->dateUpto);
-            // Calculation
+            // Calculation Date difference between two dates
             $diffInDays = $dateFrom->diffInDays($dateUpto);
             $noOfDays = $diffInDays + 1;
             $rate = $toll->rate;
             $payableAmt = $noOfDays * $rate;
             if ($payableAmt < 1)
                 throw new Exception("Dues Not Available");
-            // Payment
+            // Payment records insert in toll payment tables
             $reqTollPayment = [
                 'toll_id' => $toll->id,
                 'from_date' => $req->dateFrom,

@@ -26,7 +26,7 @@ Route::group(['middleware' => ['checkToken']], function () {
     /**
      * | Shops (50)
      * | Created By - Bikash Kumar
-     * | Status - closed (27 sep 2023)
+     * | Status - Closed (27 sep 2023)
      */
     Route::controller(ShopController::class)->group(function () {
         Route::post('shop-payments', 'shopPayment');                                                            // 01  Shop Payments
@@ -56,21 +56,21 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Tolls(51)
      */
     Route::controller(TollsController::class)->group(function () {
-        Route::post('toll-payments', 'tollPayments');                            //01
-        Route::post('crud/toll/insert', 'store');                                //02
-        Route::post('crud/toll/list-toll', 'listToll');                                //02
-        Route::post('crud/toll/edit', 'edit');                                   //03
-        Route::post('crud/toll/show-by-id', 'show');                             //04 
-        Route::post('crud/toll/retrieve-all', 'retrieve');                       //05 
-        Route::post('crud/toll/retrieve-all-active', 'retrieveActive');          //06
-        Route::post('crud/toll/delete', 'delete');
-        Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');
-        Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');
-        Route::post('rental/search-toll-by-name-or-mobile', 'searchTollByNameOrMobile');
-        Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');
-        Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');
-        Route::post('rental/get-toll-price-list', 'getTollPriceList');
-        Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');
+        Route::post('toll-payments', 'tollPayments');                                                           // 01 ( Toll Payments )
+        Route::post('crud/toll/insert', 'store');                                                               // 02 ( Add Toll )
+        Route::post('crud/toll/list-toll', 'listToll');                                                         // 03 ( Get List Toll )
+        Route::post('crud/toll/edit', 'edit');                                                                  // 04 ( Edit Toll ) 
+        Route::post('crud/toll/show-by-id', 'show');                                                            // 05 ( Get Toll Deails By Id )
+        Route::post('crud/toll/retrieve-all', 'retrieve');                                                      // 06 ( Get All Toll active and Deactive )
+        Route::post('crud/toll/retrieve-all-active', 'retrieveActive');                                         // 07 ( Get All Active Toll )
+        Route::post('crud/toll/delete', 'delete');                                                              // 08 ( Toll Active or Deactive )    
+        Route::post('rental/get-toll-collection-summary', 'gettollCollectionSummary');                          // 09 ( Get List of Toll COllection Summery )                           
+        Route::post('rental/list-toll-by-market-id', 'listTollByMarketId');                                     // 10 ( Get list toll according to given market Id )    
+        Route::post('rental/search-toll-by-name-or-mobile', 'searchTollByNameOrMobile');                        // 11 ( Search Toll by Mobile or Name )
+        Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');                                        // 12 ( Get Toll Details By Id )
+        Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');                                      // 13 ( Toll Payment By Admin )
+        Route::post('rental/get-toll-price-list', 'getTollPriceList');                                          // 14 ( Get TOll Price List )
+        Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');                                    // 15 ( Get Toll Payment Reciept )
     });
 
 

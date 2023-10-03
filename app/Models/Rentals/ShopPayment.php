@@ -59,6 +59,9 @@ class ShopPayment extends Model
     return self::create($metaReqs)->id;
   }
 
+  /**
+   * | Make MetaRequest For toll Payment paid by admin
+   */
   public function metaReqs($req, $shopId)
   {
     return [

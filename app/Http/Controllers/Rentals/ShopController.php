@@ -730,8 +730,6 @@ class ShopController extends Controller
         }
     }
 
-
-
     /**
      * | DCB Reports of All Shops
      * | API - 19
@@ -765,8 +763,6 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055019", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-
-
 
     /**
      * | Calculate Shop wise DCB
@@ -970,7 +966,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | Update webhook data when online payment is success 
      * | API - 23
@@ -1015,7 +1010,6 @@ class ShopController extends Controller
             DB::rollBack();
         }
     }
-
 
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
