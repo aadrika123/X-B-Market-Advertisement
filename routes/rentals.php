@@ -80,25 +80,30 @@ Route::group(['middleware' => ['checkToken']], function () {
 
     /**
      * | Created On-16-06-2023 
-     * | Author-Ashutosh Kumar
+     * | Author - Ashutosh Kumar
+     * | Change By - Bikash Kumar
+     * | Status - Closed By Bikash Kumar on 03 Oct 2023
      */
     Route::controller(CircleController::class)->group(function () {
-        Route::post('v1/crud/circle/insert', 'store');                            // 01  Add Circle 
-        Route::post('v1/crud/circle/update', 'edit');                             // 02  Update Circle Name 
-        Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');     // 03  Get Circle List By Ulb ID
-        Route::post('v1/crud/circle/list-all-circle', 'retireveAll');             // 04  Get All Circle List
-        Route::post('v1/crud/circle/delete', 'delete');                           // 05  Delete Circle
+        Route::post('v1/crud/circle/insert', 'store');                                                          // 01  Add Circle 
+        Route::post('v1/crud/circle/update', 'edit');                                                           // 02  Update Circle Name 
+        Route::post('v1/crud/circle/list-circle-by-ulbId', 'getCircleByUlb');                                   // 03  Get Circle List By Ulb ID
+        Route::post('v1/crud/circle/list-all-circle', 'retireveAll');                                           // 04  Get All Circle List
+        Route::post('v1/crud/circle/delete', 'delete');                                                         // 05  Delete Circle
     });
 
     /**
      * | Market(53)
+     * | Author - Ashutosh Kumar
+     * | Change By - Bikash Kumar
+     * | Status - Closed By Bikash Kumar on 03 Oct 2023
      */
     Route::controller(MarketController::class)->group(function () {
-        Route::post('v1/crud/market/insert', 'store');                                // 01  Add Market
-        Route::post('v1/crud/market/update', 'edit');                                 // 02  Update Market
-        Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId'); // 03  List Market By Circle Id
-        Route::post('v1/crud/market/list-all-market', 'retireveAll');                 // 04  List All Market
-        Route::post('v1/crud/market/delete', 'delete');                               // 05  Delete Market
-        Route::post('rental/list-construction', 'listConstruction');                  // 06  List Construction
+        Route::post('v1/crud/market/insert', 'store');                                                          // 01  Add Market
+        Route::post('v1/crud/market/update', 'edit');                                                           // 02  Update Market
+        Route::post('v1/crud/market/list-market-by-circleId', 'getMarketByCircleId');                           // 03  List Market By Circle Id
+        Route::post('v1/crud/market/list-all-market', 'retireveAll');                                           // 04  List All Market
+        Route::post('v1/crud/market/delete', 'delete');                                                         // 05  Delete Market
+        Route::post('rental/list-construction', 'listConstruction');                                            // 06  List Construction
     });
 });

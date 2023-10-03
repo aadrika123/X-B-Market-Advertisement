@@ -18,7 +18,11 @@ class MarketController extends Controller
         $this->_mMarket = new MMarket();
     }
 
-    // Add records
+    /**
+     * | Add Record of Market
+     * | Function - 01
+     * | API - 01
+     */
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -46,7 +50,11 @@ class MarketController extends Controller
         }
     }
 
-    // Edit records
+    /**
+     * | Update Record of Market
+     * | Function - 02
+     * | API - 02
+     */
     public function edit(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -78,7 +86,11 @@ class MarketController extends Controller
         }
     }
 
-    //find by Circle Id
+    /**
+     * | Get Market List By Circle Id
+     * | Function - 03
+     * | API - 03
+     */
     public function getMarketByCircleId(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -96,7 +108,12 @@ class MarketController extends Controller
         }
     }
 
-    //retireve all records
+
+    /**
+     * | Get List of All Market
+     * | Function - 04
+     * | API - 04
+     */
     public function retireveAll(Request $req)
     {
         try {
@@ -109,7 +126,11 @@ class MarketController extends Controller
         }
     }
 
-    //delete records
+    /**
+     * | Delete Market Records
+     * | Function - 05
+     * | API - 05
+     */
     public function delete(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -128,20 +149,25 @@ class MarketController extends Controller
             }
             $Shops = $this->_mMarket::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Status Updated Successfully", [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Status Updated Successfully", [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
-
-    public function listConstruction(Request $req){
-        try{
-            $mShopConstruction=new ShopConstruction();
-            $list=$mShopConstruction->listConstruction();
-            return responseMsgs(true, "Construction Fetch Successfully", $list, "055205", "1.0", responseTime(), "POST", $req->deviceId);
-        }catch(Exception $e){
-            return responseMsgs(false, $e->getMessage(), [], "055205", "1.0", responseTime(), "POST", $req->deviceId);
+    /**
+     * | Get List of All Construction
+     * | Function - 06
+     * | API - 06
+     */
+    public function listConstruction(Request $req)
+    {
+        try {
+            $mShopConstruction = new ShopConstruction();
+            $list = $mShopConstruction->listConstruction();
+            return responseMsgs(true, "Construction Fetch Successfully", $list, "055305", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055305", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

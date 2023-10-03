@@ -17,7 +17,11 @@ class CircleController extends Controller
         $this->_mCircle = new MCircle();
     }
 
-    // Add records
+    /**
+     * | Add Circle Records
+     * | Function - 01
+     * | API - 01
+     */
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -43,7 +47,12 @@ class CircleController extends Controller
         }
     }
 
-    // Edit Records
+
+    /**
+     * | Update Circle Records
+     * | Function - 02
+     * | API - 02
+     */
     public function edit(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -71,7 +80,12 @@ class CircleController extends Controller
         }
     }
 
-    //find by Ulb Id
+
+    /**
+     * | Get Circle List By ULB Id
+     * | Function - 03
+     * | API - 03
+     */
     public function getCircleByUlb(Request $req)
     {
         try {
@@ -84,7 +98,11 @@ class CircleController extends Controller
         }
     }
 
-    //retireve all records
+    /**
+     * | Get List of Circle
+     * | Function - 04
+     * | API - 04
+     */
     public function retireveAll(Request $req)
     {
         try {
@@ -97,7 +115,11 @@ class CircleController extends Controller
         }
     }
 
-    //delete records
+    /**
+     * | Delete Circle
+     * | Function - 05
+     * | API - 05
+     */
     public function delete(Request $req)
     {
         $validator = Validator::make($req->all(), [
