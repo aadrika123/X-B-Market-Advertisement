@@ -70,7 +70,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-toll-detail-by-id', 'getTollDetailtId');                                        // 12 ( Get Toll Details By Id )
         Route::post('rental/toll-payment-by-admin', 'tollPaymentByAdmin');                                      // 13 ( Toll Payment By Admin )
         Route::post('rental/get-toll-price-list', 'getTollPriceList');                                          // 14 ( Get TOll Price List )
-        Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');                                    // 15 ( Get Toll Payment Reciept )
+        Route::post('rental/get-toll-payment-reciept', 'getPaymentReciept');                                    // 15 ( Get Toll Payment Reciept )   
+        Route::post('rental/search-toll', 'searchToll');                                                        // 16 ( Search Toll by Mobile or Name )
+        Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                                 // 13  ( Calculate Toll Price )
     });
 
 

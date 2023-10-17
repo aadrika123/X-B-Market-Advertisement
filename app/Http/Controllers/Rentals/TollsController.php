@@ -473,6 +473,32 @@ class TollsController extends Controller
         }
     }
 
+    /**
+     * | Search Toll
+     */
+    public function searchToll(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'searchBy' => 'required|in:vendorName,mobileNo',
+            'value' => $req->searchBy == "vendorName" ? 'required|string|' : 'required|digits:10',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        $mMarToll = new MarToll();
+        $list = $mMarToll->getUlbWiseToll($req->auth['ulb_id']);
+        if ($req->searchBy=='mobileNo')
+            $list = $list->where('mobile', $req->value);
+        else
+            $list = $list->whereRaw('LOWER(vendor_name) = (?)', [strtolower($req->value)]);
+        $list = paginator($list, $req);
+        try {
+            return responseMsgs(true, "List Fetch Successfully !!!", $list, 055102, "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 
     /**
      * | Get All payment Receipt By Toll Id
@@ -532,4 +558,36 @@ class TollsController extends Controller
             return responseMsgs(false, $e->getMessage(), [], 055102, "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /* | Get Market Toll Price List
+    * | Function - 13
+    * | API - 13
+    */
+   public function calculateTollPrice(Request $req)
+   {
+       $validator = Validator::make($req->all(), [
+           "tollId" => "required|integer",
+           "dateUpto" => "required|date|date_format:Y-m-d",
+           "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
+       ]);
+
+       if ($validator->fails())
+           return responseMsgs(false, $validator->errors(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
+
+       try {
+           // Variable Assignments
+           $toll = $this->_mToll::find($req->tollId);
+           if (collect($toll)->isEmpty())
+               throw new Exception("Toll Not Available for this ID");
+           $dateFrom = Carbon::parse($req->dateFrom);
+           $dateUpto = Carbon::parse($req->dateUpto);
+           // Amount Calculation
+           $diffInDays = $dateFrom->diffInDays($dateUpto);
+           $noOfDays = $diffInDays + 1;
+           $payableAmt = $noOfDays * $toll->rate;
+           return responseMsgs(true, "Payable Amount - $payableAmt", ['tollAmount' => $payableAmt], "055113", "1.0", responseTime(), "POST", $req->deviceId);
+       } catch (Exception $e) {
+           return responseMsgs(false, $e->getMessage(), [], "055113", "1.0", responseTime(), "POST", $req->deviceId);
+       }
+   }
 }

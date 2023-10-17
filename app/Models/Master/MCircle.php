@@ -19,7 +19,8 @@ class MCircle extends Model
     {
         return MCircle::select('*')
             ->where('ulb_id', $ulbId)
-            ->where('circle_name', $circleName)
+            // ->where('circle_name', $circleName)
+            ->whereRaw('LOWER(circle_name) = (?)', [strtolower($circleName)])
             ->where('is_active', '1')
             ->get();
     }

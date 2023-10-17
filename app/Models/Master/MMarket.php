@@ -18,7 +18,8 @@ class MMarket extends Model
     {
         return MMarket::select('*')
             ->where('circle_id', $circleId)
-            ->where('market_name', $marketName)
+            // ->where('market_name', $marketName)
+            ->whereRaw('LOWER(market_name) = (?)', [strtolower($marketName)])
             ->where('is_active', '1')
             ->get();
     }
