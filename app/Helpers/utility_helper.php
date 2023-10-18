@@ -455,4 +455,20 @@ if (!function_exists('getClientIpAddress')) {
             return ($data);
         }
     }
+
+
+    if (!function_exists('getCurrentSesstion')) {
+        function getCurrentSesstion($date = null)
+        {
+            $data = [];
+            $strtotime = $date ? strtotime($date) : strtotime(date('Y-m-d'));
+            $y = date('Y', $strtotime);
+            $m = date('m', $strtotime);
+            $year = $y;
+            if ($m > 3)
+                $year = $y + 1;
+            return  $session=($year - 1) . '-' . $year;
+            // return ($data);
+        }
+    }
 }

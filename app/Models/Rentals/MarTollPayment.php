@@ -21,6 +21,8 @@ class MarTollPayment extends Model
       'mt.toll_no',
       'mc.circle_name',
       'mm.market_name',
+      'mt.vendor_name',
+      'mt.mobile',
       DB::raw("TO_CHAR(mar_toll_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
     )
       ->join('mar_tolls as mt', 'mt.id', '=', 'mar_toll_payments.toll_id')
@@ -54,7 +56,6 @@ class MarTollPayment extends Model
   public function addPaymentByAdmin($req, $shopId)
   {
     $metaReqs = $this->metaReqs($req, $shopId);
-    // dd($metaReqs);
     return self::create($metaReqs)->id;
   }
   
