@@ -49,28 +49,6 @@ class MarToll extends Model
             ->get();
     }
 
-
-    // public function getTollById($id)
-    // {
-    //     return MarToll::select(
-    //         '*',
-    //         DB::raw("
-    //     CASE 
-    //     WHEN status = '0' THEN 'Deactivated'  
-    //     WHEN status = '1' THEN 'Active'
-    //   END as status,
-    //   TO_CHAR(created_at::date,'dd-mm-yyyy') as date,
-    //   TO_CHAR(created_at,'HH12:MI:SS AM') as time
-    //     ")
-    //     )
-    //         ->where('id', $id)
-    //         ->first();
-    // }
-
-    /**
-     * | Get Ulb Wise Toll list
-     */
-
     /**
      * | Get All Toll ULB wise
      */

@@ -71,7 +71,7 @@ class TollsController extends Controller
                 throw new Exception("Dues Not Available");
 
             // Payment records insert in toll payment tables
-           $reqTollPayment = [
+            $reqTollPayment = [
                 'toll_id' => $toll->id,
                 'from_date' => $req->dateFrom,
                 'to_date' => $req->dateUpto,
@@ -83,7 +83,7 @@ class TollsController extends Controller
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
                 'remarks' => $req->remarks,
-                'transaction_no' => "TRAN-".time().$toll->id,
+                'transaction_no' => "TRAN-" . time() . $toll->id,
                 'session' => getCurrentSesstion(date('Y-m-d'))
             ];
             $createdTran = $mTollPayment->create($reqTollPayment);
@@ -658,9 +658,76 @@ class TollsController extends Controller
             $list = $list->where('mar_toll_payments.user_id', $req->auth['id']);
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('amount');
-            return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055109", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055118", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055109", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055118", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get TC Wise Toll Collection Summery
+     * | Function - 20
+     * | API - 19
+     */
+    public function getAllTcWiseCollectionReports(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mMarTollPayment = new MarTollPayment();
+            $list = $mMarTollPayment->tcWiseCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = paginator($list, $req);
+            $list['totalCollection'] = collect($list['data'])->sum('collectionamount');
+            return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055119", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "05519", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+     /**
+     * | Get TC Wise Toll Collection Summery
+     * | Function - 21
+     * | API - 20
+     */
+    public function getCircleMarketDateWiseReports(Request $req){
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+            'marketId'=> 'nullable|integer',
+            'circleId'=> 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mMarTollPayment = new MarTollPayment();
+            $list = $mMarTollPayment->collectionSummary($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = paginator($list, $req);
+            $list['totalCollection'] = collect($list['data'])->sum('amount');
+            return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055119", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055199", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

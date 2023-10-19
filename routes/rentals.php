@@ -74,6 +74,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-toll', 'searchToll');                                                        // 16 ( Search Toll by Mobile or Name )
         Route::post('rental/calculate-toll-price', 'calculateTollPrice');                                       // 17 ( Calculate Toll Price )
         Route::post('rental/tc-wise-toll-collection', 'getTCWiseTollCollectionSummary');                        // 18 ( TC Wise Toll COllection Summary )
+        Route::post('rental/get-all-tc-wise-collection-reports', 'getAllTcWiseCollectionReports');              // 19 ( Collection All TC wise Collection Reports )
+        Route::post('rental/get-circle-market-date-wise-report', 'getCircleMarketDateWiseReports');             // 20 ( Get Date,Market,circle,Date Wise Reports )
     });
 
 
