@@ -39,7 +39,6 @@ class TollsController extends Controller
      */
     public function tollPayments(Request $req)
     {
-        // return getCurrentSesstion();
         $validator = Validator::make($req->all(), [
             "tollId" => "required|integer",
             "dateUpto" => "required|date|date_format:Y-m-d",
@@ -83,7 +82,7 @@ class TollsController extends Controller
                 'user_id' => $req->auth['id'] ?? 0,
                 'ulb_id' => $toll->ulb_id,
                 'remarks' => $req->remarks,
-                'transaction_no' => "TRAN-" . time() . $toll->id,
+                'transaction_no' => "TRAN-" . time() . $toll->id,                                       // Generate Transaction No Using TRAN-time function in php and toll Id
                 'session' => getCurrentSesstion(date('Y-m-d'))
             ];
             $createdTran = $mTollPayment->create($reqTollPayment);
@@ -115,47 +114,24 @@ class TollsController extends Controller
                 $absolutePath = $relativePath;
                 $imageName1Absolute = $absolutePath;
             }
-
-            // if (isset($request->photograph2)) {
-            //     $image = $request->file('photograph2');
-            //     $refImageName = 'Toll-Photo-2' . '-' . $request->vendorName;
-            //     $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-            //     $absolutePath = $relativePath;
-            //     $imageName2Absolute = $absolutePath;
-            // }
             $tollNo = $this->tollIdGeneration($request->marketId);
             $marToll = [
                 'circle_id'               => $request->circleId,
                 'toll_no'                 => $tollNo,
-                // 'toll_type'               => $request->tollType,
                 'vendor_name'             => $request->vendorName,
                 'address'                 => $request->address,
                 'rate'                    => $request->rate,
-                // 'last_payment_date'       => $request->lastPaymentDate,
-                // 'last_amount'             => $request->lastAmount,
                 'market_id'               => $request->marketId,
-                // 'present_length'          => $request->presentLength,
-                // 'present_breadth'         => $request->presentBreadth,
-                // 'present_height'          => $request->presentHeight,
-                // 'no_of_floors'            => $request->noOfFloors,
-                // 'trade_license'           => $request->tradeLicense,
-                // 'construction'            => $request->construction,
-                // 'utility'                 => $request->utility,
                 'mobile'                  => $request->mobile,
                 'remarks'                 => $request->remarks,
                 'photograph1'             => $imageName1 ?? null,
                 'photo1_absolute_path'    => $imageName1Absolute ?? null,
-                // 'photograph2'             => $imageName2 ?? null,
-                // 'photo2_absolute_path'    => $imageName2Absolute ?? null,
-                // 'longitude'               => $request->longitude,
-                // 'latitude'                => $request->latitude,
                 'user_id'                 => $request->auth['id'],
                 'ulb_id'                  => $request->auth['ulb_id'],
                 'vendor_type'             => $request->vendorType,
-                // 'last_tran_id'            => $request->lastTranId,
             ];
             // return $marToll;
-            $this->_mToll->create($marToll);
+            $this->_mToll->create($marToll);                            // Store toll Data
             return responseMsgs(true, "Successfully Saved", $marToll, "055102", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055102", "1.0", responseTime(), "POST", $request->deviceId);
@@ -184,8 +160,8 @@ class TollsController extends Controller
     {
         try {
             $mMarToll = new MarToll();
-            $list = $mMarToll->getUlbWiseToll($req->auth['ulb_id']);
-            $list = paginator($list, $req);
+            $list = $mMarToll->getUlbWiseToll($req->auth['ulb_id']);            // Retrieve Toll Data Ulbwise from model
+            $list = paginator($list, $req);                                     // Paginate Toll Data
             return responseMsgs(true, "List Fetch Successfully !!!", $list, "055103", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055103", "1.0", responseTime(), "POST", $req->deviceId);
@@ -241,10 +217,6 @@ class TollsController extends Controller
                 'utility' => $request->utility,
                 'mobile' => $request->mobile,
                 'remarks' => $request->remarks,
-                // 'photograph1' => $imageName1 ?? null,
-                // 'photo1_absolute_path' => $imageName1Absolute ?? null,
-                // 'photograph2' => $imageName2 ?? null,
-                // 'photo2_absolute_path' => $imageName2Absolute ?? null,
                 'longitude' => $request->longitude,
                 'latitude' => $request->latitude,
                 'user_id' => $request->auth['id'],
@@ -291,7 +263,7 @@ class TollsController extends Controller
 
             $toll = $this->_mToll::find($request->id);
             if (!$toll)
-                throw new Exception("No Data FOund !!!");
+                throw new Exception("No Data Found !!!");
             return responseMsgs(true, "record found", $toll, "055105", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055105", "1.0", responseTime(), "POST", $request->deviceId);
@@ -339,7 +311,8 @@ class TollsController extends Controller
     public function delete(Request $request)
     {
         $validator = validator::make($request->all(), [
-            'id' => 'required|integer'
+            'id' => 'required|integer',
+            'status' => 'required|integer'
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
@@ -654,7 +627,7 @@ class TollsController extends Controller
                 $toDate = $req->toDate;
             }
             $mMarTollPayment = new MarTollPayment();
-            $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
             $list = $list->where('mar_toll_payments.user_id', $req->auth['id']);
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('amount');
@@ -688,7 +661,7 @@ class TollsController extends Controller
                 $toDate = $req->toDate;
             }
             $mMarTollPayment = new MarTollPayment();
-            $list = $mMarTollPayment->tcWiseCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = $mMarTollPayment->tcWiseCollection($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);          // Get TC Wise Collection Summary
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('collectionamount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055119", "1.0", responseTime(), "POST", $req->deviceId);
@@ -698,7 +671,7 @@ class TollsController extends Controller
     }
 
      /**
-     * | Get TC Wise Toll Collection Summery
+     * | Get Circle Market or Date wise Collection Summery
      * | Function - 21
      * | API - 20
      */

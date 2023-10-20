@@ -99,7 +99,7 @@ class MarketController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $Market = $this->_mMarket->getMarketByCircleId($req->circleId);
+            $Market = $this->_mMarket->getMarketByCircleId($req->circleId);                 // Get Market Records By Circle Id
             if (collect($Market)->isEmpty())
                 throw new Exception("Market According To Circle Id Does Not Exist");
             return responseMsgs(true, "", $Market, "055303", "1.0", responseTime(), "POST", $req->deviceId);
@@ -117,9 +117,9 @@ class MarketController extends Controller
     public function retireveAll(Request $req)
     {
         try {
-            $circle = $this->_mMarket->getAllActive();
+            $circle = $this->_mMarket->getAllActive();                              // Retrieve All Market
             if (collect($circle)->isEmpty())
-                throw new Exception("No Data Found");
+                throw new Exception("No Data Found !!!");
             return responseMsgs(true, "", $circle, "055304", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
@@ -147,11 +147,16 @@ class MarketController extends Controller
                     'is_active' => $isActive
                 ];
             }
+            if($req->isActive){
+                $message="Shop Activate Successfully !!!";
+            }else{
+                $message="Shop De-Activate Successfully !!!";
+            }
             $Shops = $this->_mMarket::findOrFail($req->id);
             $Shops->update($metaReqs);
-            return responseMsgs(true, "Status Updated Successfully", [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, $message, [], "055305", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055304", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055305", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
@@ -165,9 +170,9 @@ class MarketController extends Controller
         try {
             $mShopConstruction = new ShopConstruction();
             $list = $mShopConstruction->listConstruction();
-            return responseMsgs(true, "Construction Fetch Successfully", $list, "055305", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Construction Fetch Successfully", $list, "055306", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055305", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055306", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }
