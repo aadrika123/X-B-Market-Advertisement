@@ -27,30 +27,14 @@ class TollValidationRequest extends FormRequest
     {
         return [
             'circleId'              =>   'required|integer',
-            // 'tollNo'                =>   'nullable|string',
-            // 'tollType'              =>   'required|regex:/^[A-Za-z ]+$/',
             'vendorName'            =>   'required|regex:/^[A-Za-z ]+$/',
             'address'               =>   'required|string|max:255',
             'rate'                  =>   'required|numeric',
-            // 'lastPaymentDate'       =>   'nullable|date',
-            // 'lastAmount'            =>   'nullable|numeric',
             'marketId'              =>   'required|integer',
-            // 'presentLength'         =>   'nullable|string',
-            // 'presentBreadth'        =>   'nullable|string',
-            // 'presentHeight'         =>   'nullable|string',
-            // 'noOfFloors'            =>   'nullable|string',
-            // 'tradeLicense'          =>   'nullable|string',
-            // 'construction'          =>   'nullable|string',
-            // 'utility'               =>   'nullable|string',
             'mobile'                =>   'required|digits:10',
             'remarks'               =>   'nullable|string',
             'photograph1'           =>   'required|image|mimes:jpeg,png,jpg',
-            // 'photograph2'           =>   'required|image|mimes:jpeg,png,jpg',
-            // 'longitude'             =>   'nullable|string',
-            // 'latitude'              =>   'nullable|string',
-            // 'userId'                =>   'nullable|numeric',
-            // 'lastTranId'            =>   'nullable|numeric',
-            'vendorType'            => 'required|string'
+            'vendorType'            =>   'required|in:schedule,unscheduled'
         ];
     }
 
@@ -60,6 +44,6 @@ class TollValidationRequest extends FormRequest
             'success'   => false,
             'message'   => 'Validation errors',
             'data'      => $validator->errors()
-        ], 422),);
+        ], 200),);
     }
 }

@@ -631,12 +631,13 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                         
+            $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                                    // Get Entry Cheque Details                        
             $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
             $mMarShopPayment->bounce_amount = $req->amount;
             $mMarShopPayment->save();
             if ($req->status == 3) {
+                // if cheque is bounced then demand is again generated
                 $UpdateDetails = MarShopDemand::where('shop_id',  $shopPayment->shop_id)
                     ->where('financial_year', '>=', $shopPayment->paid_from)
                     ->where('financial_year', '<=', $shopPayment->paid_to)
@@ -680,11 +681,11 @@ class ShopController extends Controller
         }
         try {
             if (!isset($req->fromDate))
-                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then take current Date
+                $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
                 $fromDate = $req->fromDate;
             if (!isset($req->toDate))
-                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then take current Date
+                $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
             else
                 $toDate = $req->toDate;
             $mMarShopPayment = new MarShopPayment();
@@ -844,7 +845,7 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $amount = DB::table('mar_shop_demands')                                         // Calculate Amount For Selected Financial Year
+            $amount = DB::table('mar_shop_demands')                                                       // Calculate Amount For Selected Financial Year
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
@@ -856,7 +857,7 @@ class ShopController extends Controller
 
             $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();      // Get Shop Details By Shop Id
 
-            $financialYear = DB::table('mar_shop_demands')                                              // Get First Financial Year For Payment
+            $financialYear = DB::table('mar_shop_demands')                                               // Get First Financial Year For Payment
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
@@ -864,16 +865,16 @@ class ShopController extends Controller
                 ->orderBy('financial_year', 'ASC')
                 ->first('financial_year');
 
-            $refReq = new Request([                                                          // Make Payload For Online Payment
+            $refReq = new Request([                                                                     // Make Payload For Online Payment
                 'userId' => $req->auth['id'] ?? 0,
                 'amount' => $amount,
                 'applicationId' => $req->shopId,
-                'moduleId' => 5                                                             // Market- Advertisement Module Id
+                'moduleId' => 5                                                                         // Market- Advertisement Module Id
             ]);
 
             DB::beginTransaction();
-            $paymentUrl = Config::get('constants.PAYMENT_URL');                            // Get Payment Url From .env via constant page
-            $refResponse = Http::withHeaders([                                             // HTTP Call For generate referal Url
+            $paymentUrl = Config::get('constants.PAYMENT_URL');                                         // Get Payment Url From .env via constant page
+            $refResponse = Http::withHeaders([                                                          // HTTP Call For generate referal Url
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
             ])
                 ->withToken($req->token)
@@ -898,7 +899,7 @@ class ShopController extends Controller
                 'pmt_mode' => $req->paymentMode,
                 'shop_category_id' => $shopDetails->shop_category_id,
                 'referal_url' => $data->data,
-                'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,     // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
+                'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,    // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
             ];
             $createdPayment = MarShopPayment::create($paymentReqs);
             DB::commit();
@@ -923,7 +924,7 @@ class ShopController extends Controller
                 ->first();
             if (!$data)
                 throw new Exception("Transaction Id Not Valid !!!");
-            $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);
+            $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);                                               // Get Shop Details By Shop Id
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
             $reciept['shopNo'] = $shopDetails->shop_no;
@@ -944,7 +945,7 @@ class ShopController extends Controller
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
 
-            // If Payment By Cheque
+            // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();
             if (strtoupper($data->pmt_mode) == 'CHEQUE') {
                 $reciept['chequeDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
@@ -952,7 +953,7 @@ class ShopController extends Controller
                 $reciept['chequeDetails']['bank_name'] = $data->bank_name;
                 $reciept['chequeDetails']['branch_name'] = $data->branch_name;
             }
-              // If Payment By DD
+              // If Payment By DD then DD Details is Added Here
             $reciept['ddDetails'] = array();
             if (strtoupper($data->pmt_mode) == 'DD') {
                 $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
@@ -1020,10 +1021,10 @@ class ShopController extends Controller
         $mMarShopRateList = new MarShopRateList();
         $base_rate = $mMarShopRateList->getShopRate($shopCategoryId, $financialYear);
         if ($shopCategoryId == 1) {
-            $base_rate = 5;                                   // Get Base rate of BOT Shop financial yearwise
+            $base_rate = 5;                                     // Get Base rate of BOT Shop financial yearwise
             return ($base_rate * $area * 12);                   // BOT Amount Calculation
         } else {
-            $base_rate = 5;                                   // Get Base rate of City shop financial yearwise
+            $base_rate = 5;                                     // Get Base rate of City shop financial yearwise
             return ($base_rate * $area * 12);                   // BOT Amount Calculation
         }
     }
@@ -1038,7 +1039,7 @@ class ShopController extends Controller
         $market = strtoupper(substr($idDetails->market_name, 0, 3));
         $counter = $idDetails->shop_counter + 1;
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
-        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);
+        return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
     }
 
 }
