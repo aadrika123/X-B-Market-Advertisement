@@ -271,14 +271,14 @@ class ShopController extends Controller
             // return $f_y;
             $shop['fYear'] = $f_y;
             $shop['demands'] = $demands;
-            $shop['total'] =  round($total,2);
+            $shop['total'] =  round($total, 2);
 
             $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
             $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
             $totalPaid = $payments->pluck('amount')->sum();
             // $shop['payments'] = $payments;
-            $shop['totalPaid'] =   round($totalPaid,2);
-            $shop['pendingAmount'] =  round(($total - $totalPaid),2);
+            $shop['totalPaid'] =   round($totalPaid, 2);
+            $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
             // return([DB::getQueryLog(),$payments]);
             return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -302,16 +302,16 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-            $mMarShopDemand=new MarShopDemand();
+            $mMarShopDemand = new MarShopDemand();
             $demands = $mMarShopDemand->getDemandByShopId($req->id);                                            // Get List of Generated All Demands against SHop
             $total = $demands->pluck('amount')->sum();
-          
+
             $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
             $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
             $totalPaid = $payments->pluck('amount')->sum();
-            $pendingAmount =  round(($total - $totalPaid),2);
+            $pendingAmount =  round(($total - $totalPaid), 2);
 
-            if($pendingAmount > 0)
+            if ($pendingAmount > 0)
                 throw new Exception("First Clear All Due Amount !!!");
 
             if (isset($req->status)) {                                                          // In Case of Deactivation or Activation
@@ -604,9 +604,19 @@ class ShopController extends Controller
      */
     public function listEntryCheckorDD(Request $req)
     {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+        }
         try {
             $mMarShopPayment = new MarShopPayment();
             $data = $mMarShopPayment->listUnclearedCheckDD($req);
+            if ($req->fromDate != NULL) {
+                $data = $data->whereBetween('mar_shop_payments.payment_date', [$req->fromDate, $req->toDate]);
+            }
             $list = paginator($data, $req);
             return responseMsgs(true, "List Uncleared Check Or DD", $list, "055015", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -624,8 +634,10 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'chequeId' => 'required|integer',
             'status' => 'required|integer',
+            'date' => 'nullable|date_format:Y-m-d',
             'remarks' => $req->status == 3 ? 'required|string' : 'nullable|string',
             'amount' => $req->status == 3 ? 'nullable|numeric' : 'nullable',
+            'bounceReason' => $req->status == 3 ? 'required|string' : 'nullable|string',
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -635,6 +647,8 @@ class ShopController extends Controller
             $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
             $mMarShopPayment->bounce_amount = $req->amount;
+            $mMarShopPayment->bounce_reason = $req->bounceReason;
+            $mMarShopPayment->clear_or_bounce_date = $req->date;
             $mMarShopPayment->save();
             if ($req->status == 3) {
                 // if cheque is bounced then demand is again generated
@@ -861,15 +875,17 @@ class ShopController extends Controller
                 ->where('shop_id', $req->shopId)
                 ->where('payment_status', 0)
                 ->where('financial_year', '<=', $req->toFYear)
-                ->where('amount','>','0')
+                ->where('amount', '>', '0')
                 ->orderBy('financial_year', 'ASC')
                 ->first('financial_year');
 
             $refReq = new Request([                                                                     // Make Payload For Online Payment
-                'userId' => $req->auth['id'] ?? 0,
+                // 'userId' => $req->auth['id'] ?? 0,
                 'amount' => $amount,
-                'applicationId' => $req->shopId,
-                'moduleId' => 5                                                                         // Market- Advertisement Module Id
+                // 'applicationId' => $req->shopId,
+                'id' => $req->shopId,
+                'moduleId' => 5,                                                                         // Market- Advertisement Module Id
+                'auth' => $req->auth,
             ]);
 
             DB::beginTransaction();
@@ -878,15 +894,16 @@ class ShopController extends Controller
                 "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
             ])
                 ->withToken($req->token)
+                // ->post($paymentUrl . 'api/payment/v1/get-referal-url', $refReq);
                 ->post($paymentUrl . 'api/payment/v1/get-referal-url', $refReq);
 
             $data = json_decode($refResponse);
             if ($data->status == false)
                 throw new Exception("Payment Referal Url Not Generate");
-
+            $data->message->req_ref_no;
             // Insert Payment Details in Shop Payment
             $paymentReqs = [
-                "req_ref_no" => (string)$data->message->req_ref_no,
+                "req_ref_no" => $data->message->req_ref_no,
                 'shop_id' => $req->shopId,
                 'amount' => $amount,
                 'paid_from' => $financialYear->financial_year,
@@ -898,12 +915,12 @@ class ShopController extends Controller
                 'remarks' => $req->remarks,
                 'pmt_mode' => $req->paymentMode,
                 'shop_category_id' => $shopDetails->shop_category_id,
-                'referal_url' => $data->data,
+                'referal_url' => $data->data->encryptUrl,
                 'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,    // Transaction id is a combination of time funcation in PHP and ULB ID and Shop ID
             ];
-            $createdPayment = MarShopPayment::create($paymentReqs);
+            MarShopPayment::create($paymentReqs);
             DB::commit();
-            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data], "055021", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055021", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055021", "1.0", responseTime(), "POST", $req->deviceId);
@@ -953,7 +970,7 @@ class ShopController extends Controller
                 $reciept['chequeDetails']['bank_name'] = $data->bank_name;
                 $reciept['chequeDetails']['branch_name'] = $data->branch_name;
             }
-              // If Payment By DD then DD Details is Added Here
+            // If Payment By DD then DD Details is Added Here
             $reciept['ddDetails'] = array();
             if (strtoupper($data->pmt_mode) == 'DD') {
                 $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
@@ -1012,6 +1029,143 @@ class ShopController extends Controller
         }
     }
 
+
+    /**
+     * | Update webhook data when online payment is success 
+     * | API - 24
+     * | Function - 24
+     */
+    public function listUnverifiedCashPayment(Request $req)
+    {
+
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->listUnverifiedCashPayment($req);
+            if ($req->fromDate != NULL) {
+                $data = $data->whereBetween('mar_shop_payments.payment_date', [$req->fromDate, $req->toDate]);
+            }
+            $list = paginator($data, $req);
+            return responseMsgs(true, "List Uncleared Cash Payment", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Update webhook data when online payment is success 
+     * | API - 25
+     * | Function - 25
+     */
+    public function verifiedCashPayment(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $mMarShopPayment = MarShopPayment::find($req->id);
+            if (!$mMarShopPayment)
+                throw new Exception("Record Not Found !!!");
+
+            $mMarShopPayment->is_verified = '1';
+            $mMarShopPayment->save();
+            return responseMsgs(true, "Cash Payment Verified Successfully !!!", '', "055025", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Update webhook data when online payment is success 
+     * | API - 25
+     * | Function - 25
+     */
+    public function listCashVerification(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'nullable|date_format:Y-m-d',
+            'reportType' => 'nullable|integer|in:0,1',        // 0 - Not Verified, 1 - Verified
+            'shopType' => 'nullable|integer|in:1,2,3',        // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
+            'market' => 'nullable|integer',
+            'circle' => 'nullable|integer',                    // Circle i.e. Zone
+            'userId' => 'nullable|integer',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->getListOfPayment();
+            if ($req->date != NULL)
+                $data = $data->where("mar_shop_payments.payment_date", $req->date);
+            if ($req->reportType != NULL)
+                $data = $data->where("mar_shop_payments.is_verified", $req->reportType);
+            if ($req->shopType != NULL)
+                $data = $data->where("t1.shop_category_id", $req->shopType);
+            if ($req->market != NULL)
+                $data = $data->where("t1.market_id", $req->market);
+            if ($req->circle != NULL)
+                $data = $data->where("t1.circle_id", $req->circle);
+            if ($req->userId != NULL)
+                $data = $data->where("user.id", $req->userId);
+            $data = $data->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'market_id', 't1.shop_category_id');
+            $list = paginator($data, $req);
+            return responseMsgs(true, "List of Cash Verification", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function listDetailCashVerification(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'date' => 'required|date_format:Y-m-d',
+            'reportType' => 'nullable|integer|in:0,1',        // 0 - Not Verified, 1 - Verified
+            'shopType' => 'nullable|integer|in:1,2,3',        // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
+            'market' => 'nullable|integer',
+            'circle' => 'nullable|integer',                    // Circle i.e. Zone
+            'userId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->getListOfPaymentDetails();
+            if ($req->date != NULL)
+                $data = $data->where("mar_shop_payments.payment_date", $req->date);
+            if ($req->reportType != NULL)
+                $data = $data->where("mar_shop_payments.is_verified", $req->reportType);
+            if ($req->shopType != NULL)
+                $data = $data->where("t1.shop_category_id", $req->shopType);
+            if ($req->market != NULL)
+                $data = $data->where("t1.market_id", $req->market);
+            if ($req->circle != NULL)
+                $data = $data->where("t1.circle_id", $req->circle);
+            if ($req->userId != NULL)
+                $data = $data->where("user.id", $req->userId);
+            $list = paginator($data, $req);
+            $list['userDetails']['COllector_name']=$list['data'][0]->collector_name;
+            $list['userDetails']['total_amount']=$data->sum('amount');
+            $list['userDetails']['transactionDate']= $req->date;
+            $list['userDetails']['no_of_transaction']= count($list['data']);
+            return responseMsgs(true, "List of Cash Verification", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 24
@@ -1041,5 +1195,4 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
     }
-
 }

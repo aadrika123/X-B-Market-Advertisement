@@ -112,6 +112,7 @@ class MarShopPayment extends Model
       return  DB::table('mar_shop_payments')
          ->select(
             'mar_shop_payments.id',
+            'mar_shop_payments.payment_date',
             'mar_shop_payments.amount',
             'mar_shop_payments.paid_from',
             'mar_shop_payments.paid_to',
@@ -128,6 +129,29 @@ class MarShopPayment extends Model
          ->where('payment_status', '2')
          ->where('cheque_date', '!=', NULL);
    }
+
+   
+   /**
+    * | List Uncleared cheque or DD
+    */
+    public function listUnverifiedCashPayment($req)
+    {
+       return  DB::table('mar_shop_payments')
+          ->select(
+             'mar_shop_payments.id',
+             'mar_shop_payments.payment_date',
+             'mar_shop_payments.amount',
+             'mar_shop_payments.paid_from',
+             'mar_shop_payments.paid_to',
+             DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
+             't1.shop_no',
+             't1.allottee',
+             't1.contact_no'
+          )
+          ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+          ->where('is_verified', '=', '0')
+          ->where('pmt_mode', '=', 'CASH');
+    }
 
    /**
     * | update payment status for clear or bounce cheque
@@ -187,5 +211,48 @@ class MarShopPayment extends Model
    public function findByReqRefNo($reqRefNo)
    {
       return self::where('req_ref_no', $reqRefNo)->first();
+   }
+
+   /**
+    * | Get List of All Payment
+    */
+   public function getListOfPaymentDetails(){
+      return  DB::table('mar_shop_payments')
+      ->select(
+         'mar_shop_payments.id',
+         'mar_shop_payments.payment_date',
+         'mar_shop_payments.pmt_mode as payment_mode',
+         'mar_shop_payments.amount',
+         'mar_shop_payments.paid_from',
+         'mar_shop_payments.paid_to',
+         'mar_shop_payments.cheque_no',
+         'mar_shop_payments.dd_no',
+         'mar_shop_payments.bank_name',
+         'mar_shop_payments.transaction_id as transaction_no',
+         DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
+         't1.shop_no',
+         't1.allottee',
+         't1.contact_no',
+         'user.name as collector_name',
+         'user.id as tc_id',
+      )
+      ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+      ->join('users as user', 'user.id','=', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.pmt_mode','!=',"ONLINE")
+      ->where('mar_shop_payments.payment_status','!=',"3");
+   }
+
+   public function getListOfPayment(){
+      return  DB::table('mar_shop_payments')
+      ->select(
+         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+         'mar_shop_payments.user_id as tc_id',
+         'user.name as tc_name',
+         't1.circle_id',
+      )
+      ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+      ->join('users as user', 'user.id','=', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.pmt_mode','!=',"ONLINE")
+      ->where('mar_shop_payments.payment_status','!=',"3");
    }
 }
