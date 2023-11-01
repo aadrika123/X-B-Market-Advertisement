@@ -333,7 +333,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | List Ulb Wise Circle
      * | API - 06
@@ -392,7 +391,6 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055008", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-
 
     /**
      * | Get Shop Collection Summery
@@ -718,7 +716,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | Edit Shop Data For Contact Number
      * | API - 18
@@ -1031,7 +1028,7 @@ class ShopController extends Controller
 
 
     /**
-     * | Update webhook data when online payment is success 
+     * | List Un-Verified cash Payment
      * | API - 24
      * | Function - 24
      */
@@ -1058,37 +1055,31 @@ class ShopController extends Controller
         }
     }
 
-
     /**
-     * | Update webhook data when online payment is success 
+     * | Verified Payment one or more than one
      * | API - 25
      * | Function - 25
      */
     public function verifiedCashPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required|integer',
+            'ids' => 'required|array',
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors()->first(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
         }
         try {
-            $mMarShopPayment = MarShopPayment::find($req->id);
-            if (!$mMarShopPayment)
-                throw new Exception("Record Not Found !!!");
-
-            $mMarShopPayment->is_verified = '1';
-            $mMarShopPayment->save();
-            return responseMsgs(true, "Cash Payment Verified Successfully !!!", '', "055025", "1.0", responseTime(), "POST", $req->deviceId);
+            MarShopPayment::whereIn('id', $req->ids)->update(['is_verified' => '1']);
+            return responseMsgs(true, "Payment Verified Successfully !!!",  '', "055025", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055025", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
-     * | Update webhook data when online payment is success 
-     * | API - 25
-     * | Function - 25
+     * | List Cash Verification userwise
+     * | API - 26
+     * | Function - 26
      */
     public function listCashVerification(Request $req)
     {
@@ -1101,7 +1092,7 @@ class ShopController extends Controller
             'userId' => 'nullable|integer',
         ]);
         if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $validator->errors()->first(), [], "055026", "1.0", responseTime(), "POST", $req->deviceId);
         }
         try {
             $mMarShopPayment = new MarShopPayment();
@@ -1120,13 +1111,17 @@ class ShopController extends Controller
                 $data = $data->where("user.id", $req->userId);
             $data = $data->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'market_id', 't1.shop_category_id');
             $list = paginator($data, $req);
-            return responseMsgs(true, "List of Cash Verification", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "List of Cash Verification", $list, "055026", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055026", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
-
+    /**
+     * | List Cash Verification Details by TC or Userwise
+     * | API - 27
+     * | Function - 27
+     */
     public function listDetailCashVerification(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1138,7 +1133,7 @@ class ShopController extends Controller
             'userId' => 'required|integer',
         ]);
         if ($validator->fails()) {
-            return responseMsgs(false, $validator->errors()->first(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $validator->errors()->first(), [], "055027", "1.0", responseTime(), "POST", $req->deviceId);
         }
         try {
             $mMarShopPayment = new MarShopPayment();
@@ -1155,20 +1150,68 @@ class ShopController extends Controller
                 $data = $data->where("t1.circle_id", $req->circle);
             if ($req->userId != NULL)
                 $data = $data->where("user.id", $req->userId);
-            $list = paginator($data, $req);
-            $list['userDetails']['COllector_name']=$list['data'][0]->collector_name;
-            $list['userDetails']['total_amount']=$data->sum('amount');
-            $list['userDetails']['transactionDate']= $req->date;
-            $list['userDetails']['no_of_transaction']= count($list['data']);
-            return responseMsgs(true, "List of Cash Verification", $list, "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            $list = $data->get();
+            $cash = $cheque = $dd = 0;
+            foreach ($list as $record) {
+                if ($record->payment_mode == 'CASH') {
+                    $cash += $record->amount;
+                }
+                if ($record->payment_mode == 'CHEQUE') {
+                    $cheque += $record->amount;
+                }
+                if ($record->payment_mode == 'DD') {
+                    $dd += $record->amount;
+                }
+            }
+            $f_data['data'] = $list;
+            $f_data['userDetails']['collector_name'] = $list[0]->collector_name;
+            $f_data['userDetails']['total_amount'] = $data->sum('amount');
+            $f_data['userDetails']['transactionDate'] = $req->date;
+            $f_data['userDetails']['no_of_transaction'] = count($list);
+            $f_data['userDetails']['cash'] = $cash;
+            $f_data['userDetails']['cheque'] = $cheque;
+            $f_data['userDetails']['dd'] = $dd;
+            return responseMsgs(true, "List of Cash Verification", $f_data, "055027", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055024", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055027", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | Update Cheque and DD Details By Accountant
+     * | API - 28
+     * | Function - 28
+     */
+    public function updateChequeDeails(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer',
+            'chequeNo' => 'required|integer',
+            'bankName' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors()->first(), [], "055028", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+        try {
+            $paymentDetails = MarShopPayment::find($req->id);
+            $paymentDetails->bank_name = $req->bankName;
+            if (!$paymentDetails)
+                throw new Exception("Payment Details Not Found !!!");
+            if ($paymentDetails->pmt_mode == 'CHEQUE') {
+                $paymentDetails->cheque_no = $req->chequeNo;
+            }
+            if ($paymentDetails->pmt_mode == 'DD') {
+                $paymentDetails->dd_no = $req->chequeNo;
+            }
+            $paymentDetails->save();
+            return responseMsgs(true, "Details Update Successfully !!!", '', "055028", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055028", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
-     * | Function - 24
+     * | Function - 28
      */
     public function calculateShopRate($shopCategoryId, $area, $financialYear)
     {
@@ -1185,7 +1228,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 25
+     * | Function - 29
      */
     public function shopIdGeneration($marketId)
     {

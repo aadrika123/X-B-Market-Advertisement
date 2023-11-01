@@ -50,10 +50,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/dcb-reports', 'dcbReports');                                                        // 19  List DCB Reports 
         Route::post('rental/shop-wise-dcb', 'shopWiseDcb');                                                     // 20  List Shop wise DCB Reports    
         Route::post('rental/generate-referal-url-for-payment', 'generateReferalUrlForPayment');                 // 21  Generate Referal Url For Payment 
-        Route::post('rental/list-unverified-cash-payment', 'listUnverifiedCashPayment');                        // 24  List of UnVerified Cash Payment    
+        // Route::post('rental/list-unverified-cash-payment', 'listUnverifiedCashPayment');                        // 24  List of UnVerified Cash Payment    
         Route::post('rental/verified-cash-payment', 'verifiedCashPayment');                                     // 25  Verified Cash Payment    
         Route::post('rental/list-cash-verification', 'listCashVerification');                                   // 26  List Cash Verification  
-        Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                                   // 26  List Cash Verification           
+        Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                     // 27  List Details Cash Verification User wise 
+        Route::post('rental/update-cheque-detail', 'updateChequeDeails');                                       // 28  Update cheque details            
     });
 
     /**
