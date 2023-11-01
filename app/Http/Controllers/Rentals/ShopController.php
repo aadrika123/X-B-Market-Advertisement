@@ -216,7 +216,6 @@ class ShopController extends Controller
                 'user_id' => $req->auth['id'],
                 'ulb_id' => $req->auth['ulb_id']
             ];
-
             if (isset($req->status)) {                  // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
                 $metaReqs = array_merge($metaReqs, ['status', $status]);
@@ -230,9 +229,7 @@ class ShopController extends Controller
                 $metaReqs = array_merge($metaReqs, ['photo2_path', $imageName2]);
                 $metaReqs = array_merge($metaReqs, ['photo2_path_absolute', $imageName2Absolute]);
             }
-
             $Shops = $this->_mShops::findOrFail($req->id);
-
             $Shops->update($metaReqs);
             return responseMsgs(true, "Successfully Updated", [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1166,7 +1163,7 @@ class ShopController extends Controller
             $f_data['data'] = $list;
             $f_data['userDetails']['collector_name'] = $list[0]->collector_name;
             $f_data['userDetails']['total_amount'] = $data->sum('amount');
-            $f_data['userDetails']['transactionDate'] = $req->date;
+            $f_data['userDetails']['transactionDate'] = Carbon::createFromFormat('Y-m-d', $req->date)->format('d-m-Y');
             $f_data['userDetails']['no_of_transaction'] = count($list);
             $f_data['userDetails']['cash'] = $cash;
             $f_data['userDetails']['cheque'] = $cheque;
@@ -1185,7 +1182,8 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
-            'chequeNo' => 'required|integer',
+            'chequeNo' => 'nullable|integer',
+            'ddNo' => 'nullable|integer',
             'bankName' => 'required|string',
         ]);
         if ($validator->fails()) {
@@ -1200,7 +1198,7 @@ class ShopController extends Controller
                 $paymentDetails->cheque_no = $req->chequeNo;
             }
             if ($paymentDetails->pmt_mode == 'DD') {
-                $paymentDetails->dd_no = $req->chequeNo;
+                $paymentDetails->dd_no = $req->ddNo;
             }
             $paymentDetails->save();
             return responseMsgs(true, "Details Update Successfully !!!", '', "055028", "1.0", responseTime(), "POST", $req->deviceId);
