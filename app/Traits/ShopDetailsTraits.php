@@ -24,6 +24,7 @@ trait ShopDetailsTraits
             ['displayString' => 'Shop No', 'key' => 'shopeNo', 'value' => $data['shop_no']],
             ['displayString' => 'Present Occupier', 'key' => 'presentOccupier', 'value' => $data['present_occupier']],
             ['displayString' => 'Shop Type', 'key' => 'shopType', 'value' => $data['shop_type']],
+            ['displayString' => 'Shop Status', 'key' => 'shopStatus', 'value' => $data['status']==1?" Active":"De-Activated"],
         ]);
     }
 }

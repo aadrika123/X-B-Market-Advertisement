@@ -130,7 +130,6 @@ class TollsController extends Controller
                 'ulb_id'                  => $request->auth['ulb_id'],
                 'vendor_type'             => $request->vendorType,
             ];
-            // return $marToll;
             $this->_mToll->create($marToll);                            // Store toll Data
             return responseMsgs(true, "Successfully Saved", $marToll, "055102", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
@@ -260,7 +259,6 @@ class TollsController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
-
             $toll = $this->_mToll::find($request->id);
             if (!$toll)
                 throw new Exception("No Data Found !!!");
@@ -280,7 +278,7 @@ class TollsController extends Controller
         try {
             $mtoll = $this->_mToll->getUlbWiseToll($request->auth['ulb_id']);
             if ($request->key)
-                $mtoll = searchTollRentalFilter($mtoll, $request);
+                $mtoll = searchTollRentalFilter($mtoll, $request);                                                      // Get All Toll List
             $mtoll = paginator($mtoll, $request);
             return responseMsgs(true, "", $mtoll, "055106", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
@@ -296,7 +294,7 @@ class TollsController extends Controller
     public function retrieveActive(Request $request)
     {
         try {
-            $mtoll = $this->_mToll->retrieveActive();
+            $mtoll = $this->_mToll->retrieveActive();                                                           // Get All Active Toll List
             return responseMsgs(true, "", $mtoll, "055107", "1.0", responseTime(), "POST", $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055107", "1.0", responseTime(), "POST", $request->deviceId);
@@ -348,7 +346,6 @@ class TollsController extends Controller
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }
@@ -361,9 +358,8 @@ class TollsController extends Controller
                 $toDate = $req->toDate;
             }
             $mMarTollPayment = new MarTollPayment();
-            $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);
+            $list = $mMarTollPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);             // Get Payment List Details 
             $list = paginator($list, $req);
-
             $list['todayCollection'] = $mMarTollPayment->todayTallCollection($req->auth['ulb_id'], date('Y-m-d'))->get()->sum('amount');
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055109", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -381,13 +377,12 @@ class TollsController extends Controller
         $validator = Validator::make($req->all(), [
             'marketId' => 'required|integer'
         ]);
-
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors(), []);
         }
         try {
             $mMarToll = new MarToll();
-            $list = $mMarToll->getToll($req->marketId);
+            $list = $mMarToll->getToll($req->marketId);                                                                // Get Toll List According to Market
             if ($req->key)
                 $list = searchTollRentalFilter($list, $req);
             $list = paginator($list, $req);
@@ -408,7 +403,7 @@ class TollsController extends Controller
         $validator = Validator::make($req->all(), [
             'key' => 'required'
         ]);
-        if ($validator->fails()) {
+        if ($validator->fails()) { 
             return  $validator->errors();
         }
         $mMarToll = new MarToll();
@@ -509,7 +504,7 @@ class TollsController extends Controller
     {
         try {
             $mMarTollPriceList = new MarTollPriceList();
-            $list = $mMarTollPriceList->getTollPriceList();
+            $list = $mMarTollPriceList->getTollPriceList();                  // Get Toll Price List Model 
             return responseMsgs(true, "Price List Fetch Successfully !!!", $list, "055114", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055114", "1.0", responseTime(), "POST", $req->deviceId);
@@ -526,7 +521,6 @@ class TollsController extends Controller
         $validator = Validator::make($req->all(), [
             'tollId' => 'required|integer',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }

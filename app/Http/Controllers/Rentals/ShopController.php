@@ -33,7 +33,7 @@ class ShopController extends Controller
     /**
      * | Created On - 14-06-2023 
      * | Created By - Bikash Kumar
-     * | Status - Closed (27 Sep 2023)
+     * | Status - Closed (02 Nov 2023)
      */
     private $_mShops;
 
@@ -629,7 +629,7 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'chequeId' => 'required|integer',
             'status' => 'required|integer',
-            'date' => 'nullable|date_format:Y-m-d',
+            'date' => 'required|date_format:Y-m-d',
             'remarks' => $req->status == 3 ? 'required|string' : 'nullable|string',
             'amount' => $req->status == 3 ? 'nullable|numeric' : 'nullable',
             'bounceReason' => $req->status == 3 ? 'required|string' : 'nullable|string',
@@ -1173,6 +1173,7 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055027", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
     /**
      * | Update Cheque and DD Details By Accountant
      * | API - 28
@@ -1207,6 +1208,59 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Get Shop Details For Edit
+     * | API - 29
+     * | Function - 29
+     */
+    public function shopDetailsForEdit(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|numeric'
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $shopdetails = $this->_mShops->getShopDetailById($req->id);                                             // Get Shop Details By ID
+            if (collect($shopdetails)->isEmpty())
+                throw new Exception("Shop Does Not Exists");
+            return responseMsgs(true, "", $shopdetails, "055029", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055029", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function generateShopDemand(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
+            'financialYear' => 'required|string',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $mMarShopDemand = new MarShopDemand();
+            $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);
+            $demands['shopDemand'] = $shopDemand;
+            $demands['totalAmount'] = $shopDemand->pluck('amount')->sum();
+            if ($demands['totalAmount'] > 0)
+                $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+            $shopDetails = $this->_mShops->getShopDetailById($req->shopId);                                               // Get Shop Details By Shop Id
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+            $demands['shopNo'] = $shopDetails->shop_no;
+            $demands['allottee'] = $shopDetails->allottee;
+            $demands['market'] = $shopDetails->market_name;
+            $demands['shopType'] = $shopDetails->shop_type;
+            $demands['ulbName'] = $ulbDetails->ulb_name;
+            $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
+            $demands['website'] = $ulbDetails->current_website;
+            $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 28
