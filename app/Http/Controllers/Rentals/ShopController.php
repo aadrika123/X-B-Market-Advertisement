@@ -1123,10 +1123,10 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'date' => 'required|date_format:Y-m-d',
-            'reportType' => 'nullable|integer|in:0,1',        // 0 - Not Verified, 1 - Verified
-            'shopType' => 'nullable|integer|in:1,2,3',        // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
+            'reportType' => 'nullable|integer|in:0,1',          // 0 - Not Verified, 1 - Verified
+            'shopType' => 'nullable|integer|in:1,2,3',          // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
             'market' => 'nullable|integer',
-            'circle' => 'nullable|integer',                    // Circle i.e. Zone
+            'circle' => 'nullable|integer',                     // Circle i.e. Zone
             'userId' => 'required|integer',
         ]);
         if ($validator->fails()) {
@@ -1151,13 +1151,13 @@ class ShopController extends Controller
             $cash = $cheque = $dd = 0;
             foreach ($list as $record) {
                 if ($record->payment_mode == 'CASH') {
-                    $cash += $record->amount;
+                    $cash += $record->amount;                                                       // Add Cash Price
                 }
                 if ($record->payment_mode == 'CHEQUE') {
-                    $cheque += $record->amount;
+                    $cheque += $record->amount;                                                     // Add Cheque Price
                 }
                 if ($record->payment_mode == 'DD') {
-                    $dd += $record->amount;
+                    $dd += $record->amount;                                                         // Add DD Price
                 }
             }
             $f_data['data'] = $list;
@@ -1268,7 +1268,7 @@ class ShopController extends Controller
     }
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
-     * | Function - 28
+     * | Function - 31
      */
     public function calculateShopRate($shopCategoryId, $area, $financialYear)
     {
@@ -1285,7 +1285,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 29
+     * | Function - 32
      */
     public function shopIdGeneration($marketId)
     {
