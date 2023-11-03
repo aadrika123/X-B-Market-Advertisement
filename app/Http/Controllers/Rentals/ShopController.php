@@ -1230,7 +1230,11 @@ class ShopController extends Controller
         }
     }
 
-
+    /**
+     * | Generate Demand Reciept Details Before Payment
+     * | API - 30
+     * | Function - 30
+     */
     public function generateShopDemand(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1241,7 +1245,7 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         try {
             $mMarShopDemand = new MarShopDemand();
-            $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);
+            $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);                            // Demand Details Before Payment 
             $demands['shopDemand'] = $shopDemand;
             $demands['totalAmount'] = $shopDemand->pluck('amount')->sum();
             if ($demands['totalAmount'] > 0)
@@ -1256,6 +1260,7 @@ class ShopController extends Controller
             $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $demands['rentType'] =  "Shop Rent/Building Rent/Ploat Rent";
             return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
