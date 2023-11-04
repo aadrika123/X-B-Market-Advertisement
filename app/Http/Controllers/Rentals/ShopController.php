@@ -1255,7 +1255,7 @@ class ShopController extends Controller
             $mMarShopDemand = new MarShopDemand();
             $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);                            // Demand Details Before Payment 
             $demands['shopDemand'] = $shopDemand;
-            $demands['totalAmount'] = $shopDemand->pluck('amount')->sum();
+            $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
             if ($demands['totalAmount'] > 0)
                 $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
             $shopDetails = $this->_mShops->getShopDetailById($req->shopId);                                               // Get Shop Details By Shop Id
