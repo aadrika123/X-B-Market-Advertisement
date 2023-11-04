@@ -40,6 +40,6 @@ class MarShopDemand extends Model
      */
     public function payBeforeDemand($shopId,$financialYear)
     {
-        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('financial_year','<',$financialYear)->where('payment_status','0')->orderBy('financial_year','ASC')->get();
+        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('financial_year','<=',$financialYear)->where('payment_status','0')->orderBy('financial_year','ASC')->get();
     }
 }

@@ -181,8 +181,8 @@ class Shop extends Model
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
-      ->orderByDesc('mar_shops.id')
-      ->get();
+      ->orderByDesc('mar_shops.id');
+      // ->get();
   }
 
   /**

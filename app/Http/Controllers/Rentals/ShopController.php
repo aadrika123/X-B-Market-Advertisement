@@ -132,7 +132,9 @@ class ShopController extends Controller
                 'shop_category_id' => $req->shopCategoryId,
                 'last_tran_id' => $req->lastTranId,
                 'user_id' => $req->auth['id'],
-                'ulb_id' => $req->auth['ulb_id']
+                'ulb_id' => $req->auth['ulb_id'],
+                'attoted_upto' => $req->attotedUpto,
+                'shop_type' => $req->shopType,
             ];
             // return $metaReqs;
             if ($req->shopCategoryId == 3)
@@ -214,7 +216,9 @@ class ShopController extends Controller
                 'remarks' => $req->remarks,
                 'last_tran_id' => $req->lastTranId,
                 'user_id' => $req->auth['id'],
-                'ulb_id' => $req->auth['ulb_id']
+                'ulb_id' => $req->auth['ulb_id'],
+                'alloted_upto' => $req->allotedUpto,
+                'shop_type' => $req->shopType,
             ];
             if (isset($req->status)) {                  // In Case of Deactivation or Activation
                 $status = $req->status == false ? 0 : 1;
@@ -521,6 +525,9 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            if ($req->key)
+                $list = searchShopRentalFilter($list, $req);
+            $list = paginator($list, $req);
             return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
@@ -723,6 +730,7 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             'shopId' => 'required|numeric',
             'contactNo' => 'required|numeric',
+            'rentType' => 'nullable|string',
             'remarks' => 'nullable|string'
         ]);
         if ($validator->fails())
@@ -731,6 +739,7 @@ class ShopController extends Controller
         try {
             $shopDetails = Shop::find($req->shopId);
             $shopDetails->contact_no = $req->contactNo;
+            $shopDetails->rent_type = $req->rentType;
             $shopDetails->remarks = $req->remarks;
             $shopDetails->save();
             return responseMsgs(true, "Update Shop Successfully !!!", '', "055018", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1031,7 +1040,6 @@ class ShopController extends Controller
      */
     public function listUnverifiedCashPayment(Request $req)
     {
-
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate != NULL ? 'required|date_format:Y-m-d|after_or_equal:fromDate' : 'nullable|date_format:Y-m-d',
@@ -1151,13 +1159,13 @@ class ShopController extends Controller
             $cash = $cheque = $dd = 0;
             foreach ($list as $record) {
                 if ($record->payment_mode == 'CASH') {
-                    $cash += $record->amount;                                                       // Add Cash Price
+                    $cash += $record->amount;                                                       // Add Cash Amount in cash Variable
                 }
                 if ($record->payment_mode == 'CHEQUE') {
-                    $cheque += $record->amount;                                                     // Add Cheque Price
+                    $cheque += $record->amount;                                                     // Add Cheque Amount in cheque Variable
                 }
                 if ($record->payment_mode == 'DD') {
-                    $dd += $record->amount;                                                         // Add DD Price
+                    $dd += $record->amount;                                                         // Add DD Amount in DD Variable
                 }
             }
             $f_data['data'] = $list;

@@ -365,8 +365,8 @@ if (!function_exists('getClientIpAddress')) {
             $key = trim($req->key);
             return $orm->where(function ($query) use ($key) {
                 $query->orwhere('shop_no', 'ILIKE', '%' . $key . '%')
-                    ->orwhere("allottee", 'ILIKE', '%' . $key . '%');
-                // ->orwhere("vendor_name", 'ILIKE', '%' . $key . '%')
+                    ->orwhere("allottee", 'ILIKE', '%' . $key . '%')
+                    ->orwhere("contact_no", 'ILIKE', '%' . $key . '%');
                 // ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
             });
         }
@@ -467,7 +467,7 @@ if (!function_exists('getClientIpAddress')) {
             $year = $y;
             if ($m > 3)
                 $year = $y + 1;
-            return  $session=($year - 1) . '-' . $year;
+            return  $session = ($year - 1) . '-' . $year;
             // return ($data);
         }
     }
