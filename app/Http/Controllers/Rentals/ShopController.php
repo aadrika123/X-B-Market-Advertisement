@@ -1268,7 +1268,7 @@ class ShopController extends Controller
             $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
-            $demands['rentType'] =  "Shop Rent/Building Rent/Plot Rent";
+            $demands['rentType'] =  $shopDetails->rent_type;
             return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
