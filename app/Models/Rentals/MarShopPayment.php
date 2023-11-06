@@ -242,12 +242,17 @@ class MarShopPayment extends Model
       ->where('mar_shop_payments.payment_status','!=',"3");
    }
 
+
+   /**
+    * | Get Collection Report Tc Wise
+    */
    public function getListOfPayment(){
       return  DB::table('mar_shop_payments')
       ->select(
          DB::raw('sum(mar_shop_payments.amount) as total_amount'),
          'mar_shop_payments.user_id as tc_id',
          'user.name as tc_name',
+         'user.mobile as tc_mobile',
          't1.circle_id',
       )
       ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
@@ -255,4 +260,26 @@ class MarShopPayment extends Model
       ->where('mar_shop_payments.pmt_mode','!=',"ONLINE")
       ->where('mar_shop_payments.payment_status','!=',"3");
    }
+
+   
+  /**
+   * | Get Toll Payment List ULB Wise
+   */
+  public function paymentList($ulbId)
+  {
+    return self::select(
+      'mar_shop_payments.*',
+      'ms.shop_no',
+      'mc.circle_name',
+      'mm.market_name',
+      'ms.allottee as vendor_name',
+      'ms.contact_no as mobile',
+      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+    )
+      ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
+      ->join('m_circle as mc', 'mc.id', '=', 'ms.circle_id')
+      ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')
+      ->where('mar_shop_payments.ulb_id', $ulbId);
+    }
+      
 }

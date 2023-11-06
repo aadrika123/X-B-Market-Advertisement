@@ -56,7 +56,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-details-cash-verification', 'listDetailCashVerification');                     // 27  List Details Cash Verification User wise 
         Route::post('rental/update-cheque-detail', 'updateChequeDeails');                                       // 28  Update cheque details       
         Route::post('rental/shop-details-for-edit', 'shopDetailsForEdit');                                      // 29  Shop Details For Edit      
-        Route::post('rental/generate-shop-demand', 'generateShopDemand');                                       // 30  Generate Shop Demand    
+        Route::post('rental/generate-shop-demand', 'generateShopDemand');                                       // 30  Generate Shop Demand   
+        Route::post('rental/get-shop-collection-tc-wise', 'getShopCollectionTcWise');                           // 31  Get Shop Collection TC Wise 
+        Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                           // 31  Get Shop Collection TC Wise   
     });
 
     /**

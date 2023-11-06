@@ -463,14 +463,14 @@ class ShopController extends Controller
             $userDetails = Http::withToken($req->token)
                 ->post($authUrl . 'api/user-managment/v1/crud/multiple-user/list', $ids);
 
-            $userDetails = json_decode($userDetails);
-            $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
-                $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
-                $ref['userId'] = $values;
-                $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
-                return $ref;
-            });
-            $list1['list'] = $list->values();
+            //   return  $userDetails = json_decode($userDetails);
+            //     $list = collect($refValues)->map(function ($values) use ($totalCollection, $userDetails) {
+            //         $ref['totalAmount'] = $totalCollection->where('user_id', $values)->sum('amount');
+            //         $ref['userId'] = $values;
+            //         $ref['tcName'] = collect($userDetails->data)->where('id', $values)->pluck('name')->first();
+            //         return $ref;
+            //     });
+            //     $list1['list'] = $list->values();
             $list1['todayPayments'] = $todayTollPayment + $todayShopPayment;
             return responseMsgs(true, "TC Collection Fetch Successfully !!!", $list1, "055010", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1114,7 +1114,7 @@ class ShopController extends Controller
                 $data = $data->where("t1.circle_id", $req->circle);
             if ($req->userId != NULL)
                 $data = $data->where("user.id", $req->userId);
-            $data = $data->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'market_id', 't1.shop_category_id');
+            $data = $data->groupBy('mar_shop_payments.user_id', 'user.name', 'user.mobile', 'circle_id', 'market_id', 't1.shop_category_id');
             $list = paginator($data, $req);
             return responseMsgs(true, "List of Cash Verification", $list, "055026", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1274,9 +1274,78 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | Get Shop Collection TC Wise
+     * | API - 31
+     * | Function - 31
+     */
+    public function getShopCollectionTcWise(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mMarShopPayment = new MarShopPayment();
+            $list = $mMarShopPayment->getListOfPayment()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
+            $list = $list->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'user.mobile');
+            $list = paginator($list, $req);
+            $list['totalCollection'] = collect($list['data'])->sum('amount');
+            return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Get Shop Collection by TC ID
+     * | API - 32
+     * | Function - 32
+     */
+    public function getShopCollectionByTcId(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if ($req->fromDate == NULL) {
+                $fromDate = date('Y-m-d');
+                $toDate = date('Y-m-d');
+            } else {
+                $fromDate = $req->fromDate;
+                $toDate = $req->toDate;
+            }
+            $mMarShopPayment = new MarShopPayment();
+            $list = $mMarShopPayment->paymentList($req->auth['ulb_id'])->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
+            $list = $list->where('mar_shop_payments.user_id', $req->auth['id']);
+            $list = paginator($list, $req);
+            $list['totalCollection'] = collect($list['data'])->sum('amount');
+            return responseMsgs(true, "Shop Summary Fetch Successfully !!!", $list, "055132", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055132", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
-     * | Function - 31
+     * | Function - 33
      */
     public function calculateShopRate($shopCategoryId, $area, $financialYear)
     {
@@ -1293,7 +1362,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 32
+     * | Function - 33
      */
     public function shopIdGeneration($marketId)
     {
