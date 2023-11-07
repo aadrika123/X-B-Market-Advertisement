@@ -524,7 +524,8 @@ class ShopController extends Controller
         }
         try {
             $mShop = new Shop();
-            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId);
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
@@ -729,9 +730,10 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'shopId' => 'required|numeric',
-            'contactNo' => 'required|numeric',
+            'contactNo' => 'nullable|numeric|digits:10',
             'rentType' => 'nullable|string',
-            'remarks' => 'nullable|string'
+            'remarks' => 'nullable|string',
+            'circleId'=> 'nullable|integer',                                                 // Circle i.e. Zone
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
@@ -740,6 +742,7 @@ class ShopController extends Controller
             $shopDetails = Shop::find($req->shopId);
             $shopDetails->contact_no = $req->contactNo;
             $shopDetails->rent_type = $req->rentType;
+            $shopDetails->circle_id = $req->circleId;
             $shopDetails->remarks = $req->remarks;
             $shopDetails->save();
             return responseMsgs(true, "Update Shop Successfully !!!", '', "055018", "1.0", responseTime(), "POST", $req->deviceId);

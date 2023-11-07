@@ -165,7 +165,7 @@ class Shop extends Model
   /**
    * | Search Shop for Payment
    */
-  public function searchShopForPayment($shopCategoryId, $circleId, $marketId)
+  public function searchShopForPayment($shopCategoryId, $marketId)
   {
     return Shop::select(
       'mar_shops.*',
@@ -180,7 +180,8 @@ class Shop extends Model
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
-      ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
+      // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
+      ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.market_id' => $marketId])
       ->orderByDesc('mar_shops.id');
       // ->get();
   }
