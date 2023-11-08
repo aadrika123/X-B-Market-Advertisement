@@ -81,20 +81,16 @@ class ShopController extends Controller
         try {
             $docUpload = new DocumentUpload;
             $relativePath = Config::get('constants.SHOP_PATH');
-
             if (isset($req->photo1Path)) {
                 $image = $req->file('photo1Path');
                 $refImageName = 'Shop-Photo-1' . '-' . $req->allottee;
                 $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
                 $imageName1Absolute = $relativePath;
             }
-
             if (isset($req->photo2Path)) {
                 $image = $req->file('photo2Path');
                 $refImageName = 'Shop-Photo-2' . '-' . $req->allottee;
                 $imageName2 = $docUpload->upload($refImageName, $image, $relativePath);
-                // $absolutePath = $relativePath;
                 $imageName2Absolute = $relativePath;
             }
             $shopNo = $this->shopIdGeneration($req->marketId);
@@ -104,13 +100,11 @@ class ShopController extends Controller
                 'allottee' => $req->allottee,
                 'shop_no' => $shopNo,
                 'address' => $req->address,
-                // 'rate' => $req->rate,
                 'arrear' => $req->arrear,
                 'allotted_length' => $req->allottedLength,
                 'allotted_breadth' => $req->allottedBreadth,
                 'allotted_height' => $req->allottedHeight,
                 'area' => $req->allottedLength * $req->allottedBreadth,
-                // 'area' => $req->area,
                 'present_length' => $req->presentLength,
                 'present_breadth' => $req->presentBreadth,
                 'present_height' => $req->presentHeight,
@@ -136,15 +130,12 @@ class ShopController extends Controller
                 'attoted_upto' => $req->attotedUpto,
                 'shop_type' => $req->shopType,
             ];
-            // return $metaReqs;
             if ($req->shopCategoryId == 3)
                 $metaReqs = array_merge($metaReqs, ['rate' => $req->rate]);
             else {
                 $metaReqs = array_merge($metaReqs, ['rate' => 50000]);
             }
-
             $this->_mShops->create($metaReqs);
-
             return responseMsgs(true, "Successfully Saved", [$metaReqs], "055002", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
 
@@ -534,7 +525,6 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-
 
     /**
      * | Calculate Shop rate financial Wise (Given Two Financial Year)
@@ -1035,7 +1025,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | List Un-Verified cash Payment
      * | API - 24
@@ -1346,9 +1335,72 @@ class ShopController extends Controller
         }
     }
 
+     /**
+     * | Get Shop Payment Reciept By Demand ID 
+     * | API - 33
+     * | Function - 33
+     */
+    public function shopPaymentRecieptBluetoothPrint(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'tranId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
+                ->join('users', 'users.id', 'mar_shop_payments.user_id')
+                ->where('mar_shop_payments.id', $req->tranId)
+                ->first();
+            if (!$data)
+                throw new Exception("Transaction Id Not Valid !!!");
+            $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);                                               // Get Shop Details By Shop Id
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+            $reciept = array();
+            $reciept['shopNo'] = $shopDetails->shop_no;
+            $reciept['paidFrom'] = $data->paid_from;
+            $reciept['paidTo'] = $data->paid_to;
+            $reciept['amount'] = $data->amount;
+            $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d', $data->payment_date)->format('d-m-Y');
+            $reciept['paymentMode'] = $data->pmt_mode;
+            $reciept['transactionNo'] = $data->transaction_id;
+            $reciept['allottee'] = $shopDetails->allottee;
+            $reciept['market'] = $shopDetails->market_name;
+            $reciept['shopType'] = $shopDetails->shop_type;
+            $reciept['ulbName'] = $ulbDetails->ulb_name;
+            $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
+            $reciept['website'] = $ulbDetails->current_website;
+            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $reciept['recieverName'] =  $data->reciever_name;
+            $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
+            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
+
+            // If Payment By Cheque then Cheque Details is Added Here
+            $reciept['chequeDetails'] = array();
+            if (strtoupper($data->pmt_mode) == 'CHEQUE') {
+                $reciept['chequeDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
+                $reciept['chequeDetails']['cheque_no'] = $data->cheque_no;
+                $reciept['chequeDetails']['bank_name'] = $data->bank_name;
+                $reciept['chequeDetails']['branch_name'] = $data->branch_name;
+            }
+            // If Payment By DD then DD Details is Added Here
+            $reciept['ddDetails'] = array();
+            if (strtoupper($data->pmt_mode) == 'DD') {
+                $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $data->cheque_date)->format('d-m-Y');;
+                $reciept['ddDetails']['dd_no'] = $data->dd_no;
+                $reciept['ddDetails']['bank_name'] = $data->bank_name;
+                $reciept['ddDetails']['branch_name'] = $data->branch_name;
+            }
+            return responseMsgs(true, "Shop Reciept Fetch Successfully !!!", $reciept, "055033", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055033", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
-     * | Function - 33
+     * | Function - 34
      */
     public function calculateShopRate($shopCategoryId, $area, $financialYear)
     {
@@ -1365,7 +1417,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 33
+     * | Function - 35
      */
     public function shopIdGeneration($marketId)
     {

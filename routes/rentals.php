@@ -58,7 +58,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-details-for-edit', 'shopDetailsForEdit');                                      // 29  Shop Details For Edit      
         Route::post('rental/generate-shop-demand', 'generateShopDemand');                                       // 30  Generate Shop Demand   
         Route::post('rental/get-shop-collection-tc-wise', 'getShopCollectionTcWise');                           // 31  Get Shop Collection TC Wise 
-        Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                           // 31  Get Shop Collection TC Wise   
+        Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                          // 31  Get Shop Collection TC Wise   
+        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                 // 32  Get Shop Payment Receipt For Bluetooth Printer
     });
 
     /**
