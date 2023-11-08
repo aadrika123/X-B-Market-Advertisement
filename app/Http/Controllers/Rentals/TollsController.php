@@ -547,7 +547,6 @@ class TollsController extends Controller
             'searchBy' => 'required|in:vendorName,mobileNo',
             'value' => $req->searchBy == "vendorName" ? 'required|string|' : 'required|digits:10',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }
@@ -576,7 +575,6 @@ class TollsController extends Controller
             "dateUpto" => "required|date|date_format:Y-m-d",
             "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
         ]);
-
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), [], "055117", "1.0", responseTime(), "POST", $req->deviceId);
 
@@ -608,7 +606,6 @@ class TollsController extends Controller
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }
@@ -642,7 +639,6 @@ class TollsController extends Controller
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }
@@ -676,7 +672,6 @@ class TollsController extends Controller
             'marketId'=> 'nullable|integer',
             'circleId'=> 'nullable|integer',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }

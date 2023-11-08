@@ -9,6 +9,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
 use App\Models\Rentals\MarShopDemand;
+use App\Models\Rentals\MarShopLog;
 use App\Models\Rentals\MarShopPayment;
 use App\Models\Rentals\MarShopRateList;
 use App\Models\Rentals\MarShopTpye;
@@ -219,13 +220,19 @@ class ShopController extends Controller
                 $metaReqs = array_merge($metaReqs, ['photo1_path', $imageName1]);
                 $metaReqs = array_merge($metaReqs, ['photo1_path_absolute', $imageName1Absolute]);
             }
-
             if (isset($req->photograph2)) {
                 $metaReqs = array_merge($metaReqs, ['photo2_path', $imageName2]);
                 $metaReqs = array_merge($metaReqs, ['photo2_path_absolute', $imageName2Absolute]);
             }
             $Shops = $this->_mShops::findOrFail($req->id);
             $Shops->update($metaReqs);
+            $logData= [
+                'shop_id'=>$req->id,   
+                'user_id'=>$req->auth['id'],
+                'change_data'=>json_encode($req->all()),   
+                'date' => Carbon::now()->format('Y-m-d'),                
+            ];
+            MarShopLog::create($logData);
             return responseMsgs(true, "Successfully Updated", [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055003", "1.0", responseTime(), "POST", $req->deviceId);
@@ -735,6 +742,14 @@ class ShopController extends Controller
             $shopDetails->circle_id = $req->circleId;
             $shopDetails->remarks = $req->remarks;
             $shopDetails->save();
+
+           $logData= [
+                'shop_id'=>$req->shopId,   
+                'user_id'=>$req->auth['id'],
+                'change_data'=>json_encode($req->all()),   
+                'date' => Carbon::now()->format('Y-m-d'),                
+            ];
+            MarShopLog::create($logData);
             return responseMsgs(true, "Update Shop Successfully !!!", '', "055018", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055018", "1.0", responseTime(), "POST", $req->deviceId);
