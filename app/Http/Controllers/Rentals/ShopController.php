@@ -893,10 +893,10 @@ class ShopController extends Controller
             $refReq = new Request([                                                                     // Make Payload For Online Payment
                 // 'userId' => $req->auth['id'] ?? 0,
                 'amount' => $amount,
-                // 'applicationId' => $req->shopId,
                 'id' => $req->shopId,
                 'moduleId' => 5,                                                                         // Market- Advertisement Module Id
                 'auth' => $req->auth,
+                'callbackUrl' => 'https://modernulb.com/advertisement/shop-fullDetail-payment/'.$req->shopId,                                                                      // After Payment Redirect Url
             ]);
 
             DB::beginTransaction();
@@ -1364,7 +1364,7 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
+            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as receiver_name','users.mobile as receiver_mobile')
                 ->join('users', 'users.id', 'mar_shop_payments.user_id')
                 ->where('mar_shop_payments.id', $req->tranId)
                 ->first();
@@ -1387,7 +1387,8 @@ class ShopController extends Controller
             $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
             $reciept['website'] = $ulbDetails->current_website;
             $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
-            $reciept['recieverName'] =  $data->reciever_name;
+            $reciept['receiverName'] =  $data->receiver_name;
+            $reciept['receiverMobile'] =  $data->receiver_mobile;
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
 
