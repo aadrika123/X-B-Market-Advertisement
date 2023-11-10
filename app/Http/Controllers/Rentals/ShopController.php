@@ -976,17 +976,16 @@ class ShopController extends Controller
             $reqRefNo = $req->reqRefNo;
             if ($req->Status == 'SUCCESS' || $req->ResponseCode == 'E000') {
                 $mMarShopPayment = new MarShopPayment();
-                $resRefNo = $req->resRefNo;
                 $paymentReqsData = $mMarShopPayment->findByReqRefNo($reqRefNo);
                 $updReqs = [
-                    'res_ref_no' => $resRefNo,
+                    'res_ref_no' => $req->TrnId,
                     'payment_status' => 1,
                     'payment_details' => json_encode($req->all()),
                 ];
-                $mMarShopPayment->update($updReqs);                 // Payment Table Updation after payment is done.
-                $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
-                    ->where('financial_year', '>=', $paymentReqsData->financial_year)
-                    ->where('financial_year', '<=',  $req->toFYear)
+                $paymentReqsData->update($updReqs);                 // Payment Table Updation after payment is done.
+               $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
+                    ->where('financial_year', '>=', $paymentReqsData->paid_from)
+                    ->where('financial_year', '<=',  $paymentReqsData->paid_to)
                     ->where('amount', '>', 0)
                     ->orderBy('financial_year', 'ASC')
                     ->get();
