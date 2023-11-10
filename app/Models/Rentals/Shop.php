@@ -29,9 +29,9 @@ class Shop extends Model
       ->first();
   }
 
-/**
- * | Get All Shop list
- */
+  /**
+   * | Get All Shop list
+   */
   public function retrieveAll()
   {
     return Shop::select(
@@ -183,7 +183,7 @@ class Shop extends Model
       // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
       ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.market_id' => $marketId])
       ->orderByDesc('mar_shops.id');
-      // ->get();
+    // ->get();
   }
 
   /**
@@ -195,26 +195,22 @@ class Shop extends Model
   }
 
   /**
-   * | Get Shop Details By ID FOr DCB Reports
+   * | Get Shopwise DCB
    */
-  // public function getShopDetailByIdForDCB($id)
-  // {
-  //   return Shop::select(
-  //     'mar_shops.shop_no',
-  //     'mar_shops.allottee',
-  //     'mar_shops.contact_no',
-  //     'mc.circle_name',
-  //     'mm.market_name',
-  //     // 'sc.construction_type',
-  //     // 'mst.shop_type',
-  //     // 'msp.amount as last_payment_amount',
-  //   )
-  //     ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
-  //     ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
-  //     // ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
-  //     // ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
-  //     // ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
-  //     ->where('mar_shops.id', $id)
-  //     ->first();
-  // }
+  public function shopwiseDcb()
+  {
+    return Shop::select(
+      'mar_shops.id',
+      'mar_shops.shop_no',
+      'mar_shops.shop_category_id',
+      'mar_shops.allottee',
+      'mar_shops.contact_no',
+      'mc.circle_name',
+      'mm.market_name',
+      'mst.shop_type',
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join("mar_shop_types as mst", "mst.id", "mar_shops.shop_category_id");
+  }
 }
