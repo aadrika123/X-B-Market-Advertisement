@@ -39,11 +39,13 @@ class ShopController extends Controller
     private $_mShops;
 
     protected $_ulbLogoUrl;
+    protected $_callbackUrl;
 
     public function __construct()
     {
         $this->_mShops = new Shop();                                                                // Object Of Shop Model
-        $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                // Logo Url for Reciept
+        $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                 // Logo Url for Reciept
+        $this->_callbackUrl = Config::get('constants.CALLBACK_URL');                                // Callback Url for Payment
     }
 
     /**
@@ -868,7 +870,7 @@ class ShopController extends Controller
                 'id' => $req->shopId,
                 'moduleId' => 5,                                                                        // Market- Advertisement Module Id
                 'auth' => $req->auth,
-                'callbackUrl' => 'https://modernulb.com/advertisement/shop-fullDetail-payment/' . $req->shopId,                                                                             // After Payment Redirect Url
+                'callbackUrl' =>  $this->_callbackUrl.'advertisement/shop-fullDetail-payment/' . $req->shopId,                                                                             // After Payment Redirect Url
             ]);
             DB::beginTransaction();
             $paymentUrl = Config::get('constants.PAYMENT_URL');                                         // Get Payment Url From .env via constant page
@@ -895,9 +897,9 @@ class ShopController extends Controller
                 'pmt_mode' => $req->paymentMode,
                 'shop_category_id' => $shopDetails->shop_category_id,
                 'referal_url' => $data->data->encryptUrl,
-                'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,    // Transaction id is a combination of time funcation of PHP and ULB ID and Shop ID
+                'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,                       // Transaction id is a combination of time funcation of PHP and ULB ID and Shop ID
             ];
-            MarShopPayment::create($paymentReqs);                                    // Add Transaction Details in Market Shop Payment Table
+            MarShopPayment::create($paymentReqs);                                                       // Add Transaction Details in Market Shop Payment Table
             DB::commit();
             return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055021", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
