@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class TollsController extends Controller
@@ -20,6 +21,8 @@ class TollsController extends Controller
     private $_mToll;
 
     protected $_ulbLogoUrl;
+
+    protected $_callbackUrl;
 
     /**
      * | Created On-14-06-2023 
@@ -30,6 +33,7 @@ class TollsController extends Controller
     {
         $this->_mToll = new MarToll();
         $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                // Logo Url for Reciept
+        $this->_callbackUrl = Config::get('constants.CALLBACK_URL');                                // Callback Url for Payment
     }
 
     /**
@@ -403,7 +407,7 @@ class TollsController extends Controller
         $validator = Validator::make($req->all(), [
             'key' => 'required'
         ]);
-        if ($validator->fails()) { 
+        if ($validator->fails()) {
             return  $validator->errors();
         }
         $mMarToll = new MarToll();
@@ -660,17 +664,18 @@ class TollsController extends Controller
         }
     }
 
-     /**
+    /**
      * | Get Circle Market or Date wise Collection Summery
      * | Function - 21
      * | API - 20
      */
-    public function getCircleMarketDateWiseReports(Request $req){
+    public function getCircleMarketDateWiseReports(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
-            'marketId'=> 'nullable|integer',
-            'circleId'=> 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'circleId' => 'nullable|integer',
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -690,6 +695,91 @@ class TollsController extends Controller
             return responseMsgs(true, "Toll Summary Fetch Successfully !!!", $list, "055119", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055199", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Generate Refferal Url For Online Payment 
+     * | API - 21
+     * | Function - 21
+     */
+    public function generateReferalUrlForTollPayment(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "tollId" => "required|integer",
+            "dateUpto" => "required|date|date_format:Y-m-d",
+            "dateFrom" => "required|date|date_format:Y-m-d|before_or_equal:$req->dateUpto",
+            "paymentMode" => "required|string",
+            "remarks" => "nullable|string"
+        ]);
+
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), [], "055121", "1.0", responseTime(), "POST", $req->deviceId);
+
+        try {
+            // Variable Assignments
+            $todayDate = Carbon::now()->format('Y-m-d');
+            $mTollPayment = new MarTollPayment();
+
+            $toll = $this->_mToll::find($req->tollId);
+            if (collect($toll)->isEmpty())
+                throw new Exception("Toll Not Available for this ID");
+            $dateFrom = Carbon::parse($req->dateFrom);
+            $dateUpto = Carbon::parse($req->dateUpto);
+
+            // Calculation Date difference between two dates
+            $diffInDays = $dateFrom->diffInDays($dateUpto);
+            $noOfDays = $diffInDays + 1;
+            $rate = $toll->rate;
+            $payableAmt = $noOfDays * $rate;
+            if ($payableAmt < 1)
+                throw new Exception("Dues Not Available");
+            DB::beginTransaction();
+            $refReq = new Request([                                                                     // Make Payload For Online Payment
+                'amount' => $payableAmt,
+                'id' => $req->tollId,
+                'moduleId' => 5,                                                                        // Market- Advertisement Module Id
+                'auth' => $req->auth,
+                'callbackUrl' =>  $this->_callbackUrl . 'daily-license-app/toll-details/' . $req->tollId, 
+                'paymentOf' => 2,                                                                        // 1 - for shop, 2 - For Toll
+            ]);
+            $paymentUrl = Config::get('constants.PAYMENT_URL');                                         // Get Payment Url From .env via constant page
+            $refResponse = Http::withHeaders([                                                          // HTTP Call For generate referal Url
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->token)
+                ->post($paymentUrl . 'api/payment/v1/get-referal-url', $refReq);
+            $data = json_decode($refResponse);
+            if ($data->status == false)
+                throw new Exception("Payment Referal Url Not Generate");
+            // Payment records insert in toll payment tables
+            $reqTollPayment = [
+                'toll_id' => $toll->id,
+                'from_date' => $req->dateFrom,
+                'to_date' => $req->dateUpto,
+                'amount' => $payableAmt,
+                'rate' => $rate,
+                'days' => $noOfDays,
+                'payment_date' => $todayDate,
+                'pmt_mode' => $req->paymentMode,
+                'user_id' => $req->auth['id'] ?? 0,
+                'ulb_id' => $toll->ulb_id,
+                'remarks' => $req->remarks,
+                'transaction_no' => "TRAN-" . time() . $toll->id,                                       // Generate Transaction No Using TRAN-time function in php and toll Id
+                'session' => getCurrentSesstion(date('Y-m-d'))
+            ];
+            $createdTran = $mTollPayment->create($reqTollPayment);
+
+            // $toll->update([
+            //     'last_payment_date' => $todayDate,
+            //     'last_amount' => $payableAmt,
+            //     'last_tran_id' => $createdTran->id
+            // ]);
+            DB::commit();
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055121", "1.0", responseTime(), "POST", $req->deviceId);
+         } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 }

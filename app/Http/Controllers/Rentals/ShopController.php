@@ -870,7 +870,8 @@ class ShopController extends Controller
                 'id' => $req->shopId,
                 'moduleId' => 5,                                                                        // Market- Advertisement Module Id
                 'auth' => $req->auth,
-                'callbackUrl' =>  $this->_callbackUrl.'advertisement/shop-fullDetail-payment/' . $req->shopId,                                                                             // After Payment Redirect Url
+                'callbackUrl' =>  $this->_callbackUrl.'advertisement/shop-fullDetail-payment/' . $req->shopId,    
+                'paymentOf' => 1,                                                                        // 1 - for shop, 2 - For Toll                                                                         // After Payment Redirect Url
             ]);
             DB::beginTransaction();
             $paymentUrl = Config::get('constants.PAYMENT_URL');                                         // Get Payment Url From .env via constant page
@@ -1357,7 +1358,8 @@ class ShopController extends Controller
             $reciept['ulbName'] = $ulbDetails->ulb_name;
             $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
             $reciept['website'] = $ulbDetails->current_website;
-            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            // $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $reciept['ulbLogo'] =  $this->_ulbLogoUrl . "Uploads/Icon/akolall.png";
             $reciept['receiverName'] =  $data->receiver_name;
             $reciept['receiverMobile'] =  $data->receiver_mobile;
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
