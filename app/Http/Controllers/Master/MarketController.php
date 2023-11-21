@@ -175,4 +175,4 @@ class MarketController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055306", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-}
+    }

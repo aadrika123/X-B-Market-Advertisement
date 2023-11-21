@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
     Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 22 Get Shop Payment Receipt
     Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 23 Update webhook Data After Payment is Success
+    Route::post('rental/sendSms', 'sendSms');
+
+
 });
 
 // Route::controller(TollsController::class)->group(function () {
@@ -58,8 +61,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-details-for-edit', 'shopDetailsForEdit');                                      // 29  Shop Details For Edit      
         Route::post('rental/generate-shop-demand', 'generateShopDemand');                                       // 30  Generate Shop Demand   
         Route::post('rental/get-shop-collection-tc-wise', 'getShopCollectionTcWise');                           // 31  Get Shop Collection TC Wise 
-        Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                          // 31  Get Shop Collection TC Wise   
-        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                 // 32  Get Shop Payment Receipt For Bluetooth Printer
+        Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                          // 32  Get Shop Collection TC Wise   
+        Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                // 33  Get Shop Payment Receipt For Bluetooth Printer
+        Route::post('rental/search-shop-by-mobile-no', 'searchShopByMobileNo');                                 // 34  Search Shop By Mobile No
     });
 
     /**
@@ -121,5 +125,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('v1/crud/market/list-all-market', 'retireveAll');                                           // 04  List All Market
         Route::post('v1/crud/market/delete', 'delete');                                                         // 05  Delete Market
         Route::post('rental/list-construction', 'listConstruction');                                            // 06  List Construction
+
     });
 });

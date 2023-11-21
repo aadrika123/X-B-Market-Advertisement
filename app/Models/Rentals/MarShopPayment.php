@@ -101,7 +101,11 @@ class MarShopPayment extends Model
          $updateRow->tran_id = $createdPayment->id;
          $updateRow->save();
       }
-      return $createdPayment;
+      $shop['createdPayment']=$createdPayment;
+      $shop['shopDetails']=$mshop;
+      $shop['amount']=$amount;
+      $shop['lastTranId']=$createdPayment->id;
+      return $shop;
    }
 
    /**

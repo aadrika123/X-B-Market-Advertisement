@@ -119,7 +119,7 @@ class ShopPaymentBll
         DB::beginTransaction();
         $createdPayment = $this->_mShopPayments::create($paymentReqs);                          // Insert Payment Records in Payment Table
         $mshop = Shop::find($req->shopId);
-        $mshop->last_tran_id = $createdPayment->id;
+        $tranId=$mshop->last_tran_id = $createdPayment->id;
         $mshop->save();
 
         $UpdateDetails = MarShopDemand::where('shop_id', $req->shopId)                         // Get All demand of Selected financial Year After Payment Success
@@ -139,7 +139,13 @@ class ShopPaymentBll
             $updateRow->save();
         }
         $mShop = Shop::find($req->shopId);
-        return $amount;
+        $ret['shopDetails']=$mShop;
+        $ret['amount']=$amount;
+        $ret['paymentDate']=Carbon::now()->format('d-m-Y');
+        $ret['allottee']=$mShop->allottee;
+        $ret['mobile']=$mShop->contact_no;
+        $ret['tranId']=$tranId;
+        return $ret;
     }
 
     /**

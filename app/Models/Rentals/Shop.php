@@ -213,4 +213,22 @@ class Shop extends Model
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join("mar_shop_types as mst", "mst.id", "mar_shops.shop_category_id");
   }
+ /**
+   * | Get ShopList By Mobile No
+   */
+  public function searchShopByContactNo($mobileNo){
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'mst.shop_type',
+      'msp.amount as last_payment_amount'
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      ->where('mar_shops.contact_no', $mobileNo)
+      ->where('mar_shops.status', '1');
+  }
 }

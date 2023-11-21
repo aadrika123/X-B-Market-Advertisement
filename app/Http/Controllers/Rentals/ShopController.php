@@ -65,9 +65,27 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         // Business Logics
         try {
-            $amount = $shopPmtBll->shopPayment($req);
+            $shop = $shopPmtBll->shopPayment($req);
             DB::commit();
-            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $amount], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            $mobile = $shop['mobile'];
+            // $mobile="8271522513";
+            if ($mobile != NULL && strlen($mobile) == 10) {
+                (Whatsapp_Send(
+                    $mobile,
+                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                    [
+                        "content_type" => "text",
+                        [
+                            $shop['allottee'],
+                            $shop['amount'],
+                            $shop['paymentDate'],
+                            "Shop Payment",
+                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
+                        ]
+                    ]
+                ));
+            }
+            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $shop['amount']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);
@@ -580,7 +598,25 @@ class ShopController extends Controller
             $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
             $mMarShopPayment = new MarShopPayment();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
-            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res], "055014", "1.0", responseTime(), "POST", $req->deviceId);
+            $mobile = $res['shopDetails']['mobile'];
+            // $mobile = "8271522513";
+            if ($mobile != NULL && strlen($mobile) == 10) {
+                (Whatsapp_Send(
+                    $mobile,
+                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                    [
+                        "content_type" => "text",
+                        [
+                            $res['shopDetails']['allottee'],
+                            $res['amount'],
+                            Carbon::now()->format('d-m-Y'),
+                            "Shop Payment",
+                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $res['lastTranId']
+                        ]
+                    ]
+                ));
+            }
+            return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -634,7 +670,7 @@ class ShopController extends Controller
         }
         try {
             $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                                    // Get Entry Cheque Details                        
-            $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
+            // $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
             $mMarShopPayment->bounce_amount = $req->amount;
             $mMarShopPayment->bounce_reason = $req->bounceReason;
@@ -657,11 +693,31 @@ class ShopController extends Controller
                     $updateRow->save();
                 }
             }
-            if ($req->status == 1)
+            if ($req->status == 1) {
                 $msg = $shopPayment->pmt_mode . " Cleared Successfully !!!";
-            else
+                $shop = Shop::find($shopPayment->shop_id);
+                $mobile = $shop['contact_no'];
+                // $mobile = "8271522513";
+                if ($mobile != NULL && strlen($mobile) == 10) {
+                    (Whatsapp_Send(
+                        $mobile,
+                        "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                        [
+                            "content_type" => "text",
+                            [
+                                $shop['allottee'],
+                                $shopPayment->amount,
+                                Carbon::now()->format('d-m-Y'),
+                                "Shop Payment",
+                                "https://modernulb.com/advertisement/rental-payment-receipt/" . $shopPayment->id
+                            ]
+                        ]
+                    ));
+                }
+            } else {
                 $msg = $shopPayment->pmt_mode . " Has Been Bounced !!!";
-            return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
+                return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
+            }
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -870,7 +926,7 @@ class ShopController extends Controller
                 'id' => $req->shopId,
                 'moduleId' => 5,                                                                        // Market- Advertisement Module Id
                 'auth' => $req->auth,
-                'callbackUrl' =>  $this->_callbackUrl.'advertisement/shop-fullDetail-payment/' . $req->shopId,    
+                'callbackUrl' =>  $this->_callbackUrl . 'advertisement/shop-fullDetail-payment/' . $req->shopId,
                 'paymentOf' => 1,                                                                        // 1 - for shop, 2 - For Toll                                                                         // After Payment Redirect Url
             ]);
             DB::beginTransaction();
@@ -986,7 +1042,7 @@ class ShopController extends Controller
                     'payment_details' => json_encode($req->all()),
                 ];
                 $paymentReqsData->update($updReqs);                 // Payment Table Updation after payment is done.
-               $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
+                $UpdateDetails = MarShopDemand::where('shop_id',  $paymentReqsData->shop_id)
                     ->where('financial_year', '>=', $paymentReqsData->paid_from)
                     ->where('financial_year', '<=',  $paymentReqsData->paid_to)
                     ->where('amount', '>', 0)
@@ -999,12 +1055,31 @@ class ShopController extends Controller
                     $updateRow->tran_id = $paymentReqsData->id;
                     $updateRow->save();
                 }
-                $mshop = Shop::find($paymentReqsData->shop_id);
-                $mshop->last_tran_id = $paymentReqsData->id;
+                $shop = $mshop = Shop::find($paymentReqsData->shop_id);
+                $lastTranId = $mshop->last_tran_id = $paymentReqsData->id;
                 $mshop->save();
             }
             // ❗❗ Pending for Module Specific Table Updation ❗❗
             DB::commit();
+            $amount = MarShopPayment::select('amount')->where('id', $lastTranId)->first()->amount;
+            $mobile = $shop['mobile'];
+            // $mobile = "8271522513";
+            if ($mobile != NULL && strlen($mobile) == 10) {
+                (Whatsapp_Send(
+                    $mobile,
+                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                    [
+                        "content_type" => "text",
+                        [
+                            $shop['allottee'],
+                            $amount,
+                            Carbon::now()->format('d-m-Y'),
+                            "Shop Payment",
+                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $lastTranId
+                        ]
+                    ]
+                ));
+            }
             return true;
         } catch (Exception $e) {
             DB::rollBack();
@@ -1386,6 +1461,28 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055033", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+    /**
+     * | Get Shop List By Contact No 
+     * | API - 33
+     * | Function - 33
+     */
+    public function searchShopByMobileNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'mobileNo' => 'required|digits:10',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mshop = new Shop();
+            $listShop = $mshop->searchShopByContactNo($req->mobileNo)->get();
+            // $list = paginator($listShop, $req);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
@@ -1415,5 +1512,52 @@ class ShopController extends Controller
         $counter = $idDetails->shop_counter + 1;
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
+    }
+
+
+    /**
+     * | this is for test whatsappp mesaging
+     */
+    public function sendSms(Request $request)
+    {
+        try {
+            // return $whatsapp2 = (Whatsapp_Send(
+            //     6206998554,
+            //     "test_file_v3",
+            //     [
+            //         "content_type" => "pdf",
+            //         [
+            //             [
+            //                 "link" => "https://egov.modernulb.com/Uploads/Icon/Water%20_%20Akola%20Municipal%20Corportation%202.pdf",
+            //                 "filename" => "TEST_PDF" . ".pdf"
+            //             ],
+            //         ],
+            //         "text" => [
+            //             "17",
+            //             "CON-100345",
+            //             "https://modernulb.com/water/waterViewDemand/28"
+            //         ]
+            //     ]
+            // ));
+
+            $whatsapp2 = (Whatsapp_Send(
+                8271522513,
+                "test_file_v4",
+                [
+                    "content_type" => "text",
+                    [
+                        "bikash jee",
+                        "2005-09-01",
+                        "2005-09-01",
+                        "30",
+                        "5 parameter"
+                    ]
+                ]
+            ));
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }
