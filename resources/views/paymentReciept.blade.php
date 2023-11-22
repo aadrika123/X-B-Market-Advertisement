@@ -60,17 +60,17 @@
     </head>
     
     <body>
-        <table border="0" cellpadding="0" cellspacing="0" style="width:850px; margin:0 auto; height:900px; border:1px solid;">
+        <table border="1" cellpadding="0" cellspacing="0" style="width:850px; margin:0 auto; height:900px; border:1px dashed;">
             <tbody>
                 <tr>
                     <td style="vertical-align:top">
-                    <table border="0" cellpadding="5" cellspacing="0" style="width:850px">
+                    <table border="1" cellpadding="5" cellspacing="0" style="width:850px">
                         <tbody>
                             <tr>
                                 <td style="background-color:#55a003;" align="center">
-                                    <h2 class="text-white m-5 text-center">cvb xvx</h2>
-                                    <p class="text-white m-5 text-center">Krishna Arcade, 4th Floor, Booty More,<br>Ranchi, Jharkhand. Pin - 834009</p>
-                                    <p class="text-white m-5 text-center">GSTIN : 20AAJCC0895R1Z7</p>
+                                    <h2 class="text-white m-5 text-center">Akola Municipal Corporation</h2>
+                                    <p class="text-white m-5 text-center">Akola Municipal Corporation Building, MG Road, Akola City, Akola 444002</p>
+                                    <p class="text-white m-5 text-center">Municipal Rental Receipt</p>
                                  
                                 </td>
                             </tr>

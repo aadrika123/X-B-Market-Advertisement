@@ -69,45 +69,45 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         // Business Logics
         try {
-            // $shop = $shopPmtBll->shopPayment($req);
-            // DB::commit();
-            // $mobile = $shop['mobile'];
-            $mobile="8271522513";
+            $shop = $shopPmtBll->shopPayment($req);
+            DB::commit();
+            $mobile = $shop['mobile'];
+            // $mobile="8271522513";
             if ($mobile != NULL && strlen($mobile) == 10) {
-                // (Whatsapp_Send(
-                //     $mobile,
-                //     "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                //     [
-                //         "content_type" => "text",
-                //         [
-                //             $shop['allottee'],
-                //             $shop['amount'],
-                //             $shop['paymentDate'],
-                //             "Shop Payment",
-                //             "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
-                //         ]
-                //     ]
-                // ));
-                $url="https://modernulb.com/advertisement/rental-payment-receipt/266";
-                // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-                // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
-                $path= "Uploads/shops/payment/";
-                // $fileUrl=$this->downloadAndSavePDF($path,$url);
-                $fileUrl=$this->saveUrlAsPdf($url,$path);
                 (Whatsapp_Send(
                     $mobile,
-                    "file_test",
+                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
                     [
-                        "content_type" => "pdfOnly",
+                        "content_type" => "text",
                         [
-                            [
-                                "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
-                                "filename" =>$fileUrl,
-                            ]
-                        
+                            $shop['allottee'],
+                            $shop['amount'],
+                            $shop['paymentDate'],
+                            "Shop Payment",
+                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
                         ]
-                    ],
+                    ]
                 ));
+                // $url="https://modernulb.com/advertisement/rental-payment-receipt/266";
+                // // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+                // // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
+                // $path= "Uploads/shops/payment/";
+                // // $fileUrl=$this->downloadAndSavePDF($path,$url);
+                // $fileUrl=$this->saveUrlAsPdf($url,$path);
+                // (Whatsapp_Send(
+                //     $mobile,
+                //     "file_test",
+                //     [
+                //         "content_type" => "pdfOnly",
+                //         [
+                //             [
+                //                 "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
+                //                 "filename" =>$fileUrl,
+                //             ]
+                        
+                //         ]
+                //     ],
+                // ));
             }
             return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $shop['amount']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -1584,7 +1584,8 @@ class ShopController extends Controller
             $url = "Uploads/shop/payment/" . $filename;
             $customPaper = array(0, 0, 720, 1440);
             $pdf = PDF::loadView('paymentReciept',  ['returnValues' => $data])->setPaper($customPaper, 'portrait');
-            $file = $pdf->download($filename . '.' . 'pdf');
+           return view('paymentReciept');
+             $file = $pdf->download($filename . '.' . 'pdf');
             $pdf = Storage::put('public' . '/' . $url, $file);
             (Whatsapp_Send(
                 8271522513,
