@@ -90,7 +90,7 @@ class ShopController extends Controller
                 $url="https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId'];
                 // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
                 // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
-                $path= "Uploads/shop/payment/";
+                $path= "Uploads/shops/payment/";
                 $fileUrl=$this->downloadAndSavePDF($path,$url);
                 (Whatsapp_Send(
                     $mobile,
