@@ -25,10 +25,10 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Barryvdh\DomPDF\Facade\PDF;
 
 use App\Traits\ShopDetailsTraits;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\PDF;
 use GuzzleHttp\Client;
 use Spatie\Browsershot\Browsershot;
 
