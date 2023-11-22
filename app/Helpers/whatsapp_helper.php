@@ -57,8 +57,22 @@ if (!function_exists('WHATSAPPJHGOVT')) {
                                 ]
                             ]
                             )
-                            :
-                            ""
+                            : (($message['content_type'] ?? "") == "pdfOnly" ?
+                                ( # Document with text
+                                    [
+                                        [
+                                            'type' => 'header',
+                                            'parameters' => [
+                                                [
+                                                    'type' => 'document',
+                                                    'document' => $message[0][0]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                )
+                                : ""
+                            )
                         )
 
                     )

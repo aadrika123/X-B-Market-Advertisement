@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 use App\Traits\ShopDetailsTraits;
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\PDF;
+use GuzzleHttp\Client;
 
 class ShopController extends Controller
 {
@@ -83,6 +86,25 @@ class ShopController extends Controller
                             "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
                         ]
                     ]
+                ));
+                $url="https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId'];
+                // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+                // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
+                $path= "Uploads/shop/payment/";
+                $fileUrl=$this->downloadAndSavePDF($path,$url);
+                (Whatsapp_Send(
+                    $mobile,
+                    "file_test",
+                    [
+                        "content_type" => "pdfOnly",
+                        [
+                            [
+                                "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
+                                "filename" =>$fileUrl,
+                            ]
+                        
+                        ]
+                    ],
                 ));
             }
             return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $shop['amount']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1540,24 +1562,90 @@ class ShopController extends Controller
             //     ]
             // ));
 
-            $whatsapp2 = (Whatsapp_Send(
+            // $whatsapp2 = (Whatsapp_Send(
+            //     8271522513,
+            //     "test_file_v4",
+            //     [
+            //         "content_type" => "text",
+            //         [
+            //             "bikash jee",
+            //             "2005-09-01",
+            //             "2005-09-01",
+            //             "30",
+            //             "5 parameter"
+            //         ]
+            //     ]
+            // ));
+            $data["data"] = ["afsdf", "sdlfjksld", "dfksdfjk"];
+            # Watsapp pdf sending
+            $filename = "1-2-" . time() . '.' . 'pdf';
+            $url = "Uploads/shop/payment/" . $filename;
+            $customPaper = array(0, 0, 720, 1440);
+            $pdf = PDF::loadView('payment-receipt',  ['returnValues' => $data])->setPaper($customPaper, 'portrait');
+            $file = $pdf->download($filename . '.' . 'pdf');
+            $pdf = Storage::put('public' . '/' . $url, $file);
+            (Whatsapp_Send(
                 8271522513,
-                "test_file_v4",
+                "file_test",
                 [
-                    "content_type" => "text",
+                    "content_type" => "pdfOnly",
                     [
-                        "bikash jee",
-                        "2005-09-01",
-                        "2005-09-01",
-                        "30",
-                        "5 parameter"
+                        [
+                            // "link" => config('app.url') . "/getImageLink?path=" . $url,
+                            "link" => "https://egov.modernulb.com/Uploads/Icon/Water%20_%20Akola%20Municipal%20Corportation%202.pdf",
+                            "filename" => $filename . ".pdf"
+                        ]
+
                     ]
-                ]
+                ],
             ));
+
 
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    // public function downloadAndSavePDF($url, $storagePath)
+    // {
+    //     // Get the file content from the URL
+    //     $fileContent = file_get_contents($url);
+
+    //     // Check if the file content was retrieved successfully
+    //     if ($fileContent !== false) {
+    //         // Store the file content in the storage path
+    //         Storage::put('public' . '/' .$storagePath, $fileContent);
+
+    //         // You can also use the Storage facade to generate a URL for the stored file
+    //         $fileUrl = Storage::url($storagePath);
+
+    //         // Optionally, you can return the URL or perform any other actions
+    //         return $fileUrl;
+    //     } else {
+    //         // Handle the case where the file content couldn't be retrieved
+    //         return false;
+    //     }
+    // }
+    public function downloadAndSavePdf($path,$url)
+    {
+        // Get the URL from the request or replace it with your desired URL
+        // $url =  "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+
+        // Use Guzzle to make the HTTP request
+        $client = new Client();
+        $response = $client->get($url);
+
+        // Get the content of the response
+        $pdfContent = $response->getBody()->getContents();
+
+        // Generate a unique filename for the saved PDF
+        $filename = 'downloaded_pdf_' . time() . '.pdf';
+
+        // Save the PDF to the storage disk (default is 'public')
+        Storage::put('public' . '/' .$path.'/'.$filename, $pdfContent);
+
+        // Optionally, you can return a response or redirect
+        return  $filename;
     }
 }
