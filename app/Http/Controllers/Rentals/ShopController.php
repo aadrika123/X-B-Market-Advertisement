@@ -30,6 +30,7 @@ use App\Traits\ShopDetailsTraits;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\PDF;
 use GuzzleHttp\Client;
+use Spatie\Browsershot\Browsershot;
 
 class ShopController extends Controller
 {
@@ -68,30 +69,31 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         // Business Logics
         try {
-            $shop = $shopPmtBll->shopPayment($req);
-            DB::commit();
-            $mobile = $shop['mobile'];
-            // $mobile="8271522513";
+            // $shop = $shopPmtBll->shopPayment($req);
+            // DB::commit();
+            // $mobile = $shop['mobile'];
+            $mobile="8271522513";
             if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $shop['allottee'],
-                            $shop['amount'],
-                            $shop['paymentDate'],
-                            "Shop Payment",
-                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
-                        ]
-                    ]
-                ));
-                $url="https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId'];
+                // (Whatsapp_Send(
+                //     $mobile,
+                //     "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                //     [
+                //         "content_type" => "text",
+                //         [
+                //             $shop['allottee'],
+                //             $shop['amount'],
+                //             $shop['paymentDate'],
+                //             "Shop Payment",
+                //             "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
+                //         ]
+                //     ]
+                // ));
+                $url="https://modernulb.com/advertisement/rental-payment-receipt/266";
                 // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
                 // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
                 $path= "Uploads/shops/payment/";
-                $fileUrl=$this->downloadAndSavePDF($path,$url);
+                // $fileUrl=$this->downloadAndSavePDF($path,$url);
+                $fileUrl=$this->saveUrlAsPdf($url,$path);
                 (Whatsapp_Send(
                     $mobile,
                     "file_test",
@@ -1578,10 +1580,10 @@ class ShopController extends Controller
             // ));
             $data["data"] = ["afsdf", "sdlfjksld", "dfksdfjk"];
             # Watsapp pdf sending
-            $filename = "1-2-" . time() . '.' . 'pdf';
+            $filename = "download-invoice-" . time() . '.' . 'pdf';
             $url = "Uploads/shop/payment/" . $filename;
             $customPaper = array(0, 0, 720, 1440);
-            $pdf = PDF::loadView('payment-receipt',  ['returnValues' => $data])->setPaper($customPaper, 'portrait');
+            $pdf = PDF::loadView('paymentReciept',  ['returnValues' => $data])->setPaper($customPaper, 'portrait');
             $file = $pdf->download($filename . '.' . 'pdf');
             $pdf = Storage::put('public' . '/' . $url, $file);
             (Whatsapp_Send(
@@ -1592,7 +1594,7 @@ class ShopController extends Controller
                     [
                         [
                             // "link" => config('app.url') . "/getImageLink?path=" . $url,
-                            "link" => "https://egov.modernulb.com/Uploads/Icon/Water%20_%20Akola%20Municipal%20Corportation%202.pdf",
+                            "link" => "https://market.modernulb.com/".$url,
                             "filename" => $filename . ".pdf"
                         ]
 
@@ -1629,23 +1631,51 @@ class ShopController extends Controller
     // }
     public function downloadAndSavePdf($path,$url)
     {
-        // Get the URL from the request or replace it with your desired URL
-        // $url =  "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
-        // Use Guzzle to make the HTTP request
-        $client = new Client();
-        $response = $client->get($url);
+        // // Use Guzzle to make the HTTP request
+        // $client = new Client();
+        // $response = $client->get($url);
 
-        // Get the content of the response
-        $pdfContent = $response->getBody()->getContents();
+        // // Get the content of the response
+        // $pdfContent = $response->getBody()->getContents();
+
+        // // Generate a unique filename for the saved PDF
+        // $filename = 'downloaded_pdf_' . time() . '.pdf';
+
+        // // Save the PDF to the storage disk (default is 'public')
+        // Storage::put('public' . '/' .$path.'/'.$filename, $pdfContent);
+
+        // // Optionally, you can return a response or redirect
+        // return  $filename;
+
+
+        // Use laravel-dompdf to generate the PDF
+        $pdf = PDF::loadFile($url);
 
         // Generate a unique filename for the saved PDF
-        $filename = 'downloaded_pdf_' . time() . '.pdf';
+        $filename = 'downloaded_page_' . time() . '.pdf';
 
         // Save the PDF to the storage disk (default is 'public')
-        Storage::put('public' . '/' .$path.'/'.$filename, $pdfContent);
+        Storage::put('public' . '/' .$path.'/'.$filename, $pdf->output());
 
         // Optionally, you can return a response or redirect
-        return  $filename;
+        return $filename;
+   
+    }
+
+    public function saveUrlAsPdf($url,$path)
+    {
+        // Get the URL from the request or replace it with your desired URL
+        // $url = $request->input('url', 'https://example.com');
+
+        // Generate a unique filename for the saved PDF
+        $filename = 'downloaded_page_' . time() . '.pdf';
+
+        // Use Browsershot to capture the page and save it as a PDF
+        Browsershot::url($url)
+            ->save(storage_path('public' . '/' .$path.'/'. $filename));
+
+        // Optionally, you can return a response or redirect
+        return $filename;
     }
 }
