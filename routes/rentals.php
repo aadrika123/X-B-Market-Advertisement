@@ -90,7 +90,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/tc-wise-toll-collection', 'getTCWiseTollCollectionSummary');                        // 18 ( TC Wise Toll COllection Summary )
         Route::post('rental/get-all-tc-wise-collection-reports', 'getAllTcWiseCollectionReports');              // 19 ( Collection All TC wise Collection Reports )
         Route::post('rental/get-circle-market-date-wise-report', 'getCircleMarketDateWiseReports');             // 20 ( Get Date,Market,circle,Date Wise Reports )
-        Route::post('rental/generate-referal-url-for-toll-payment', 'generateReferalUrlForTollPayment');                 // 21 ( Generate Referal Url For Payment ) 
+        Route::post('rental/generate-referal-url-for-toll-payment', 'generateReferalUrlForTollPayment');        // 21 ( Generate Referal Url For Payment ) 
     });
 
 

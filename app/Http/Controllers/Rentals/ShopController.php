@@ -622,7 +622,7 @@ class ShopController extends Controller
             $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
             $mMarShopPayment = new MarShopPayment();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
-            $mobile = $res['shopDetails']['mobile'];
+            $mobile = $res['shopDetails']->contact_no;
             // $mobile = "8271522513";
             if ($mobile != NULL && strlen($mobile) == 10) {
                 (Whatsapp_Send(
@@ -631,7 +631,7 @@ class ShopController extends Controller
                     [
                         "content_type" => "text",
                         [
-                            $res['shopDetails']['allottee'],
+                            $res['shopDetails']->allottee,
                             $res['amount'],
                             Carbon::now()->format('d-m-Y'),
                             "Shop Payment",
@@ -738,6 +738,7 @@ class ShopController extends Controller
                         ]
                     ));
                 }
+                return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
             } else {
                 $msg = $shopPayment->pmt_mode . " Has Been Bounced !!!";
                 return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
@@ -950,7 +951,7 @@ class ShopController extends Controller
                 'id' => $req->shopId,
                 'moduleId' => 5,                                                                        // Market- Advertisement Module Id
                 'auth' => $req->auth,
-                'callbackUrl' =>  $this->_callbackUrl . 'advertisement/shop-fullDetail-payment/' . $req->shopId,
+                'callbackUrl' => $this->_callbackUrl . 'advertisement/shop-fullDetail-payment/' . $req->shopId,
                 'paymentOf' => 1,                                                                        // 1 - for shop, 2 - For Toll                                                                         // After Payment Redirect Url
             ]);
             DB::beginTransaction();
