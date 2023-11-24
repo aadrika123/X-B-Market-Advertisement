@@ -174,7 +174,7 @@ class Shop extends Model
       'sc.construction_type',
       'mst.shop_type',
       'msp.amount as last_payment_amount',
-      DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
+      // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')

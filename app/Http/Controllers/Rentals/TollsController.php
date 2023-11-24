@@ -95,6 +95,24 @@ class TollsController extends Controller
                 'last_amount' => $payableAmt,
                 'last_tran_id' => $createdTran->id
             ]);
+            // $mobile = $toll['mobile'];
+            // $mobile = "8271522513";
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $toll['vendor_name'],
+            //                 $payableAmt,
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Toll Payment",
+            //                 "https://modernulb.com/advertisement/rental-payment-receipt/" . $shopPayment->id
+            //             ]
+            //         ]
+            //     ));
+            // }
             return responseMsgs(true, "Payment Successfully Done", ['paymentAmount' => $payableAmt, 'tollId' => $toll->id], "055101", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055101", "1.0", responseTime(), "POST", $req->deviceId);

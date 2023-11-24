@@ -555,10 +555,12 @@ class ShopController extends Controller
         try {
             $mShop = new Shop();
             // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            DB::enableQueryLog();
             $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId);                                       // Get List Shop FOr Payment
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
+            // return [dd(DB::getQueryLog())];
             return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055012", "1.0", responseTime(), "POST", $req->deviceId);
