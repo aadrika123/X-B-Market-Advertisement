@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
     Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 22 Get Shop Payment Receipt
     Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 23 Update webhook Data After Payment is Success
-    Route::get('rental/get-shop-demand-reciept/{shopId}/{fyYear}', 'getShopDemandReciept');                                    // 35 Get Shop Demand Reciept
+    Route::get('rental/get-shop-demand-reciept/{shopId}/{fyYear}', 'getShopDemandReciept');                     // 35 Get Shop Demand Reciept
     Route::post('rental/sendSms', 'sendSms');
 
 
@@ -65,6 +65,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                          // 32  Get Shop Collection TC Wise   
         Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                // 33  Get Shop Payment Receipt For Bluetooth Printer
         Route::post('rental/search-shop-by-mobile-no', 'searchShopByMobileNo');                                 // 34  Search Shop By Mobile No
+        Route::post('rental/shop-report-summary', 'shopReportSummary');                                         // 36  Shop Report Summary
     });
 
     /**

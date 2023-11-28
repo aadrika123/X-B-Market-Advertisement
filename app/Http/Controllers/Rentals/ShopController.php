@@ -104,7 +104,7 @@ class ShopController extends Controller
                 //                 "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
                 //                 "filename" =>$fileUrl,
                 //             ]
-                        
+
                 //         ]
                 //     ],
                 // ));
@@ -803,6 +803,7 @@ class ShopController extends Controller
             'contactNo' => 'nullable|numeric|digits:10',
             'rentType' => 'nullable|string',
             'remarks' => 'nullable|string',
+            'amcShopNo' => 'nullable|string',
             'circleId' => 'nullable|integer',                                                 // Circle i.e. Zone
         ]);
         if ($validator->fails())
@@ -813,6 +814,7 @@ class ShopController extends Controller
             $shopDetails->contact_no = $req->contactNo;
             $shopDetails->rent_type = $req->rentType;
             $shopDetails->circle_id = $req->circleId;
+            $shopDetails->amc_shop_no = $req->amcShopNo;
             $shopDetails->remarks = $req->remarks;
             $shopDetails->save();
             // Generate Edit Logs
@@ -1010,6 +1012,7 @@ class ShopController extends Controller
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
             $reciept['shopNo'] = $shopDetails->shop_no;
+            $reciept['amcShopNo'] = $shopDetails->amc_shop_no;
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
             $reciept['amount'] = $data->amount;
@@ -1342,6 +1345,7 @@ class ShopController extends Controller
             $shopDetails = $this->_mShops->getShopDetailById($req->shopId);                                               // Get Shop Details By Shop Id
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $demands['shopNo'] = $shopDetails->shop_no;
+            $demands['amcShopNo'] = $shopDetails->amc_shop_no;
             $demands['allottee'] = $shopDetails->allottee;
             $demands['market'] = $shopDetails->market_name;
             $demands['shopType'] = $shopDetails->shop_type;
@@ -1448,6 +1452,7 @@ class ShopController extends Controller
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
             $reciept['shopNo'] = $shopDetails->shop_no;
+            $reciept['amcShopNo'] = $shopDetails->amc_shop_no;
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
             $reciept['amount'] = $data->amount;
@@ -1513,10 +1518,11 @@ class ShopController extends Controller
 
     /**
      * | Get Shop Demand Reciept  
-     * | API - 34
-     * | Function - 34
+     * | API - 35
+     * | Function - 35
      */
-    public function getShopDemandReciept($shopId,$fYear, Request $req){
+    public function getShopDemandReciept($shopId, $fYear, Request $req)
+    {
         try {
             $mMarShopDemand = new MarShopDemand();
             $shopDemand = $mMarShopDemand->payBeforeDemand($shopId, $fYear);                            // Demand Details Before Payment 
@@ -1527,6 +1533,7 @@ class ShopController extends Controller
             $shopDetails = $this->_mShops->getShopDetailById($shopId);                                               // Get Shop Details By Shop Id
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $demands['shopNo'] = $shopDetails->shop_no;
+            $demands['amcShopNo'] = $shopDetails->amc_shop_no;
             $demands['allottee'] = $shopDetails->allottee;
             $demands['market'] = $shopDetails->market_name;
             $demands['shopType'] = $shopDetails->shop_type;
@@ -1535,11 +1542,69 @@ class ShopController extends Controller
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $demands['rentType'] =  $shopDetails->rent_type;
+
+            $mobile = $shopDetails->mobile;
+            // $mobile = "8271522513";
+            if ($mobile != NULL && strlen($mobile) == 10) {
+                (Whatsapp_Send(
+                    $mobile,
+                    "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                    [
+                        "content_type" => "text",
+                        [
+                            $shopDetails->allottee,
+                            $demands['totalAmount'],
+                            Carbon::now()->format('d-m-Y'),
+                            "Shop Demand Reciept",
+                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $fYear,
+                        ]
+                    ]
+                ));
+            }
             return responseMsgs(true, "", $demands, "055034", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    
+    /**
+     * | Get Shop Demand Reciept  
+     * | API - 36
+     * | Function - 36
+     */
+    public function shopReportSummary(Request $req){
+        $validator = Validator::make($req->all(), [
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+            'shopCategory' => 'nullable|integer',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if($req->dateFrom === NULL){
+                $dateFrom=Carbon::now()->format('Y-m-d');
+            }else{
+                $dateFrom=$req->dateFrom;
+            }
+            if($req->dateTo === NULL){
+                $dateTo=Carbon::now()->format('Y-m-d');
+            }else{
+                $dateTo=$req->dateTo;
+            }
+            $mMarShopPayment=new MarShopPayment();
+            $list=$mMarShopPayment->listShopPaymentSummary($dateFrom,$dateTo);
+            if($req->shopCategory !== NULL){
+                $list=$list->where('mar_shop_payments.shop_category_id',$req->shopCategory);
+            }
+            $list=$list->get();
+            return responseMsgs(true, "Shop Report Summary !!!", $list, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 34
@@ -1569,7 +1634,6 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
     }
-
 
     /**
      * | this is for test whatsappp mesaging
@@ -1616,8 +1680,8 @@ class ShopController extends Controller
             $url = "Uploads/shop/payment/" . $filename;
             $customPaper = array(0, 0, 720, 1440);
             $pdf = PDF::loadView('paymentReciept',  ['returnValues' => $data])->setPaper($customPaper, 'portrait');
-           return view('paymentReciept');
-             $file = $pdf->download($filename . '.' . 'pdf');
+            return view('paymentReciept');
+            $file = $pdf->download($filename . '.' . 'pdf');
             $pdf = Storage::put('public' . '/' . $url, $file);
             (Whatsapp_Send(
                 8271522513,
@@ -1627,7 +1691,7 @@ class ShopController extends Controller
                     [
                         [
                             // "link" => config('app.url') . "/getImageLink?path=" . $url,
-                            "link" => "https://market.modernulb.com/".$url,
+                            "link" => "https://market.modernulb.com/" . $url,
                             "filename" => $filename . ".pdf"
                         ]
 
@@ -1662,7 +1726,7 @@ class ShopController extends Controller
     //         return false;
     //     }
     // }
-    public function downloadAndSavePdf($path,$url)
+    public function downloadAndSavePdf($path, $url)
     {
 
         // // Use Guzzle to make the HTTP request
@@ -1689,14 +1753,13 @@ class ShopController extends Controller
         $filename = 'downloaded_page_' . time() . '.pdf';
 
         // Save the PDF to the storage disk (default is 'public')
-        Storage::put('public' . '/' .$path.'/'.$filename, $pdf->output());
+        Storage::put('public' . '/' . $path . '/' . $filename, $pdf->output());
 
         // Optionally, you can return a response or redirect
         return $filename;
-   
     }
 
-    public function saveUrlAsPdf($url,$path)
+    public function saveUrlAsPdf($url, $path)
     {
         // Get the URL from the request or replace it with your desired URL
         // $url = $request->input('url', 'https://example.com');
@@ -1706,7 +1769,7 @@ class ShopController extends Controller
 
         // Use Browsershot to capture the page and save it as a PDF
         Browsershot::url($url)
-            ->save(storage_path('public' . '/' .$path.'/'. $filename));
+            ->save(storage_path('public' . '/' . $path . '/' . $filename));
 
         // Optionally, you can return a response or redirect
         return $filename;

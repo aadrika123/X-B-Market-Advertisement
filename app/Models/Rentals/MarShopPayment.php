@@ -286,4 +286,22 @@ class MarShopPayment extends Model
       ->where('mar_shop_payments.ulb_id', $ulbId);
     }
       
+    /**
+     * | Get Shop Payment List
+     */
+    public function listShopPaymentSummary($dateFrom,$dateTo){
+      return self::select(
+         'mar_shop_payments.payment_date',
+         'mar_shop_payments.user_id',
+         'mar_shop_payments.shop_category_id',
+         'mar_shop_payments.pmt_mode',
+         'mst.shop_type',
+         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+         DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
+      )
+      ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')   
+      ->where('payment_status','1')
+      ->whereBetween('payment_date', [$dateFrom, $dateTo])
+      ->groupBy('pmt_mode','mar_shop_payments.payment_date','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type');
+    }
 }
