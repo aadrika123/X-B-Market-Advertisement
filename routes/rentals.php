@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::controller(ShopController::class)->group(function () {
     Route::get('rental/shop-payment-reciept/{tranId}', 'shopPaymentReciept');                                   // 22 Get Shop Payment Receipt
     Route::post('rental/update-webhook-data', 'updateWebhookData');                                             // 23 Update webhook Data After Payment is Success
+    Route::get('rental/get-shop-demand-reciept/{shopId}/{fyYear}', 'getShopDemandReciept');                                    // 35 Get Shop Demand Reciept
     Route::post('rental/sendSms', 'sendSms');
 
 

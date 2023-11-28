@@ -1512,6 +1512,35 @@ class ShopController extends Controller
     }
 
     /**
+     * | Get Shop Demand Reciept  
+     * | API - 34
+     * | Function - 34
+     */
+    public function getShopDemandReciept($shopId,$fYear, Request $req){
+        try {
+            $mMarShopDemand = new MarShopDemand();
+            $shopDemand = $mMarShopDemand->payBeforeDemand($shopId, $fYear);                            // Demand Details Before Payment 
+            $demands['shopDemand'] = $shopDemand;
+            $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
+            if ($demands['totalAmount'] > 0)
+                $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+            $shopDetails = $this->_mShops->getShopDetailById($shopId);                                               // Get Shop Details By Shop Id
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+            $demands['shopNo'] = $shopDetails->shop_no;
+            $demands['allottee'] = $shopDetails->allottee;
+            $demands['market'] = $shopDetails->market_name;
+            $demands['shopType'] = $shopDetails->shop_type;
+            $demands['ulbName'] = $ulbDetails->ulb_name;
+            $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
+            $demands['website'] = $ulbDetails->current_website;
+            $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $demands['rentType'] =  $shopDetails->rent_type;
+            return responseMsgs(true, "", $demands, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 34
      */
