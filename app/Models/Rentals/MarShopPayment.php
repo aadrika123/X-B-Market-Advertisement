@@ -287,7 +287,7 @@ class MarShopPayment extends Model
     }
       
     /**
-     * | Get Shop Payment List
+     * | Get Shop Payment List mode wise
      */
     public function listShopPaymentSummary($dateFrom,$dateTo){
       return self::select(
@@ -303,5 +303,25 @@ class MarShopPayment extends Model
       ->where('payment_status','1')
       ->whereBetween('payment_date', [$dateFrom, $dateTo])
       ->groupBy('pmt_mode','mar_shop_payments.payment_date','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type');
+    }
+
+    /**
+     * | List shop collection summary
+     */
+    public function listShopCollectionSummary($dateFrom, $dateTo){
+      return self::select(
+         'mar_shop_payments.shop_category_id',
+         'mst.shop_type',
+         'ms.market_id',
+         'mm.market_name',
+         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+         DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
+      )
+      ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')
+      ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')  
+      ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
+      ->where('payment_status','1')
+      ->whereBetween('payment_date', [$dateFrom, $dateTo]);
+      // ->groupBy('pmt_mode','mar_shop_payments.payment_date','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type');
     }
 }

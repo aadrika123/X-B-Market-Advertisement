@@ -1599,7 +1599,47 @@ class ShopController extends Controller
                 $list=$list->where('mar_shop_payments.shop_category_id',$req->shopCategory);
             }
             $list=$list->get();
-            return responseMsgs(true, "Shop Report Summary !!!", $list, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $list, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function shopCollectionSummary(Request $req){
+        $validator = Validator::make($req->all(), [
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+            'shopCategory' => 'required|integer',
+            'circleId' => 'required|integer',
+            'marketId' => 'required|integer',
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            if($req->dateFrom === NULL){
+                $dateFrom=Carbon::now()->format('Y-m-d');
+            }else{
+                $dateFrom=$req->dateFrom;
+            }
+            if($req->dateTo === NULL){
+                $dateTo=Carbon::now()->format('Y-m-d');
+            }else{
+                $dateTo=$req->dateTo;
+            }
+            $mMarShopPayment=new MarShopPayment();
+            $list=$mMarShopPayment->listShopCollectionSummary($dateFrom, $dateTo);
+            if($req->shopCategory > 0){
+                $list=$list->where('ms.shop_category_id',$req->shopCategory);
+            }
+            if($req->marketId > 0){
+                $list=$list->where('ms.market_id',$req->marketId);
+            }
+            
+            // $list=$list->where('payment_status','1')->whereBetween('payment_date', [$dateFrom, $dateTo]);
+            $list=$list->groupBy('mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type','ms.market_id','mm.market_name');
+            $list=$list->get();
+            return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055034", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
         }
