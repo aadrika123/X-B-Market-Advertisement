@@ -1602,7 +1602,7 @@ class ShopController extends Controller
             }
             if($req->marketId > 0){
                 $list=$list->where('ms.market_id',$req->marketId);
-            }
+            }//DB::enableQueryLog();
             $list=$list->get();
             return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $list, "055036", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
