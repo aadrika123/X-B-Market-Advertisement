@@ -65,7 +65,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/get-shop-collection-by-tc-id', 'getShopCollectionByTcId');                          // 32  Get Shop Collection TC Wise   
         Route::post('rental/shop-payment-reciept-bt-print', 'shopPaymentRecieptBluetoothPrint');                // 33  Get Shop Payment Receipt For Bluetooth Printer
         Route::post('rental/search-shop-by-mobile-no', 'searchShopByMobileNo');                                 // 34  Search Shop By Mobile No
-        Route::post('rental/shop-report-by-payment-mode-summary', 'shopReportSummary');                         // 36  Shop Report Summary by payment mode wise
+        Route::post('rental/shop-report-by-payment-mode-summary', 'shopReportSummaryByPaymentMode');                         // 36  Shop Report Summary by payment mode wise
         Route::post('rental/shop-collection-summary', 'shopCollectionSummary');                                 // 37  Shop Collection Summary
     });
 
