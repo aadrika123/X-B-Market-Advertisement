@@ -291,11 +291,11 @@ class MarShopPayment extends Model
      */
     public function listShopPaymentSummaryByPaymentMode($dateFrom,$dateTo){
       return self::select(
-         'mar_shop_payments.shop_category_id',
+         // 'mar_shop_payments.shop_category_id',
          'mar_shop_payments.pmt_mode',
          'mst.shop_type',
-         'mm.id as market_id',
-         // 'mm.market_name',
+         // 'mm.id as market_id',
+         'mm.market_name',
          DB::raw('sum(mar_shop_payments.amount) as total_amount'),
          DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
       )
@@ -304,7 +304,7 @@ class MarShopPayment extends Model
       ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
       ->where('payment_status','1')
       ->whereBetween('payment_date', [$dateFrom, $dateTo])
-      ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id');
+      ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id','mm.market_name');
     }
 
     /**

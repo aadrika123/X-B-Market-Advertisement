@@ -1603,8 +1603,12 @@ class ShopController extends Controller
             if($req->marketId > 0){
                 $list=$list->where('ms.market_id',$req->marketId);
             }//DB::enableQueryLog();
-            $list=$list->get();
-            return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $list, "055036", "1.0", responseTime(), "POST", $req->deviceId);
+            $list1=$list=$list->get();
+            // $tamoount= $list->sum('total_amount');
+            $f_data['data']=$list1;
+            // $f_data['totalCollection']= $tamoount;
+            $f_data['totalCollection']=$list->sum('total_amount');
+            return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $f_data, "055036", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055036", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -1646,7 +1650,6 @@ class ShopController extends Controller
             if($req->marketId > 0){
                 $list=$list->where('ms.market_id',$req->marketId);
             }
-            
             // $list=$list->where('payment_status','1')->whereBetween('payment_date', [$dateFrom, $dateTo]);
             $list=$list->groupBy('mar_shop_payments.pmt_mode','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type','ms.market_id','mm.market_name');
             $list=$list->get();
