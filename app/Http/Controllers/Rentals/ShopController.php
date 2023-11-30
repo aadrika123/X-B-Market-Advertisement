@@ -1608,6 +1608,7 @@ class ShopController extends Controller
             $f_data['data']=$list1;
             // $f_data['totalCollection']= $tamoount;
             $f_data['totalCollection']=$list->sum('total_amount');
+            $f_data['totalTranscation']=$list->sum('total_no_of_transaction');
             return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $f_data, "055036", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055036", "1.0", responseTime(), "POST", $req->deviceId);
