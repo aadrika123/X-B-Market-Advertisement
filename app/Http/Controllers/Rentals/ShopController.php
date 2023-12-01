@@ -1028,7 +1028,8 @@ class ShopController extends Controller
             $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $reciept['recieverName'] =  $data->reciever_name;
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque/DD Bounce" : "No Any Payment"));
-            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";                                               // Convert digits to words 
+            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";  
+            $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;                                             // Convert digits to words 
 
             // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();
@@ -1354,6 +1355,8 @@ class ShopController extends Controller
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $demands['rentType'] =  $shopDetails->rent_type;
+            $demands['aggrementEndDate'] =  $shopDetails->alloted_upto;
+
 
             $mobile = $shopDetails->contact_no;
             // $mobile = "8271522513";
@@ -1490,6 +1493,7 @@ class ShopController extends Controller
             $reciept['receiverMobile'] =  $data->receiver_mobile;
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
+            $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;
 
             // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();
@@ -1561,6 +1565,7 @@ class ShopController extends Controller
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $demands['rentType'] =  $shopDetails->rent_type;
+            $demands['aggrementEndDate'] =  $shopDetails->alloted_upto;
 
             $mobile = $shopDetails->mobile;
             // $mobile = "8271522513";
