@@ -1634,7 +1634,7 @@ class ShopController extends Controller
                 $dateTo = $req->dateTo;
             }
             $mMarShopPayment = new MarShopPayment();
-            DB::enableQueryLog();
+            // DB::enableQueryLog();
             $list = $mMarShopPayment->listShopPaymentSummaryByPaymentMode($dateFrom, $dateTo);
             if ($req->shopCategoryId > 0) {
                 $list = $list->where('mar_shop_payments.shop_category_id', $req->shopCategoryId);
@@ -1642,6 +1642,7 @@ class ShopController extends Controller
             if ($req->marketId > 0) {
                 $list = $list->where('ms.market_id', $req->marketId);
             } //DB::enableQueryLog();
+            $list=$list->groupBy('pmt_mode');
             $list1 = $list = $list->get();
             // return ([DB::getQueryLog()]);
             // $tamoount= $list->sum('total_amount');

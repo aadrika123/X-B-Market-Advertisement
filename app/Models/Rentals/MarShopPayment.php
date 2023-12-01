@@ -317,9 +317,9 @@ class MarShopPayment extends Model
       ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')   
       ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
       ->where('payment_status','1')
-      ->whereBetween('payment_date', [$dateFrom, $dateTo])
+      ->whereBetween('payment_date', [$dateFrom, $dateTo]);
       // ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id','mm.market_name');
-      ->groupBy('pmt_mode','mm.id');
+      // ->groupBy('pmt_mode','mm.id');
     }
 
     /**
