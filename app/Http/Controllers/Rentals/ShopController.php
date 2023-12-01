@@ -804,18 +804,31 @@ class ShopController extends Controller
             'rentType' => 'nullable|string',
             'remarks' => 'nullable|string',
             'amcShopNo' => 'nullable|string',
-            'circleId' => 'nullable|integer',                                                 // Circle i.e. Zone
+            'circleId' => 'nullable|integer',                                                               // Circle i.e. Zone
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
+            $docUpload = new DocumentUpload;
+            $relativePath = Config::get('constants.SHOP_PATH');
+            if (isset($req->image)) {
+                $image = $req->file('image');
+                $refImageName = 'Shop-Photo-1';
+                $imageName1 = $docUpload->upload($refImageName, $image, $relativePath);
+                $imageName1Absolute = $relativePath;
+            }
             $shopDetails = Shop::find($req->shopId);
             $shopDetails->contact_no = $req->contactNo;
             $shopDetails->rent_type = $req->rentType;
             $shopDetails->circle_id = $req->circleId;
             $shopDetails->amc_shop_no = $req->amcShopNo;
             $shopDetails->remarks = $req->remarks;
+            if (isset($req->image)) {
+                $shopDetails->photo1_path = $imageName1 ?? "";
+                $shopDetails->photo1_path_absolute = $imageName1Absolute ?? "";
+            }
             $shopDetails->save();
             // Generate Edit Logs
             $logData = [
@@ -1028,7 +1041,7 @@ class ShopController extends Controller
             $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $reciept['recieverName'] =  $data->reciever_name;
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque/DD Bounce" : "No Any Payment"));
-            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";  
+            $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
             $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;                                             // Convert digits to words 
 
             // If Payment By Cheque then Cheque Details is Added Here
@@ -1371,7 +1384,7 @@ class ShopController extends Controller
                             $demands['totalAmount'],
                             Carbon::now()->format('d-m-Y'),
                             "Shop Demand Reciept",
-                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" .$req->financialYear,
+                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $req->financialYear,
                         ]
                     ]
                 ));
@@ -1686,20 +1699,21 @@ class ShopController extends Controller
         }
     }
 
-    public function dcbReportsArrearCurrent(Request $req){
+    public function dcbReportsArrearCurrent(Request $req)
+    {
         try {
             $shopType = MarShopType::select('shop_type', 'id')->where('status', '1')->orderBy('id')->get();
             $mMarShopDemand = new MarShopDemand();
             $mMarShopPayment = new MarShopPayment();
             $mShop = new Shop();
-           $totalDCB= $total = array();
-           $currentYear=getCurrentSesstion(date('Y-m-d'));
+            $totalDCB = $total = array();
+            $currentYear = getCurrentSesstion(date('Y-m-d'));
             foreach ($shopType as $key => $st) {
                 $sType = str_replace(" ", "_", $st['shop_type']);
                 $total[$sType]['shopCategoryId'] = $st['id'];
                 $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
-                $demand = (float)$mMarShopDemand->totalArrearDemand($st['id'],$currentYear);
-                $collection = (float)$mMarShopPayment->totalArrearCollectoion($st['id'],$currentYear);
+                $demand = (float)$mMarShopDemand->totalArrearDemand($st['id'], $currentYear);
+                $collection = (float)$mMarShopPayment->totalArrearCollectoion($st['id'], $currentYear);
                 $total[$sType]['totalDemand'] = number_format($demand, 2);
                 $total[$sType]['totalCollection'] = number_format($collection, 2);
                 $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
@@ -1709,14 +1723,14 @@ class ShopController extends Controller
                 $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
-            $totalDCB['areear']= $total;
-            $total=array();
+            $totalDCB['areear'] = $total;
+            $total = array();
             foreach ($shopType as $key => $st) {
                 $sType = str_replace(" ", "_", $st['shop_type']);
                 $total[$sType]['shopCategoryId'] = $st['id'];
                 $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
-                $demand = (float)$mMarShopDemand->totalCurrentDemand($st['id'],$currentYear);
-                $collection = (float)$mMarShopPayment->totalCurrentCollectoion($st['id'],$currentYear);
+                $demand = (float)$mMarShopDemand->totalCurrentDemand($st['id'], $currentYear);
+                $collection = (float)$mMarShopPayment->totalCurrentCollectoion($st['id'], $currentYear);
                 $total[$sType]['totalDemand'] = number_format($demand, 2);
                 $total[$sType]['totalCollection'] = number_format($collection, 2);
                 $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
@@ -1726,7 +1740,7 @@ class ShopController extends Controller
                 $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
-            $totalDCB['current']=$total;
+            $totalDCB['current'] = $total;
             return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055037", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055037", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1736,9 +1750,10 @@ class ShopController extends Controller
     /**
      * | Get Shop Details without Login
      */
-    public function getShopDetails($shopId){
+    public function getShopDetails($shopId)
+    {
         try {
-           $details = $this->_mShops->getShopDetailById($shopId);                                             // Get Shop Details By ID
+            $details = $this->_mShops->getShopDetailById($shopId);                                             // Get Shop Details By ID
             if (collect($details)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
             // Basic Details
@@ -1772,8 +1787,9 @@ class ShopController extends Controller
     /**
      * | Get Demand Amount without Login
      */
-    public function getPaymentAmountofShop($shopId,$fYear){
-        $req=new Request(['shopId'=>$shopId,'toFYear'=>$fYear]);
+    public function getPaymentAmountofShop($shopId, $fYear)
+    {
+        $req = new Request(['shopId' => $shopId, 'toFYear' => $fYear]);
         $shopPmtBll = new ShopPaymentBll();
         // Business Logics
         try {
@@ -1783,14 +1799,14 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST");
         }
     }
-     /**
+    /**
      * | Generate Refferal Url For Online Payment 
      * | API - 21
      * | Function - 21
      */
-    public function getGenerateReferalUrlForPayment($shopId,$fYear)
+    public function getGenerateReferalUrlForPayment($shopId, $fYear)
     {
-        $req=new Request(['shopId'=>$shopId,'toFYear'=>$fYear,'paymentMode'=>'ONLINE']);
+        $req = new Request(['shopId' => $shopId, 'toFYear' => $fYear, 'paymentMode' => 'ONLINE']);
         // $validator = Validator::make($req->all(), [
         //     "shopId" => "required|integer",
         //     "paymentMode" => 'required|string',
