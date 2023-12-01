@@ -1634,6 +1634,7 @@ class ShopController extends Controller
                 $dateTo = $req->dateTo;
             }
             $mMarShopPayment = new MarShopPayment();
+            DB::enableQueryLog();
             $list = $mMarShopPayment->listShopPaymentSummaryByPaymentMode($dateFrom, $dateTo);
             if ($req->shopCategoryId > 0) {
                 $list = $list->where('mar_shop_payments.shop_category_id', $req->shopCategoryId);
@@ -1642,6 +1643,7 @@ class ShopController extends Controller
                 $list = $list->where('ms.market_id', $req->marketId);
             } //DB::enableQueryLog();
             $list1 = $list = $list->get();
+            // return ([DB::getQueryLog()]);
             // $tamoount= $list->sum('total_amount');
             $f_data['data'] = $list1;
             // $f_data['totalCollection']= $tamoount;
@@ -1723,7 +1725,7 @@ class ShopController extends Controller
                 $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
-            $totalDCB['areear'] = $total;
+            $totalDCB['arrear'] = $total;
             $total = array();
             foreach ($shopType as $key => $st) {
                 $sType = str_replace(" ", "_", $st['shop_type']);
