@@ -1728,6 +1728,50 @@ class ShopController extends Controller
         }
     }
 
+    public function getShopDetails($shopId){
+        try {
+           $details = $this->_mShops->getShopDetailById($shopId);                                             // Get Shop Details By ID
+            if (collect($details)->isEmpty())
+                throw new Exception("Shop Does Not Exists");
+            // Basic Details
+            $basicDetails = $this->generateBasicDetails($details);                                              // Generate Basic Details of Shop
+            $shop['shopDetails'] = $basicDetails;
+            $mMarShopDemand = new MarShopDemand();
+            $demands = $mMarShopDemand->getDemandByShopId($shopId);                                            // Get List of Generated All Demands against SHop
+            $total = $demands->pluck('amount')->sum();
+            $financialYear = $demands->where('payment_status', '0')->where('amount', '>', '0')->pluck('financial_year');
+            $f_y = array();
+            foreach ($financialYear as $key => $fy) {
+                $f_y[$key]['id'] = $fy;
+                $f_y[$key]['financialYear'] = $fy;
+            }
+            $shop['fYear'] = $f_y;
+            $shop['demands'] = $demands;
+            $shop['total'] =  round($total, 2);
+            $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
+            $payments = $mMarShopPayment->getPaidListByShopId($shopId);                                        // Get Paid Demand Against Shop
+            $totalPaid = $payments->pluck('amount')->sum();
+            // $shop['payments'] = $payments;
+            $shop['totalPaid'] =   round($totalPaid, 2);
+            $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
+            // return([DB::getQueryLog(),$payments]);
+            return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST");
+        }
+    }
+
+    public function getPaymentAmountofShop($shopId,$fYear){
+        $req=new Request(['shopId'=>$shopId,'toFYear'=>$fYear]);
+        $shopPmtBll = new ShopPaymentBll();
+        // Business Logics
+        try {
+            $amount = $shopPmtBll->calculateRateFinancialYearWiae($req);                                        // Calculate amount according to Financial Year wise
+            return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], "055013", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST");
+        }
+    }
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 34
