@@ -196,10 +196,24 @@ class MarShopPayment extends Model
    /**
     * | find total collection shop type wise
     */
-   public function totalCollectoion($shopType)
-   {
-      return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->sum('amount');
-   }
+    public function totalCollectoion($shopType)
+    {
+       return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
+    }
+    /**
+     * | find total Arrear collection shop type wise
+     */
+    public function totalArrearCollectoion($shopType,$currentYear)
+    {
+       return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year','<',$currentYear)->where('shop_category_id', $shopType)->sum('amount');
+    }
+    /**
+     * | find total Current collection shop type wise
+     */
+    public function totalCurrentCollectoion($shopType,$currentYear)
+    {
+       return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year','=',$currentYear)->where('shop_category_id', $shopType)->sum('amount');
+    }
 
    /**
     * | Get Shop Wise All Payments details For DCB Reports 
@@ -293,9 +307,9 @@ class MarShopPayment extends Model
       return self::select(
          // 'mar_shop_payments.shop_category_id',
          'mar_shop_payments.pmt_mode',
-         'mst.shop_type',
+         // 'mst.shop_type',
          // 'mm.id as market_id',
-         'mm.market_name',
+         // 'mm.market_name',
          DB::raw('sum(mar_shop_payments.amount) as total_amount'),
          DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
       )
@@ -304,7 +318,8 @@ class MarShopPayment extends Model
       ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
       ->where('payment_status','1')
       ->whereBetween('payment_date', [$dateFrom, $dateTo])
-      ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id','mm.market_name');
+      // ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id','mm.market_name');
+      ->groupBy('pmt_mode','mm.id');
     }
 
     /**

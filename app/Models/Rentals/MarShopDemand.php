@@ -28,6 +28,23 @@ class MarShopDemand extends Model
     }
 
     /**
+     * | Total Arrear Demand Generated shop category wise
+     */
+    public function totalArrearDemand($shopType,$currentYear)
+    {
+        return MarShopDemand::select('*')->where('shop_category_id', $shopType)->where('status', '1')->where('financial_year','<',$currentYear)->sum('amount');
+    }
+
+    
+    /**
+     * | Total Current Demand Generated shop category wise
+     */
+    public function totalCurrentDemand($shopType,$currentYear)
+    {
+        return MarShopDemand::select('*')->where('shop_category_id', $shopType)->where('status', '1')->where('financial_year','=',$currentYear)->sum('amount');
+    }
+
+    /**
      * | Get Shop All Generated Demands For DCB Reports
      */
     public function shopDemand($shopId)

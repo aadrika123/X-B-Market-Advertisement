@@ -1354,6 +1354,25 @@ class ShopController extends Controller
             $demands['website'] = $ulbDetails->current_website;
             $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
             $demands['rentType'] =  $shopDetails->rent_type;
+
+            $mobile = $shopDetails->contact_no;
+            // $mobile = "8271522513";
+            if ($mobile != NULL && strlen($mobile) == 10) {
+                (Whatsapp_Send(
+                    $mobile,
+                    "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                    [
+                        "content_type" => "text",
+                        [
+                            $shopDetails->allottee,
+                            $demands['totalAmount'],
+                            Carbon::now()->format('d-m-Y'),
+                            "Shop Demand Reciept",
+                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" .$req->financialYear,
+                        ]
+                    ]
+                ));
+            }
             return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1567,13 +1586,14 @@ class ShopController extends Controller
         }
     }
 
-    
+
     /**
      * | Get Shop Collection Summary by Payment Mode Wise 
      * | API - 36
      * | Function - 36
      */
-    public function shopReportSummaryByPaymentMode(Request $req){
+    public function shopReportSummaryByPaymentMode(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
@@ -1585,43 +1605,44 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            if($req->dateFrom === NULL){
-                $dateFrom=Carbon::now()->format('Y-m-d');
-            }else{
-                $dateFrom=$req->dateFrom;
+            if ($req->dateFrom === NULL) {
+                $dateFrom = Carbon::now()->format('Y-m-d');
+            } else {
+                $dateFrom = $req->dateFrom;
             }
-            if($req->dateTo === NULL){
-                $dateTo=Carbon::now()->format('Y-m-d');
-            }else{
-                $dateTo=$req->dateTo;
+            if ($req->dateTo === NULL) {
+                $dateTo = Carbon::now()->format('Y-m-d');
+            } else {
+                $dateTo = $req->dateTo;
             }
-            $mMarShopPayment=new MarShopPayment();
-            $list=$mMarShopPayment->listShopPaymentSummaryByPaymentMode($dateFrom,$dateTo);
-            if($req->shopCategoryId > 0){
-                $list=$list->where('mar_shop_payments.shop_category_id',$req->shopCategoryId);
+            $mMarShopPayment = new MarShopPayment();
+            $list = $mMarShopPayment->listShopPaymentSummaryByPaymentMode($dateFrom, $dateTo);
+            if ($req->shopCategoryId > 0) {
+                $list = $list->where('mar_shop_payments.shop_category_id', $req->shopCategoryId);
             }
-            if($req->marketId > 0){
-                $list=$list->where('ms.market_id',$req->marketId);
-            }//DB::enableQueryLog();
-            $list1=$list=$list->get();
+            if ($req->marketId > 0) {
+                $list = $list->where('ms.market_id', $req->marketId);
+            } //DB::enableQueryLog();
+            $list1 = $list = $list->get();
             // $tamoount= $list->sum('total_amount');
-            $f_data['data']=$list1;
+            $f_data['data'] = $list1;
             // $f_data['totalCollection']= $tamoount;
-            $f_data['totalCollection']=$list->sum('total_amount');
-            $f_data['totalTranscation']=$list->sum('total_no_of_transaction');
+            $f_data['totalCollection'] = $list->sum('total_amount');
+            $f_data['totalTranscation'] = $list->sum('total_no_of_transaction');
             return responseMsgs(true, "Shop Report Summary Payment Mode Wise !!!", $f_data, "055036", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055036", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
-  
+
     /**
      * | Get Shop Collection Summary
      * | API - 36
      * | Function - 36
      */
-    public function shopCollectionSummary(Request $req){
+    public function shopCollectionSummary(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'dateFrom' => 'nullable|date_format:Y-m-d',
             'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
@@ -1633,30 +1654,77 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
-            if($req->dateFrom === NULL){
-                $dateFrom=Carbon::now()->format('Y-m-d');
-            }else{
-                $dateFrom=$req->dateFrom;
+            if ($req->dateFrom === NULL) {
+                $dateFrom = Carbon::now()->format('Y-m-d');
+            } else {
+                $dateFrom = $req->dateFrom;
             }
-            if($req->dateTo === NULL){
-                $dateTo=Carbon::now()->format('Y-m-d');
-            }else{
-                $dateTo=$req->dateTo;
+            if ($req->dateTo === NULL) {
+                $dateTo = Carbon::now()->format('Y-m-d');
+            } else {
+                $dateTo = $req->dateTo;
             }
-            $mMarShopPayment=new MarShopPayment();
-            $list=$mMarShopPayment->listShopCollectionSummary($dateFrom, $dateTo);
-            if($req->shopCategoryId > 0){
-                $list=$list->where('ms.shop_category_id',$req->shopCategoryId);
+            $mMarShopPayment = new MarShopPayment();
+            $list = $mMarShopPayment->listShopCollectionSummary($dateFrom, $dateTo);
+            if ($req->shopCategoryId > 0) {
+                $list = $list->where('ms.shop_category_id', $req->shopCategoryId);
             }
-            if($req->marketId > 0){
-                $list=$list->where('ms.market_id',$req->marketId);
+            if ($req->marketId > 0) {
+                $list = $list->where('ms.market_id', $req->marketId);
             }
             // $list=$list->where('payment_status','1')->whereBetween('payment_date', [$dateFrom, $dateTo]);
-            $list=$list->groupBy('mar_shop_payments.pmt_mode','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type','ms.market_id','mm.market_name');
-            $list=$list->get();
-                return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055034", "1.0", responseTime(), "POST", $req->deviceId);
+            $list = $list->groupBy('mar_shop_payments.pmt_mode', 'mar_shop_payments.user_id', 'mar_shop_payments.shop_category_id', 'mst.shop_type', 'ms.market_id', 'mm.market_name');
+            $list = $list->get();
+            return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055036", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055036", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function dcbReportsArrearCurrent(Request $req){
+        try {
+            $shopType = MarShopType::select('shop_type', 'id')->where('status', '1')->orderBy('id')->get();
+            $mMarShopDemand = new MarShopDemand();
+            $mMarShopPayment = new MarShopPayment();
+            $mShop = new Shop();
+           $totalDCB= $total = array();
+           $currentYear=getCurrentSesstion(date('Y-m-d'));
+            foreach ($shopType as $key => $st) {
+                $sType = str_replace(" ", "_", $st['shop_type']);
+                $total[$sType]['shopCategoryId'] = $st['id'];
+                $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
+                $demand = (float)$mMarShopDemand->totalArrearDemand($st['id'],$currentYear);
+                $collection = (float)$mMarShopPayment->totalArrearCollectoion($st['id'],$currentYear);
+                $total[$sType]['totalDemand'] = number_format($demand, 2);
+                $total[$sType]['totalCollection'] = number_format($collection, 2);
+                $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
+                $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+
+                $total[$sType]['totalDemandGraph'] = $demand;
+                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalBalanceGraph'] = $demand - $collection;
+            }
+            $totalDCB['areear']= $total;
+            $total=array();
+            foreach ($shopType as $key => $st) {
+                $sType = str_replace(" ", "_", $st['shop_type']);
+                $total[$sType]['shopCategoryId'] = $st['id'];
+                $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
+                $demand = (float)$mMarShopDemand->totalCurrentDemand($st['id'],$currentYear);
+                $collection = (float)$mMarShopPayment->totalCurrentCollectoion($st['id'],$currentYear);
+                $total[$sType]['totalDemand'] = number_format($demand, 2);
+                $total[$sType]['totalCollection'] = number_format($collection, 2);
+                $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
+                $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+
+                $total[$sType]['totalDemandGraph'] = $demand;
+                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalBalanceGraph'] = $demand - $collection;
+            }
+            $totalDCB['current']=$total;
+            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055037", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055037", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
@@ -1676,6 +1744,24 @@ class ShopController extends Controller
             return ($base_rate * $area * 12);                   // BOT Amount Calculation
         }
     }
+    /*===========================  Part Payment SSection ================================ */
+    public function partPayment($shopId, $amount)
+    {
+        $totalDemandAmount = DB::table('mar_shop_demands')
+            ->where('shop_id', $shopId)
+            ->where('payment_status', 0)
+            ->sum('amount');
+        $totalPaidAmount = DB::table('mar_shop_payments')
+            ->where('shop_id', $shopId)
+            ->whereIn('payment_status', [1, 2])
+            ->sum('amount');
+        $restAmount = $totalDemandAmount - $totalPaidAmount;
+        if ($restAmount < 1)
+            throw new Exception("No Any Due Amount !!!");
+        if ($amount > $restAmount)
+            throw new Exception("Your Amount is Greater Than Demand !!!");
+    }
+    /*===========================  Part Payment SSection ================================ */
 
     /**
      * | ID Generation For Shop
