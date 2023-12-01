@@ -977,7 +977,7 @@ class ShopController extends Controller
                 'paid_to' => $req->toFYear,
                 'payment_date' => Carbon::now(),
                 'payment_status' => '0',
-                'user_id' => $req->auth['id'] ?? 0,
+                'user_id' => $req->auth['id'] ?? NULL,
                 'ulb_id' => $shopDetails->ulb_id,
                 'remarks' => $req->remarks,
                 'pmt_mode' => $req->paymentMode,
@@ -1003,7 +1003,7 @@ class ShopController extends Controller
     {
         try {
             $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
-                ->join('users', 'users.id', 'mar_shop_payments.user_id')
+                ->leftjoin('users', 'users.id', 'mar_shop_payments.user_id')
                 ->where('mar_shop_payments.id', $tranId)
                 ->first();
             if (!$data)
@@ -1462,7 +1462,7 @@ class ShopController extends Controller
         }
         try {
             $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as receiver_name', 'users.mobile as receiver_mobile')
-                ->join('users', 'users.id', 'mar_shop_payments.user_id')
+                ->leftjoin('users', 'users.id', 'mar_shop_payments.user_id')
                 ->where('mar_shop_payments.id', $req->tranId)
                 ->first();
             if (!$data)
@@ -1728,6 +1728,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Get Shop Details without Login
+     */
     public function getShopDetails($shopId){
         try {
            $details = $this->_mShops->getShopDetailById($shopId);                                             // Get Shop Details By ID
@@ -1761,6 +1764,9 @@ class ShopController extends Controller
         }
     }
 
+    /**
+     * | Get Demand Amount without Login
+     */
     public function getPaymentAmountofShop($shopId,$fYear){
         $req=new Request(['shopId'=>$shopId,'toFYear'=>$fYear]);
         $shopPmtBll = new ShopPaymentBll();
@@ -1770,6 +1776,105 @@ class ShopController extends Controller
             return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], "055013", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST");
+        }
+    }
+     /**
+     * | Generate Refferal Url For Online Payment 
+     * | API - 21
+     * | Function - 21
+     */
+    public function getGenerateReferalUrlForPayment($shopId,$fYear)
+    {
+        $req=new Request(['shopId'=>$shopId,'toFYear'=>$fYear,'paymentMode'=>'ONLINE']);
+        // $validator = Validator::make($req->all(), [
+        //     "shopId" => "required|integer",
+        //     "paymentMode" => 'required|string',
+        //     "toFYear" => 'required|string',
+        // ]);
+        // if ($validator->fails())
+        //     return responseMsgs(false, $validator->errors(), []);
+        try {
+            $amount = DB::table('mar_shop_demands')                                                       // Calculate Amount For Selected Financial Year
+                ->where('shop_id', $req->shopId)
+                ->where('payment_status', 0)
+                ->where('financial_year', '<=', $req->toFYear)
+                ->orderBy('financial_year', 'ASC')
+                ->sum('amount');
+            if ($amount < 1)
+                throw new Exception("No Any Due Amount !!!");
+            $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();      // Get Shop Details By Shop Id
+            $financialYear = DB::table('mar_shop_demands')                                               // Get First Financial Year For Payment
+                ->where('shop_id', $req->shopId)
+                ->where('payment_status', 0)
+                ->where('financial_year', '<=', $req->toFYear)
+                ->where('amount', '>', '0')
+                ->orderBy('financial_year', 'ASC')
+                ->first('financial_year');
+            $refReq = new Request([                                                                     // Make Payload For Online Payment
+                'amount' => $amount,
+                'id' => $req->shopId,
+                'moduleId' => 5,                                                                        // Market- Advertisement Module Id
+                'auth' => $req->auth,
+                'callbackUrl' => $this->_callbackUrl . 'advertisement/shop-fullDetail-payment/' . $req->shopId,
+                'paymentOf' => 1,                                                                        // 1 - for shop, 2 - For Toll                                                                         // After Payment Redirect Url
+            ]);
+            DB::beginTransaction();
+            $paymentUrl = Config::get('constants.PAYMENT_URL');                                         // Get Payment Url From .env via constant page
+            $refResponse = Http::withHeaders([                                                          // HTTP Call For generate referal Url
+                "api-key" => "eff41ef6-d430-4887-aa55-9fcf46c72c99"
+            ])
+                ->withToken($req->token)
+                ->post($paymentUrl . 'api/payment/v1/get-referal-url', $refReq);
+            $data = json_decode($refResponse);
+            if ($data->status == false)
+                throw new Exception("Payment Referal Url Not Generate");
+            // Insert Payment Details in Shop Payment
+            $paymentReqs = [
+                "req_ref_no" => $data->message->req_ref_no,
+                'shop_id' => $req->shopId,
+                'amount' => $amount,
+                'paid_from' => $financialYear->financial_year,
+                'paid_to' => $req->toFYear,
+                'payment_date' => Carbon::now(),
+                'payment_status' => '0',
+                'user_id' => $req->auth['id'] ?? NULL,
+                'ulb_id' => $shopDetails->ulb_id,
+                'remarks' => $req->remarks,
+                'pmt_mode' => $req->paymentMode,
+                'shop_category_id' => $shopDetails->shop_category_id,
+                'referal_url' => $data->data->encryptUrl,
+                'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,                       // Transaction id is a combination of time funcation of PHP and ULB ID and Shop ID
+            ];
+            MarShopPayment::create($paymentReqs);                                                       // Add Transaction Details in Market Shop Payment Table
+            DB::commit();
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055021", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055021", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    /**
+     * | Get Shop List By Contact No 
+     * | API - 33
+     * | Function - 33
+     */
+    public function getsearchShopByMobileNo($mobileNo)
+    {
+        // $validator = Validator::make($req->all(), [
+        //     'mobileNo' => 'required|digits:10',
+        // ]);
+        // if ($validator->fails()) {
+        //     return  $validator->errors();
+        // }
+        try {
+            $mshop = new Shop();
+            $listShop = $mshop->searchShopByContactNo($mobileNo)->get();
+            // $list = paginator($listShop, $req);
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055034", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
         }
     }
     /**

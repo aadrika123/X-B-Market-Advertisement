@@ -20,6 +20,8 @@ Route::controller(ShopController::class)->group(function () {
     Route::get('rental/get-shop-demand-reciept/{shopId}/{fyYear}', 'getShopDemandReciept');                     // 35 Get Shop Demand Reciept
     Route::get('rental/get-shop-details/{shopId}', 'getShopDetails');                                           // 39 Get Shop Details
     Route::get('rental/get-payment-amount-of-shop/{shopId}/{fyYear}', 'getPaymentAmountofShop');               // 40 Calculate Shop Amount According to Financial Year Wise
+    Route::get('rental/get-generate-referal-url-payment/{shopId}/{fyYear}', 'getGenerateReferalUrlForPayment');               // 41 Generate Refferal Url for Without Login Payment
+    Route::get('rental/get-search-shop-by-mobile-no/{mobileNo}', 'getsearchShopByMobileNo');                                     // 42 Search Shop By Mobile No Without Login
     Route::post('rental/sendSms', 'sendSms');
 
 
