@@ -623,7 +623,9 @@ class ShopController extends Controller
             $req->merge(['photo_path' => $imageName1 ?? ""]);
             $req->merge(['photo_path_absolute' => $imageName1Absolute ?? ""]);
             $mMarShopPayment = new MarShopPayment();
+            DB::beginTransaction();
             $res = $mMarShopPayment->entryCheckDD($req);                                                            // Store Cheque or DD Details in Shop Payment Table
+            DB::commit();
             $mobile = $res['shopDetails']->contact_no;
             // $mobile = "8271522513";
             if ($mobile != NULL && strlen($mobile) == 10) {
@@ -644,6 +646,7 @@ class ShopController extends Controller
             }
             return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
@@ -695,6 +698,7 @@ class ShopController extends Controller
             return  $validator->errors();
         }
         try {
+            DB::beginTransaction();
             $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                                    // Get Entry Cheque Details                        
             // $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
@@ -719,6 +723,7 @@ class ShopController extends Controller
                     $updateRow->save();
                 }
             }
+            DB::commit();
             if ($req->status == 1) {
                 $msg = $shopPayment->pmt_mode . " Cleared Successfully !!!";
                 $shop = Shop::find($shopPayment->shop_id);
@@ -746,6 +751,7 @@ class ShopController extends Controller
                 return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
             }
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055016", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
@@ -1917,6 +1923,32 @@ class ShopController extends Controller
             // $list = paginator($listShop, $req);
             return responseMsgs(true, "Transaction Details Fetch Successfully !!!", $transactionDetails, "055034", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+        }
+    }
+
+    /**
+     * | Transaction Deaction 
+     */
+    public function transactionDeactivation(Request $req){
+        $validator = Validator::make($req->all(), [
+            "tranId" => "required|integer",
+            "deactiveReason"=>"required|string",
+            "module"=>"required|in:Shop Rent",
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            if ($req->module == 'Shop Rent') {
+                $mMarShopPayment = new MarShopPayment();
+                DB::beginTransaction();
+                $status=$mMarShopPayment->deActiveTransaction($req);
+                DB::commit();
+            }
+            // $list = paginator($listShop, $req);
+            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055034", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
         }
     }

@@ -348,11 +348,39 @@ class MarShopPayment extends Model
 
    public function searchTransaction($tranNo)
    {
-      return Self::select('mar_shop_payments.id','mar_shop_payments.transaction_id as transaction_no','mar_shop_payments.amount','mar_shop_payments.payment_date','mar_shop_payments.pmt_mode as payment_mode','mar_shop_payments.dd_no','mar_shop_payments.bank_name','mar_shop_payments.cheque_no',
-      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
-      DB::raw("'Shop Rent' as type"),)
+      return Self::select(
+         'mar_shop_payments.id',
+         'mar_shop_payments.transaction_id as transaction_no',
+         'mar_shop_payments.amount',
+         'mar_shop_payments.payment_date',
+         'mar_shop_payments.pmt_mode as payment_mode',
+         'mar_shop_payments.dd_no',
+         'mar_shop_payments.bank_name',
+         'mar_shop_payments.cheque_no',
+         DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+         DB::raw("'Shop Rent' as type"),
+      )
          ->where('transaction_id', $tranNo)
-         ->where('is_verified','0')
+         // ->where('is_verified','0')
          ->get();
+   }
+   /**
+    * | Transaction De-activation
+    */
+   public function deActiveTransaction($req)
+   {
+      $tranDetails = $tran = Self::find($req->tranId);
+      $tran->payment_status = 0;
+      $tran->deactive_reason = $req->deactiveReason;
+      $tran->save();
+      $demandids = MarShopDemand::select('id')->where('shop_id', $tranDetails->shop_id)->whereBetween('financial_year', [$tranDetails->paid_from, $tranDetails->paid_to])->get();
+      $updateData = [
+         'payment_status' => '0',
+         'payment_date' => NULL,
+         'tran_id' => NULL
+      ];
+
+      return MarShopDemand::whereIn('id', $demandids)
+         ->update($updateData);
    }
 }
