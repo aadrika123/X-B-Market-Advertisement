@@ -73,7 +73,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-collection-summary', 'shopCollectionSummary');                                 // 37  Shop Collection Summary
         Route::post('rental/dcb-reports-arrear-current', 'dcbReportsArrearCurrent');                            // 38  DCB Reports Arrear Current 
         Route::post('rental/search-transaction-by-transaction-no', 'searchTransactionByTransactionNo');         // 34  Search Transaction By Transaction No
-        Route::post('rental/transaction-deactivation', 'transactionDeactivation');         // 34  Search Transaction By Transaction No
+        Route::post('rental/transaction-deactivation', 'transactionDeactivation');                              // 34  Deactive Transaction
+        Route::post('rental/list-deactivation-transaction', 'listDeactiveTransaction');                         // 34  List Deactive Transaction
     });
 
     /**

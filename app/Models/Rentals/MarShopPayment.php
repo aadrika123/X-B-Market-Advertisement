@@ -383,4 +383,22 @@ class MarShopPayment extends Model
       return MarShopDemand::whereIn('id', $demandids)
          ->update($updateData);
    }
+
+   public function listDeActiveTransaction($dateFrom,$dateTo){
+      return Self::select(
+         'mar_shop_payments.id',
+         'mar_shop_payments.transaction_id as transaction_no',
+         'mar_shop_payments.amount',
+         'mar_shop_payments.payment_date',
+         'mar_shop_payments.pmt_mode as payment_mode',
+         'mar_shop_payments.dd_no',
+         'mar_shop_payments.bank_name',
+         'mar_shop_payments.cheque_no',
+         DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+         DB::raw("'Shop Rent' as type"),
+      )
+         ->where(['payment_status'=> '0','deactive_reason'])
+         // ->where('is_verified','0')
+         ->get();
+   }
 }

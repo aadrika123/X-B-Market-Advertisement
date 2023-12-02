@@ -1909,12 +1909,12 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             "transactionNo" => "required|integer",
-            "module" => "required|in:Shop",
+            "module" => "required|in:Shop Rent",
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            if ($req->module == 'Shop') {
+            if ($req->module == 'Shop Rent') {
                 $mMarShopPayment = new MarShopPayment();
                 $transactionDetails = $mMarShopPayment->searchTransaction($req->transactionNo);
             }
@@ -1930,11 +1930,12 @@ class ShopController extends Controller
     /**
      * | Transaction Deaction 
      */
-    public function transactionDeactivation(Request $req){
+    public function transactionDeactivation(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             "tranId" => "required|integer",
-            "deactiveReason"=>"required|string",
-            "module"=>"required|in:Shop Rent",
+            "deactiveReason" => "required|string",
+            "module" => "required|in:Shop Rent",
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
@@ -1942,7 +1943,7 @@ class ShopController extends Controller
             if ($req->module == 'Shop Rent') {
                 $mMarShopPayment = new MarShopPayment();
                 DB::beginTransaction();
-                $status=$mMarShopPayment->deActiveTransaction($req);
+                $status = $mMarShopPayment->deActiveTransaction($req);
                 DB::commit();
             }
             // $list = paginator($listShop, $req);
@@ -1951,6 +1952,37 @@ class ShopController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
         }
+    }
+
+    /**
+     * | List De-active Transaction
+     */
+    public function listDeactiveTransaction(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'dateFrom' => 'nullable|date_format:Y-m-d',
+            'dateTo' => $req->dateFrom == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            if($req->dateFrom === NULL){
+                $dateFrom=date('Y-m-d');
+            }else{
+                $dateFrom=$req->dateFrom;
+            }
+            if($req->dateTo === NULL){
+                $dateTo=date('Y-m-d');
+            }else{
+                $dateTo=$req->dateTo;
+            }
+                $mMarShopPayment = new MarShopPayment();
+                $status = $mMarShopPayment->listDeActiveTransaction($dateFrom,$dateTo);
+            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055034", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+        }   
     }
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
