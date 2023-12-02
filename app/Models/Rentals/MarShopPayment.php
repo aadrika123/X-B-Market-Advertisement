@@ -396,10 +396,12 @@ class MarShopPayment extends Model
          'mar_shop_payments.dd_no',
          'mar_shop_payments.bank_name',
          'mar_shop_payments.cheque_no',
+         'mar_shop_payments.deactive_reason',
          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
-         DB::raw("'Shop Rent' as type"),
+         DB::raw("TO_CHAR(mar_shop_payments.deactive_date, 'DD-MM-YYYY') as deactive_date"),
+         DB::raw("'Municipal Rental' as type"),
       )
-         ->where(['payment_status'=> '0','deactive_reason'=>'!= NULL']);
+         ->where('payment_status', '0')->where('deactive_reason','!=',NULL);
          // ->where('is_verified','0')
          // ->get();
    }
