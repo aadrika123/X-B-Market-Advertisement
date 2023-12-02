@@ -1977,8 +1977,9 @@ class ShopController extends Controller
                 $dateTo=$req->dateTo;
             }
                 $mMarShopPayment = new MarShopPayment();
-                $status = $mMarShopPayment->listDeActiveTransaction($dateFrom,$dateTo);
-            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055034", "1.0", responseTime(), "POST");
+                $list = $mMarShopPayment->listDeActiveTransaction();
+
+            return responseMsgs(true, "List De-Active Transaction !!!", $status, "055034", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");

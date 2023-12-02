@@ -372,6 +372,7 @@ class MarShopPayment extends Model
    {
       $tranDetails = $tran = Self::find($req->tranId);
       $tran->payment_status = 0;
+      $tran->deactive_date = Carbon::now();
       $tran->deactive_reason = $req->deactiveReason;
       $tran->save();
       $demandids = MarShopDemand::select('id')->where('shop_id', $tranDetails->shop_id)->whereBetween('financial_year', [$tranDetails->paid_from, $tranDetails->paid_to])->get();
@@ -385,7 +386,7 @@ class MarShopPayment extends Model
          ->update($updateData);
    }
 
-   public function listDeActiveTransaction($dateFrom,$dateTo){
+   public function listDeActiveTransaction(){
       return Self::select(
          'mar_shop_payments.id',
          'mar_shop_payments.transaction_id as transaction_no',
@@ -398,8 +399,8 @@ class MarShopPayment extends Model
          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
          DB::raw("'Shop Rent' as type"),
       )
-         ->where(['payment_status'=> '0','deactive_reason'])
+         ->where(['payment_status'=> '0','deactive_reason'=>'!= NULL']);
          // ->where('is_verified','0')
-         ->get();
+         // ->get();
    }
 }
