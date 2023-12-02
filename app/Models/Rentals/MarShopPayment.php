@@ -52,7 +52,7 @@ class MarShopPayment extends Model
       $financialYear = DB::table('mar_shop_demands')                                                                                // Get First Financial Year where Payment start
          ->where('shop_id', $req->shopId)
          ->where('payment_status', 0)
-         ->where('amount','>','0')
+         ->where('amount', '>', '0')
          ->where('financial_year', '<=', $req->toFYear)
          ->orderBy('financial_year', 'ASC')
          ->first('financial_year');
@@ -101,10 +101,10 @@ class MarShopPayment extends Model
          $updateRow->tran_id = $createdPayment->id;
          $updateRow->save();
       }
-      $shop['createdPayment']=$createdPayment;
-      $shop['shopDetails']=$mshop;
-      $shop['amount']=$amount;
-      $shop['lastTranId']=$createdPayment->id;
+      $shop['createdPayment'] = $createdPayment;
+      $shop['shopDetails'] = $mshop;
+      $shop['amount'] = $amount;
+      $shop['lastTranId'] = $createdPayment->id;
       return $shop;
    }
 
@@ -134,28 +134,28 @@ class MarShopPayment extends Model
          ->where('cheque_date', '!=', NULL);
    }
 
-   
+
    /**
     * | List Uncleared cheque or DD
     */
-    public function listUnverifiedCashPayment($req)
-    {
-       return  DB::table('mar_shop_payments')
-          ->select(
-             'mar_shop_payments.id',
-             'mar_shop_payments.payment_date',
-             'mar_shop_payments.amount',
-             'mar_shop_payments.paid_from',
-             'mar_shop_payments.paid_to',
-             DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
-             't1.shop_no',
-             't1.allottee',
-             't1.contact_no'
-          )
-          ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
-          ->where('is_verified', '=', '0')
-          ->where('pmt_mode', '=', 'CASH');
-    }
+   public function listUnverifiedCashPayment($req)
+   {
+      return  DB::table('mar_shop_payments')
+         ->select(
+            'mar_shop_payments.id',
+            'mar_shop_payments.payment_date',
+            'mar_shop_payments.amount',
+            'mar_shop_payments.paid_from',
+            'mar_shop_payments.paid_to',
+            DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
+            't1.shop_no',
+            't1.allottee',
+            't1.contact_no'
+         )
+         ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+         ->where('is_verified', '=', '0')
+         ->where('pmt_mode', '=', 'CASH');
+   }
 
    /**
     * | update payment status for clear or bounce cheque
@@ -196,24 +196,24 @@ class MarShopPayment extends Model
    /**
     * | find total collection shop type wise
     */
-    public function totalCollectoion($shopType)
-    {
-       return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
-    }
-    /**
-     * | find total Arrear collection shop type wise
-     */
-    public function totalArrearCollectoion($shopType,$currentYear)
-    {
-       return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year','<',$currentYear)->where('shop_category_id', $shopType)->sum('amount');
-    }
-    /**
-     * | find total Current collection shop type wise
-     */
-    public function totalCurrentCollectoion($shopType,$currentYear)
-    {
-       return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year','=',$currentYear)->where('shop_category_id', $shopType)->sum('amount');
-    }
+   public function totalCollectoion($shopType)
+   {
+      return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
+   }
+   /**
+    * | find total Arrear collection shop type wise
+    */
+   public function totalArrearCollectoion($shopType, $currentYear)
+   {
+      return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year', '<', $currentYear)->where('shop_category_id', $shopType)->sum('amount');
+   }
+   /**
+    * | find total Current collection shop type wise
+    */
+   public function totalCurrentCollectoion($shopType, $currentYear)
+   {
+      return MarShopDemand::select('*')->where('payment_status', '1')->where('financial_year', '=', $currentYear)->where('shop_category_id', $shopType)->sum('amount');
+   }
 
    /**
     * | Get Shop Wise All Payments details For DCB Reports 
@@ -234,76 +234,79 @@ class MarShopPayment extends Model
    /**
     * | Get List of All Payment
     */
-   public function getListOfPaymentDetails(){
+   public function getListOfPaymentDetails()
+   {
       return  DB::table('mar_shop_payments')
-      ->select(
-         'mar_shop_payments.id',
-         'mar_shop_payments.payment_date',
-         'mar_shop_payments.pmt_mode as payment_mode',
-         'mar_shop_payments.amount',
-         'mar_shop_payments.paid_from',
-         'mar_shop_payments.paid_to',
-         'mar_shop_payments.cheque_no',
-         'mar_shop_payments.dd_no',
-         'mar_shop_payments.bank_name',
-         'mar_shop_payments.transaction_id as transaction_no',
-         DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
-         't1.shop_no',
-         't1.allottee',
-         't1.contact_no',
-         'user.name as collector_name',
-         'user.id as tc_id',
-      )
-      ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
-      ->join('users as user', 'user.id','=', 'mar_shop_payments.user_id')
-      ->where('mar_shop_payments.pmt_mode','!=',"ONLINE")
-      ->where('mar_shop_payments.payment_status','!=',"3");
+         ->select(
+            'mar_shop_payments.id',
+            'mar_shop_payments.payment_date',
+            'mar_shop_payments.pmt_mode as payment_mode',
+            'mar_shop_payments.amount',
+            'mar_shop_payments.paid_from',
+            'mar_shop_payments.paid_to',
+            'mar_shop_payments.cheque_no',
+            'mar_shop_payments.dd_no',
+            'mar_shop_payments.bank_name',
+            'mar_shop_payments.transaction_id as transaction_no',
+            DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
+            't1.shop_no',
+            't1.allottee',
+            't1.contact_no',
+            'user.name as collector_name',
+            'user.id as tc_id',
+         )
+         ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+         ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+         ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+         ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 
 
    /**
     * | Get Collection Report Tc Wise
     */
-   public function getListOfPayment(){
+   public function getListOfPayment()
+   {
       return  DB::table('mar_shop_payments')
-      ->select(
-         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
-         'mar_shop_payments.user_id as tc_id',
-         'user.name as tc_name',
-         'user.mobile as tc_mobile',
-         't1.circle_id',
-      )
-      ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
-      ->join('users as user', 'user.id','=', 'mar_shop_payments.user_id')
-      ->where('mar_shop_payments.pmt_mode','!=',"ONLINE")
-      ->where('mar_shop_payments.payment_status','!=',"3");
+         ->select(
+            DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+            'mar_shop_payments.user_id as tc_id',
+            'user.name as tc_name',
+            'user.mobile as tc_mobile',
+            't1.circle_id',
+         )
+         ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+         ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+         ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+         ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 
-   
-  /**
-   * | Get Toll Payment List ULB Wise
-   */
-  public function paymentList($ulbId)
-  {
-    return self::select(
-      'mar_shop_payments.*',
-      'ms.shop_no',
-      'mc.circle_name',
-      'mm.market_name',
-      'ms.allottee as vendor_name',
-      'ms.contact_no as mobile',
-      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
-    )
-      ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
-      ->join('m_circle as mc', 'mc.id', '=', 'ms.circle_id')
-      ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')
-      ->where('mar_shop_payments.ulb_id', $ulbId);
-    }
-      
-    /**
-     * | Get Shop Payment List mode wise
-     */
-    public function listShopPaymentSummaryByPaymentMode($dateFrom,$dateTo){
+
+   /**
+    * | Get Toll Payment List ULB Wise
+    */
+   public function paymentList($ulbId)
+   {
+      return self::select(
+         'mar_shop_payments.*',
+         'ms.shop_no',
+         'mc.circle_name',
+         'mm.market_name',
+         'ms.allottee as vendor_name',
+         'ms.contact_no as mobile',
+         DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+      )
+         ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
+         ->join('m_circle as mc', 'mc.id', '=', 'ms.circle_id')
+         ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')
+         ->where('mar_shop_payments.ulb_id', $ulbId);
+   }
+
+   /**
+    * | Get Shop Payment List mode wise
+    */
+   public function listShopPaymentSummaryByPaymentMode($dateFrom, $dateTo)
+   {
       return self::select(
          // 'mar_shop_payments.shop_category_id',
          'mar_shop_payments.pmt_mode',
@@ -313,19 +316,20 @@ class MarShopPayment extends Model
          DB::raw('sum(mar_shop_payments.amount) as total_amount'),
          DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
       )
-      ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')  
-      ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')   
-      ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
-      ->where('payment_status','1')
-      ->whereBetween('payment_date', [$dateFrom, $dateTo]);
+         ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')
+         ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
+         ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')
+         ->where('payment_status', '1')
+         ->whereBetween('payment_date', [$dateFrom, $dateTo]);
       // ->groupBy('pmt_mode','mar_shop_payments.shop_category_id','mst.shop_type','mm.id','mm.market_name');
       // ->groupBy('pmt_mode','mm.id');
-    }
+   }
 
-    /**
-     * | List shop collection summary
-     */
-    public function listShopCollectionSummary($dateFrom, $dateTo){
+   /**
+    * | List shop collection summary
+    */
+   public function listShopCollectionSummary($dateFrom, $dateTo)
+   {
       return self::select(
          'mar_shop_payments.shop_category_id',
          'mst.shop_type',
@@ -334,11 +338,21 @@ class MarShopPayment extends Model
          DB::raw('sum(mar_shop_payments.amount) as total_amount'),
          DB::raw('count(mar_shop_payments.id) as total_no_of_transaction'),
       )
-      ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')
-      ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')  
-      ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')  
-      ->where('payment_status','1')
-      ->whereBetween('payment_date', [$dateFrom, $dateTo]);
+         ->join('mar_shop_types as mst', 'mst.id', '=', 'mar_shop_payments.shop_category_id')
+         ->join('mar_shops as ms', 'ms.id', '=', 'mar_shop_payments.shop_id')
+         ->join('m_market as mm', 'mm.id', '=', 'ms.market_id')
+         ->where('payment_status', '1')
+         ->whereBetween('payment_date', [$dateFrom, $dateTo]);
       // ->groupBy('pmt_mode','mar_shop_payments.payment_date','mar_shop_payments.user_id','mar_shop_payments.shop_category_id','mst.shop_type');
-    }
+   }
+
+   public function searchTransaction($tranNo)
+   {
+      return Self::select('mar_shop_payments.id','mar_shop_payments.transaction_id as transaction_no','mar_shop_payments.amount','mar_shop_payments.payment_date','mar_shop_payments.pmt_mode as payment_mode','mar_shop_payments.dd_no','mar_shop_payments.bank_name','mar_shop_payments.cheque_no',
+      DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+      DB::raw("'Shop Rent' as type"),)
+         ->where('transaction_id', $tranNo)
+         ->where('is_verified','0')
+         ->get();
+   }
 }

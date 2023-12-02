@@ -1642,7 +1642,7 @@ class ShopController extends Controller
             if ($req->marketId > 0) {
                 $list = $list->where('ms.market_id', $req->marketId);
             } //DB::enableQueryLog();
-            $list=$list->groupBy('pmt_mode');
+            $list = $list->groupBy('pmt_mode');
             $list1 = $list = $list->get();
             // return ([DB::getQueryLog()]);
             // $tamoount= $list->sum('total_amount');
@@ -1886,17 +1886,36 @@ class ShopController extends Controller
      */
     public function getsearchShopByMobileNo($mobileNo)
     {
-        // $validator = Validator::make($req->all(), [
-        //     'mobileNo' => 'required|digits:10',
-        // ]);
-        // if ($validator->fails()) {
-        //     return  $validator->errors();
-        // }
         try {
             $mshop = new Shop();
             $listShop = $mshop->searchShopByContactNo($mobileNo)->get();
             // $list = paginator($listShop, $req);
             return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055034", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+        }
+    }
+
+    /**
+     * | Search Transaction By Transaction No
+     */
+    public function searchTransactionByTransactionNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "transactionNo" => "required|integer",
+            "module" => "required|in:Shop",
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            if ($req->module == 'Shop') {
+                $mMarShopPayment = new MarShopPayment();
+                $transactionDetails = $mMarShopPayment->searchTransaction($req->transactionNo);
+            }
+            if (!$transactionDetails)
+                throw new Exception('Transaction Details Not Found !!!');
+            // $list = paginator($listShop, $req);
+            return responseMsgs(true, "Transaction Details Fetch Successfully !!!", $transactionDetails, "055034", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
         }

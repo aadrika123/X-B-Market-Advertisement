@@ -71,7 +71,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-shop-by-mobile-no', 'searchShopByMobileNo');                                 // 34  Search Shop By Mobile No
         Route::post('rental/shop-report-by-payment-mode-summary', 'shopReportSummaryByPaymentMode');            // 36  Shop Report Summary by payment mode wise
         Route::post('rental/shop-collection-summary', 'shopCollectionSummary');                                 // 37  Shop Collection Summary
-        Route::post('rental/dcb-reports-arrear-current', 'dcbReportsArrearCurrent');                             // 38  DCB Reports Arrear Current
+        Route::post('rental/dcb-reports-arrear-current', 'dcbReportsArrearCurrent');                            // 38  DCB Reports Arrear Current
+        Route::post('rental/search-transaction-by-transaction-no', 'searchTransactionByTransactionNo');         // 34  Search Transaction By Transaction No
     });
 
     /**
