@@ -1909,12 +1909,12 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             "transactionNo" => "required|integer",
-            "module" => "required|in:Shop Rent",
+            "module" => "required|in:Shop",
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            if ($req->module == 'Shop Rent') {
+            if ($req->module == 'Shop') {
                 $mMarShopPayment = new MarShopPayment();
                 $transactionDetails = $mMarShopPayment->searchTransaction($req->transactionNo);
             }
@@ -1935,12 +1935,12 @@ class ShopController extends Controller
         $validator = Validator::make($req->all(), [
             "tranId" => "required|integer",
             "deactiveReason" => "required|string",
-            "module" => "required|in:Shop Rent",
+            "module" => "required|in:Shop",
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            if ($req->module == 'Shop Rent') {
+            if ($req->module == 'Shop') {
                 $mMarShopPayment = new MarShopPayment();
                 DB::beginTransaction();
                 $status = $mMarShopPayment->deActiveTransaction($req);

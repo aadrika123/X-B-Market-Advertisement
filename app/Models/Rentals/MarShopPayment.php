@@ -358,7 +358,7 @@ class MarShopPayment extends Model
          'mar_shop_payments.bank_name',
          'mar_shop_payments.cheque_no',
          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
-         DB::raw("'Shop Rent' as type"),
+         DB::raw("'Municipal Rental' as type"),
       )
          ->where('transaction_id', $tranNo)
          // ->where('is_verified','0')
