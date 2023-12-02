@@ -1234,7 +1234,7 @@ class ShopController extends Controller
     public function listDetailCashVerification(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'date' => 'required|date_format:Y-m-d',
+            'date' => 'nullable|date_format:Y-m-d',
             'reportType' => 'nullable|integer|in:0,1',          // 0 - Not Verified, 1 - Verified
             'shopType' => 'nullable|integer|in:1,2,3',          // 1 - BOT Shop, 2 - City Shop, 3 - GP (Gram Panchyat Shop) Shop
             'market' => 'nullable|integer',
@@ -1662,11 +1662,10 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | Get Shop Collection Summary
-     * | API - 36
-     * | Function - 36
+     * | API - 37
+     * | Function - 37
      */
     public function shopCollectionSummary(Request $req)
     {
@@ -1702,12 +1701,17 @@ class ShopController extends Controller
             // $list=$list->where('payment_status','1')->whereBetween('payment_date', [$dateFrom, $dateTo]);
             $list = $list->groupBy('mar_shop_payments.pmt_mode', 'mar_shop_payments.user_id', 'mar_shop_payments.shop_category_id', 'mst.shop_type', 'ms.market_id', 'mm.market_name');
             $list = $list->get();
-            return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055036", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055037", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055036", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055037", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
+    /**
+     * | Get Shop Collection Summary
+     * | API - 38
+     * | Function - 38
+     */
     public function dcbReportsArrearCurrent(Request $req)
     {
         try {
@@ -1750,14 +1754,16 @@ class ShopController extends Controller
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
             $totalDCB['current'] = $total;
-            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055037", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055038", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055037", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055038", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
     /**
      * | Get Shop Details without Login
+     * | API - 39
+     * | Function - 39
      */
     public function getShopDetails($shopId)
     {
@@ -1787,14 +1793,16 @@ class ShopController extends Controller
             $shop['totalPaid'] =   round($totalPaid, 2);
             $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
             // return([DB::getQueryLog(),$payments]);
-            return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "", $shop, "055039", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055004", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055039", "1.0", responseTime(), "POST");
         }
     }
 
     /**
      * | Get Demand Amount without Login
+     * | API - 40
+     * | Function - 40
      */
     public function getPaymentAmountofShop($shopId, $fYear)
     {
@@ -1803,26 +1811,19 @@ class ShopController extends Controller
         // Business Logics
         try {
             $amount = $shopPmtBll->calculateRateFinancialYearWiae($req);                                        // Calculate amount according to Financial Year wise
-            return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], "055013", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "Amount Fetch Successfully", ['amount' => $amount], "055040", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055013", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055040", "1.0", responseTime(), "POST");
         }
     }
     /**
      * | Generate Refferal Url For Online Payment 
-     * | API - 21
-     * | Function - 21
+     * | API - 41
+     * | Function - 41
      */
     public function getGenerateReferalUrlForPayment($shopId, $fYear)
     {
         $req = new Request(['shopId' => $shopId, 'toFYear' => $fYear, 'paymentMode' => 'ONLINE']);
-        // $validator = Validator::make($req->all(), [
-        //     "shopId" => "required|integer",
-        //     "paymentMode" => 'required|string',
-        //     "toFYear" => 'required|string',
-        // ]);
-        // if ($validator->fails())
-        //     return responseMsgs(false, $validator->errors(), []);
         try {
             $amount = DB::table('mar_shop_demands')                                                       // Calculate Amount For Selected Financial Year
                 ->where('shop_id', $req->shopId)
@@ -1877,18 +1878,18 @@ class ShopController extends Controller
             ];
             MarShopPayment::create($paymentReqs);                                                       // Add Transaction Details in Market Shop Payment Table
             DB::commit();
-            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055021", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Proceed For Payment !!!", ['paymentUrl' => $data->data->encryptUrl], "055041", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "055021", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055041", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
 
     /**
      * | Get Shop List By Contact No 
-     * | API - 33
-     * | Function - 33
+     * | API - 42
+     * | Function - 42
      */
     public function getsearchShopByMobileNo($mobileNo)
     {
@@ -1896,14 +1897,16 @@ class ShopController extends Controller
             $mshop = new Shop();
             $listShop = $mshop->searchShopByContactNo($mobileNo)->get();
             // $list = paginator($listShop, $req);
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055042", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055042", "1.0", responseTime(), "POST");
         }
     }
 
     /**
      * | Search Transaction By Transaction No
+     * | API - 43
+     * | Function - 43
      */
     public function searchTransactionByTransactionNo(Request $req)
     {
@@ -1921,14 +1924,16 @@ class ShopController extends Controller
             if (!$transactionDetails)
                 throw new Exception('Transaction Details Not Found !!!');
             // $list = paginator($listShop, $req);
-            return responseMsgs(true, "Transaction Details Fetch Successfully !!!", $transactionDetails, "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "Transaction Details Fetch Successfully !!!", $transactionDetails, "055043", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055043", "1.0", responseTime(), "POST");
         }
     }
 
     /**
-     * | Transaction Deaction 
+     * | Transaction Deactivation 
+     * | API - 44
+     * | Function - 44
      */
     public function transactionDeactivation(Request $req)
     {
@@ -1947,15 +1952,17 @@ class ShopController extends Controller
                 DB::commit();
             }
             // $list = paginator($listShop, $req);
-            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055044", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055044", "1.0", responseTime(), "POST");
         }
     }
 
     /**
      * | List De-active Transaction
+     * | API - 45
+     * | Function - 45
      */
     public function listDeactiveTransaction(Request $req)
     {
@@ -1981,15 +1988,15 @@ class ShopController extends Controller
                 $list = $mMarShopPayment->listDeActiveTransaction();
                 $list=$list->whereBetween('deactive_date',[$dateFrom,$dateTo])->get();
                 // return (DB::getQueryLog());
-            return responseMsgs(true, "List De-Active Transaction !!!", $list, "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "List De-Active Transaction !!!", $list, "055045", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055045", "1.0", responseTime(), "POST");
         }   
     }
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
-     * | Function - 34
+     * | Function - 46
      */
     public function calculateShopRate($shopCategoryId, $area, $financialYear)
     {
@@ -2024,7 +2031,7 @@ class ShopController extends Controller
 
     /**
      * | ID Generation For Shop
-     * | Function - 35
+     * | Function - 47
      */
     public function shopIdGeneration($marketId)
     {
