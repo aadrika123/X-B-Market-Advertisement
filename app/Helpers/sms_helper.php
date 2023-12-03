@@ -843,7 +843,23 @@ if (!function_exists("AkolaMarket")) {
     function AkolaMarket($data = array(), $sms_for = null)
     {
 
-        if (strtoupper($sms_for) == strtoupper('Payment Receipt')) {
+        if (strtoupper($sms_for) == strtoupper('payment_receipt')) {
+            try {
+                //Dear {#var#}, congratulations on submitting your Assessment application! Your Ref No. is {#var#}. For details visit www.akolamc.org/call us at:18008907909 SWATI INDUSTRIES               
+                $sms = "Dear " . $data["owner_name"] . ", congratulations on submitting your Assessment application! Your Ref No. is " . $data["saf_no"] . ". For details visit www.akolamc.org/call us at:18008907909 SWATI INDUSTRIES";
+                $temp_id = "1707169564185074869";
+                return array("sms" => $sms, "temp_id" => $temp_id, 'status' => true);
+            } catch (Exception $e) {
+                return array(
+                    "sms_formate" => "Dear {#var#}, congratulations on submitting your Assessment application! Your Ref No. is {#var#}. For details visit www.akolamc.org/call us at:18008907909 SWATI INDUSTRIES",
+                    "discriuption" => "1. 2 para required 
+                        2. 1st para array('owner_name'=>'','saf_no'=>'') sizeof 2  
+                        3. 2nd para sms for ",
+                    "error" => $e->getMessage(),
+                    'status' => false
+                );
+            }
+        }elseif(strtoupper($sms_for) == strtoupper('demand_receipt')){
             try {
                 //Dear {#var#}, congratulations on submitting your Assessment application! Your Ref No. is {#var#}. For details visit www.akolamc.org/call us at:18008907909 SWATI INDUSTRIES               
                 $sms = "Dear " . $data["owner_name"] . ", congratulations on submitting your Assessment application! Your Ref No. is " . $data["saf_no"] . ". For details visit www.akolamc.org/call us at:18008907909 SWATI INDUSTRIES";

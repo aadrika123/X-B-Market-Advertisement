@@ -73,42 +73,52 @@ class ShopController extends Controller
             DB::commit();
             $mobile = $shop['mobile'];
             // $mobile="8271522513";
-            if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $shop['allottee'],
-                            $shop['amount'],
-                            $shop['paymentDate'],
-                            "Shop Payment",
-                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
-                        ]
-                    ]
-                ));
-                // $url="https://modernulb.com/advertisement/rental-payment-receipt/266";
-                // // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-                // // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
-                // $path= "Uploads/shops/payment/";
-                // // $fileUrl=$this->downloadAndSavePDF($path,$url);
-                // $fileUrl=$this->saveUrlAsPdf($url,$path);
-                // (Whatsapp_Send(
-                //     $mobile,
-                //     "file_test",
-                //     [
-                //         "content_type" => "pdfOnly",
-                //         [
-                //             [
-                //                 "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
-                //                 "filename" =>$fileUrl,
-                //             ]
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $shop['allottee'],
+            //                 $shop['amount'],
+            //                 $shop['paymentDate'],
+            //                 "Shop Payment",
+            //                 "https://modernulb.com/advertisement/rental-payment-receipt/" . $shop['tranId']
+            //             ]
+            //         ]
+            //     ));
+            //     $sms = AkolaMarket(
+            //         [
+            //             "owner_name" => "bikash",
+            //             "saf_no" => "1023124"
+            //         ],
+            //         "payment_receipt"
+            //     );
+            //     if (($sms["status"] !== false)) {
+            //         $respons = SMSAKGOVT($mobile, $sms["sms"], $sms["temp_id"]);
+            //     }
+            //     // $url="https://modernulb.com/advertisement/rental-payment-receipt/266";
+            //     // // $url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+            //     // // $url="http://192.168.0.128:3035/advertisement/rental-payment-receipt/" . $shop['tranId'];
+            //     // $path= "Uploads/shops/payment/";
+            //     // // $fileUrl=$this->downloadAndSavePDF($path,$url);
+            //     // $fileUrl=$this->saveUrlAsPdf($url,$path);
+            //     // (Whatsapp_Send(
+            //     //     $mobile,
+            //     //     "file_test",
+            //     //     [
+            //     //         "content_type" => "pdfOnly",
+            //     //         [
+            //     //             [
+            //     //                 "link" => "https://market.modernulb.com/". $path."/".$fileUrl,
+            //     //                 "filename" =>$fileUrl,
+            //     //             ]
 
-                //         ]
-                //     ],
-                // ));
-            }
+            //     //         ]
+            //     //     ],
+            //     // ));
+            // }
             return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $shop['amount']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -628,22 +638,32 @@ class ShopController extends Controller
             DB::commit();
             $mobile = $res['shopDetails']->contact_no;
             // $mobile = "8271522513";
-            if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $res['shopDetails']->allottee,
-                            $res['amount'],
-                            Carbon::now()->format('d-m-Y'),
-                            "Shop Payment",
-                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $res['lastTranId']
-                        ]
-                    ]
-                ));
-            }
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $res['shopDetails']->allottee,
+            //                 $res['amount'],
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Shop Payment",
+            //                 "https://modernulb.com/advertisement/rental-payment-receipt/" . $res['lastTranId']
+            //             ]
+            //         ]
+            //     ));
+            //     $sms = AkolaMarket(
+            //         [
+            //             "owner_name" => "bikash",
+            //             "saf_no" => "1023124"
+            //         ],
+            //         "payment_receipt"
+            //     );
+            //     if (($sms["status"] !== false)) {
+            //         $respons = SMSAKGOVT($mobile, $sms["sms"], $sms["temp_id"]);
+            //     }
+            // }
             return responseMsgs(true, "Cheque or DD Entry Successfully", ['details' => $res['createdPayment']], "055014", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
@@ -729,22 +749,32 @@ class ShopController extends Controller
                 $shop = Shop::find($shopPayment->shop_id);
                 $mobile = $shop['contact_no'];
                 // $mobile = "8271522513";
-                if ($mobile != NULL && strlen($mobile) == 10) {
-                    (Whatsapp_Send(
-                        $mobile,
-                        "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                        [
-                            "content_type" => "text",
-                            [
-                                $shop['allottee'],
-                                $shopPayment->amount,
-                                Carbon::now()->format('d-m-Y'),
-                                "Shop Payment",
-                                "https://modernulb.com/advertisement/rental-payment-receipt/" . $shopPayment->id
-                            ]
-                        ]
-                    ));
-                }
+                // if ($mobile != NULL && strlen($mobile) == 10) {
+                //     (Whatsapp_Send(
+                //         $mobile,
+                //         "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+                //         [
+                //             "content_type" => "text",
+                //             [
+                //                 $shop['allottee'],
+                //                 $shopPayment->amount,
+                //                 Carbon::now()->format('d-m-Y'),
+                //                 "Shop Payment",
+                //                 "https://modernulb.com/advertisement/rental-payment-receipt/" . $shopPayment->id
+                //             ]
+                //         ]
+                //     ));
+                //     // $sms = AkolaMarket(
+                //     //     [
+                //     //         "owner_name" => "bikash",
+                //     //         "saf_no" => "1023124"
+                //     //     ],
+                //     //     "payment_receipt"
+                //     // );
+                //     // if (($sms["status"] !== false)) {
+                //     //     $respons = SMSAKGOVT($mobile, $sms["sms"], $sms["temp_id"]);
+                //     // }
+                // }
                 return responseMsgs(true, $msg, '', "055016", "1.0", responseTime(), "POST", $req->deviceId);
             } else {
                 $msg = $shopPayment->pmt_mode . " Has Been Bounced !!!";
@@ -1114,22 +1144,32 @@ class ShopController extends Controller
             $amount = MarShopPayment::select('amount')->where('id', $lastTranId)->first()->amount;
             $mobile = $shop['mobile'];
             // $mobile = "8271522513";
-            if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $shop['allottee'],
-                            $amount,
-                            Carbon::now()->format('d-m-Y'),
-                            "Shop Payment",
-                            "https://modernulb.com/advertisement/rental-payment-receipt/" . $lastTranId
-                        ]
-                    ]
-                ));
-            }
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v1",           // Dear *{{name}}*, your payment has been received successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $shop['allottee'],
+            //                 $amount,
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Shop Payment",
+            //                 "https://modernulb.com/advertisement/rental-payment-receipt/" . $lastTranId
+            //             ]
+            //         ]
+            //     ));
+            //     //  $sms = AkolaMarket(
+            //     //     [
+            //     //         "owner_name" => "bikash",
+            //     //         "saf_no" => "1023124"
+            //     //     ],
+            //     //     "payment_receipt"
+            //     // );
+            //     // if (($sms["status"] !== false)) {
+            //     //     $respons = SMSAKGOVT($mobile, $sms["sms"], $sms["temp_id"]);
+            //     // }
+            // }
             return true;
         } catch (Exception $e) {
             DB::rollBack();
@@ -1378,23 +1418,23 @@ class ShopController extends Controller
 
 
             $mobile = $shopDetails->contact_no;
-            // $mobile = "8271522513";
-            if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $shopDetails->allottee,
-                            $demands['totalAmount'],
-                            Carbon::now()->format('d-m-Y'),
-                            "Shop Demand Reciept",
-                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $req->financialYear,
-                        ]
-                    ]
-                ));
-            }
+            $mobile = "8271522513";
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $shopDetails->allottee,
+            //                 $demands['totalAmount'],
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Shop Demand Reciept",
+            //                 "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $req->financialYear,
+            //             ]
+            //         ]
+            //     ));
+            // }
             return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
@@ -1588,22 +1628,32 @@ class ShopController extends Controller
 
             $mobile = $shopDetails->mobile;
             // $mobile = "8271522513";
-            if ($mobile != NULL && strlen($mobile) == 10) {
-                (Whatsapp_Send(
-                    $mobile,
-                    "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
-                    [
-                        "content_type" => "text",
-                        [
-                            $shopDetails->allottee,
-                            $demands['totalAmount'],
-                            Carbon::now()->format('d-m-Y'),
-                            "Shop Demand Reciept",
-                            "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $fYear,
-                        ]
-                    ]
-                ));
-            }
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $shopDetails->allottee,
+            //                 $demands['totalAmount'],
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Shop Demand Reciept",
+            //                 "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $fYear,
+            //             ]
+            //         ]
+            //     ));
+            //     // $sms = AkolaMarket(
+            //     //     [
+            //     //         "owner_name" => "bikash",
+            //     //         "saf_no" => "1023124"
+            //     //     ],
+            //     //     "demand_receipt"
+            //     // );
+            //     // if (($sms["status"] !== false)) {
+            //     //     $respons = SMSAKGOVT($mobile, $sms["sms"], $sms["temp_id"]);
+            //     // }
+            // }
             return responseMsgs(true, "", $demands, "055034", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055034", "1.0", responseTime(), "POST", $req->deviceId);
