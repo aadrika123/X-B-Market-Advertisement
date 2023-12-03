@@ -2139,8 +2139,8 @@ class ShopController extends Controller
                 $toDate = $req->toDate;
             }
             $mMarShopPayment = new MarShopPayment();
-            $list = $mMarShopPayment->getListOfPaymentForTCwise()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
-            // $list = $list->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'user.mobile');
+            $list = $mMarShopPayment->getListTCwise()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
+            $list = $list->groupBy('user.id','user.name');
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('amount');
             return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);

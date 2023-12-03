@@ -436,7 +436,18 @@ class MarShopPayment extends Model
          ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 
-   public function getListTCwise(Request $req){
-      
+   public function getListTCwise(){
+      return  DB::table('mar_shop_payments')
+      ->select(
+         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+         DB::raw('count(mar_shop_payments.id) as total_transaction'),
+         'user.name as tc_name',
+         // 'user.mobile as tc_mobile',
+         //  't1.allottee as shop_name',
+      )
+      ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+      ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+      ->where('mar_shop_payments.deactive_date', '=', NULL)
+      ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 }
