@@ -1741,6 +1741,7 @@ class ShopController extends Controller
                 $dateTo = $req->dateTo;
             }
             $mMarShopPayment = new MarShopPayment();
+            // DB::enableQueryLog();
             $list = $mMarShopPayment->listShopCollectionSummary($dateFrom, $dateTo);
             if ($req->shopCategoryId > 0) {
                 $list = $list->where('ms.shop_category_id', $req->shopCategoryId);
@@ -1749,8 +1750,9 @@ class ShopController extends Controller
                 $list = $list->where('ms.market_id', $req->marketId);
             }
             // $list=$list->where('payment_status','1')->whereBetween('payment_date', [$dateFrom, $dateTo]);
-            $list = $list->groupBy('mar_shop_payments.pmt_mode', 'mar_shop_payments.user_id', 'mar_shop_payments.shop_category_id', 'mst.shop_type', 'ms.market_id', 'mm.market_name');
+            $list = $list->groupBy('mar_shop_payments.shop_category_id', 'mst.shop_type', 'ms.market_id', 'mm.market_name');
             $list = $list->get();
+            // return ([DB::getQueryLog()]);
             return responseMsgs(true, "Shop Collection Report Summary !!!", $list, "055037", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055037", "1.0", responseTime(), "POST", $req->deviceId);
