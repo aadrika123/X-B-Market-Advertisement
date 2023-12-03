@@ -278,6 +278,7 @@ class MarShopPayment extends Model
          ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
          ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
          ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+         ->where('mar_shop_payments.deactive_date', '=', NULL)
          ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 
@@ -360,8 +361,8 @@ class MarShopPayment extends Model
          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
          DB::raw("'Municipal Rental' as type"),
       )
-      ->where('transaction_id', $tranNo)
-      ->where('payment_status', '!=', '0')
+         ->where('transaction_id', $tranNo)
+         ->where('payment_status', '!=', '0')
          // ->where('is_verified','0')
          ->get();
    }
@@ -386,7 +387,8 @@ class MarShopPayment extends Model
          ->update($updateData);
    }
 
-   public function listDeActiveTransaction(){
+   public function listDeActiveTransaction()
+   {
       return Self::select(
          'mar_shop_payments.id',
          'mar_shop_payments.transaction_id as transaction_no',
@@ -401,8 +403,40 @@ class MarShopPayment extends Model
          DB::raw("TO_CHAR(mar_shop_payments.deactive_date, 'DD-MM-YYYY') as deactive_date"),
          DB::raw("'Municipal Rental' as type"),
       )
-         ->where('payment_status', '0')->where('deactive_reason','!=',NULL);
-         // ->where('is_verified','0')
-         // ->get();
+         ->where('payment_status', '0')->where('deactive_reason', '!=', NULL);
+      // ->where('is_verified','0')
+      // ->get();
+   }
+
+   /**
+    * | Get Collection Report Tc Wise
+    */
+   public function getListOfPaymentForTCwise()
+   {
+      return  DB::table('mar_shop_payments')
+         ->select(
+            //  DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+            'mar_shop_payments.amount as total_amount',
+            'mar_shop_payments.user_id as tc_id',
+            'mar_shop_payments.pmt_mode as payment_mode',
+            'user.name as tc_name',
+            'user.mobile as tc_mobile',
+            't1.circle_id',
+            't1.allottee as shop_name',
+            'mm.market_name',
+            'mc.circle_name as zone',
+            //  't1.allottee as shop_name',
+         )
+         ->join('mar_shops as t1', 'mar_shop_payments.shop_id', '=', 't1.id')
+         ->join('m_market as mm', 't1.market_id', '=', 'mm.id')
+         ->join('m_circle as mc', 't1.circle_id', '=', 'mc.id')
+         ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+         ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+         ->where('mar_shop_payments.deactive_date', '=', NULL)
+         ->where('mar_shop_payments.payment_status', '!=', "3");
+   }
+
+   public function getListTCwise(Request $req){
+      
    }
 }

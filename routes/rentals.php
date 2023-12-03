@@ -75,6 +75,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-transaction-by-transaction-no', 'searchTransactionByTransactionNo');         // 43  Search Transaction By Transaction No
         Route::post('rental/transaction-deactivation', 'transactionDeactivation');                              // 44  Deactive Transaction
         Route::post('rental/list-deactivation-transaction', 'listDeactiveTransaction');                         // 45  List Deactive Transaction
+        Route::post('rental/bulk-demand-reciept', 'bulkDemandReciept');                                         // 46  Bulk Demand Receipt
+        Route::post('rental/tc-wise-collection-details', 'tcwisecollectionDetails');                            // 46  Tc Wise Collection Details
+        Route::post('rental/tc-wise-collection', 'tcwisecollection');                            // 46  Tc Wise Collection Details
     });
 
     /**

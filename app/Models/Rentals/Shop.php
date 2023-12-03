@@ -232,4 +232,5 @@ class Shop extends Model
       ->where('mar_shops.contact_no', $mobileNo)
       ->where('mar_shops.status', '1');
   }
+  
 }
