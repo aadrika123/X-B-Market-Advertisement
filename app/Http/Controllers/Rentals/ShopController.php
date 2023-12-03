@@ -1885,7 +1885,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | Get Shop List By Contact No 
      * | API - 42
