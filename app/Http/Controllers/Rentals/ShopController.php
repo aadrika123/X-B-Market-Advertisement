@@ -2143,7 +2143,7 @@ class ShopController extends Controller
             $list = $list->groupBy('user.id','user.name');
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('amount');
-            return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "TC Wise Collection Summary !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
         }
