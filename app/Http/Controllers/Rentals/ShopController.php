@@ -2114,7 +2114,7 @@ class ShopController extends Controller
             $list = $mMarShopPayment->getListOfPaymentForTCwise()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
             // $list = $list->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'user.mobile');
             $list = paginator($list, $req);
-            $list['totalCollection'] = collect($list['data'])->sum('amount');
+            $list['totalCollection'] = collect($list['data'])->sum('total_amount');
             return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
@@ -2142,7 +2142,7 @@ class ShopController extends Controller
             $list = $mMarShopPayment->getListTCwise()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
             $list = $list->groupBy('user.id','user.name');
             $list = paginator($list, $req);
-            $list['totalCollection'] = collect($list['data'])->sum('amount');
+            $list['totalCollection'] = collect($list['data'])->sum('total_amount');
             return responseMsgs(true, "TC Wise Collection Summary !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
