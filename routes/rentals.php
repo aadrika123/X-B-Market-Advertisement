@@ -76,8 +76,11 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/transaction-deactivation', 'transactionDeactivation');                              // 44  Deactive Transaction
         Route::post('rental/list-deactivation-transaction', 'listDeactiveTransaction');                         // 45  List Deactive Transaction
         Route::post('rental/bulk-demand-reciept', 'bulkDemandReciept');                                         // 46  Bulk Demand Receipt
-        Route::post('rental/tc-wise-collection-details', 'tcwisecollectionDetails');                            // 46  Tc Wise Collection Details
-        Route::post('rental/tc-wise-collection', 'tcwisecollection');                            // 46  Tc Wise Collection Details
+        Route::post('rental/tc-wise-collection-details', 'tcwisecollectionDetails');                            // 47  Tc Wise Collection  
+        Route::post('rental/tc-wise-collection', 'tcwisecollection');                                           // 48  Tc Wise Collection Details
+        Route::post('rental/bulk-payment-reciept', 'bulkPaymentReciept');                                       // 50  Bulk Payment Reciept
+        Route::post('rental/search-demand-for-update', 'searchDemandForUpdate');                                // 51  Search Demand For Update
+        Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                // 52  Update Shop Demand
     });
 
     /**

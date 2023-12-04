@@ -9,6 +9,7 @@ use App\MicroServices\DocumentUpload;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
 use App\Models\Rentals\MarShopDemand;
+use App\Models\Rentals\MarShopDemandLog;
 use App\Models\Rentals\MarShopLog;
 use App\Models\Rentals\MarShopPayment;
 use App\Models\Rentals\MarShopRateList;
@@ -2061,7 +2062,7 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         try {
             // $mShop=new Shop();
-            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('shop_category_id',$req->shopCategoryId)->orderBy('id')->get();
+            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('shop_category_id', $req->shopCategoryId)->orderBy('id')->get();
             $receipts = array();
             foreach ($shopIds as $val) {
                 $mMarShopDemand = new MarShopDemand();
@@ -2164,7 +2165,7 @@ class ShopController extends Controller
     }
 
     /**
-     * | List De-active Transaction
+     * | Bulk Payment Reciept
      * | API - 49
      * | Function - 49
      */
@@ -2172,43 +2173,138 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'marketId' => 'required|integer',
-            'marketId' => 'required|integer',
+            'shopCategoryId' => 'required|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            // $mShop=new Shop();
-            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->orderBy('id')->get();
-            $receipts = array();
-            foreach ($shopIds as $val) {
-                $mMarShopDemand = new MarShopDemand();
-                $shopDemand = $mMarShopDemand->payBeforeAllDemand($val->id);                            // Demand Details Before Payment 
-                // if (empty($shopDemand)) {
-                $demands['shopDemand'] = $shopDemand;
-                $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
-                if ($demands['totalAmount'] > 0) {
-                    $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
-
-                    $shopDetails = $this->_mShops->getShopDetailById($val->id);                                               // Get Shop Details By Shop Id
-                    $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
-                    $demands['shopNo'] = $shopDetails->shop_no;
-                    $demands['amcShopNo'] = $shopDetails->amc_shop_no;
-                    $demands['allottee'] = $shopDetails->allottee;
-                    $demands['market'] = $shopDetails->market_name;
-                    $demands['shopType'] = $shopDetails->shop_type;
-                    $demands['ulbName'] = $ulbDetails->ulb_name;
-                    $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
-                    $demands['website'] = $ulbDetails->current_website;
-                    $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
-                    $demands['rentType'] =  $shopDetails->rent_type;
-                    $demands['aggrementEndDate'] =  $shopDetails->alloted_upto;
-                    $receipts[] = $demands;
-                }
+            // DB::enableQueryLog();
+            $data = MarShopPayment::select('mar_shop_payments.*', 'users.name as reciever_name')
+                ->leftjoin('users', 'users.id', 'mar_shop_payments.user_id')
+                ->where('mar_shop_payments.transaction_id', '!=', NULL)
+                // ->where('mar_shop_payments.id','=',325)
+                ->where(function ($query) {
+                    $query->where('mar_shop_payments.payment_status', '1')
+                        ->orwhere('mar_shop_payments.payment_status', '2');
+                });
+            if ($req->fromDate != NULL) {
+                $data = $data->whereBetween('payment_date', [$req->fromDate, $req->toDate]);
             }
-            return responseMsgs(true, "Bulk Reciept Generated Successfully !!!", $receipts, "055046", "1.0", responseTime(), "POST");
+            $data = $data->get();
+            // return [DB::getQueryLog()];
+            if (!$data)
+                throw new Exception("No Any Transaction Found !!!");
+            $payReciept = array();
+            foreach ($data as $payment) {
+                $shopDetails = $this->_mShops->getShopDetailById($payment->shop_id);                                               // Get Shop Details By Shop Id
+                $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+                $reciept = array();
+                $reciept['shopNo'] = $shopDetails->shop_no;
+                $reciept['amcShopNo'] = $shopDetails->amc_shop_no;
+                $reciept['paidFrom'] = $payment->paid_from;
+                $reciept['paidTo'] = $payment->paid_to;
+                $reciept['amount'] = $payment->amount;
+                $reciept['paymentDate'] =  Carbon::createFromFormat('Y-m-d', $payment->payment_date)->format('d-m-Y');
+                $reciept['paymentMode'] = $payment->pmt_mode;
+                $reciept['transactionNo'] = $payment->transaction_id;
+                $reciept['allottee'] = $shopDetails->allottee;
+                $reciept['market'] = $shopDetails->market_name;
+                $reciept['shopType'] = $shopDetails->shop_type;
+                $reciept['ulbName'] = $ulbDetails->ulb_name;
+                $reciept['tollFreeNo'] = $ulbDetails->toll_free_no;
+                $reciept['website'] = $ulbDetails->current_website;
+                $reciept['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+                $reciept['recieverName'] =  $payment->reciever_name;
+                $reciept['paymentStatus'] = $payment->payment_status == 1 ? "Success" : ($payment->payment_status == 2 ? "Payment Made By " . strtolower($payment->pmt_mode) . " are considered provisional until they are successfully cleared." : ($payment->payment_status == 3 ? "Cheque/DD Bounce" : "No Any Payment"));
+                $reciept['amountInWords'] = getIndianCurrency($payment->amount) . "Only /-";
+                $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;                                             // Convert digits to words 
+
+                // If Payment By Cheque then Cheque Details is Added Here
+                $reciept['chequeDetails'] = array();
+                if (strtoupper($payment->pmt_mode) == 'CHEQUE') {
+                    $reciept['chequeDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $payment->cheque_date)->format('d-m-Y');;
+                    $reciept['chequeDetails']['cheque_no'] = $payment->cheque_no;
+                    $reciept['chequeDetails']['bank_name'] = $payment->bank_name;
+                    $reciept['chequeDetails']['branch_name'] = $payment->branch_name;
+                }
+                // If Payment By DD then DD Details is Added Here
+                $reciept['ddDetails'] = array();
+                if (strtoupper($payment->pmt_mode) == 'DD') {
+                    $reciept['ddDetails']['cheque_date'] = Carbon::createFromFormat('Y-m-d', $payment->cheque_date)->format('d-m-Y');;
+                    $reciept['ddDetails']['dd_no'] = $payment->dd_no;
+                    $reciept['ddDetails']['bank_name'] = $payment->bank_name;
+                    $reciept['ddDetails']['branch_name'] = $payment->branch_name;
+                }
+                $payReciept[] = $reciept;
+            }
+            return responseMsgs(true, "Bulk Reciept Fetch Successfully !!!", $payReciept, "055049", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055049", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Search Demand For Update
+     * | API - 50
+     * | Function - 50
+     */
+    public function searchDemandForUpdate(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
+            'financialYear' => 'required|string',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $data = MarShopDemand::select('id', 'shop_id', 'financial_year', 'amount')
+                ->where('shop_id', $req->shopId)
+                ->where('financial_year', $req->financialYear)
+                ->first();
+            return responseMsgs(true, "Fetch Demand Successfully !!!", $data, "055050", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055050", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * | Search Demand For Update
+     * | API - 50
+     * | Function - 50
+     */
+    public function UpdateShopDemand(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|integer',
+            '6' => 'required|integer',
+            'financialYear' => 'required|string',
+            'amount' => 'required|numeric',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            DB::beginTransaction();
+            $mMarShopDemand = MarShopDemand::find($req->id); 
+            $demandAmt=$mMarShopDemand->amount;
+            $mMarShopDemand->amount=$req->amount;
+            $mMarShopDemand->save();  
+            
+            $updateData=[
+                'shop_id'=>$req->shopId,
+                'user_id'=>$req->auth['id'],
+                'financial_year'=>$req->financialYear,
+                'previous_amount'=>$demandAmt,
+                'amount'=>$req->amount,
+                'date'=>Carbon::now()
+            ];
+            MarShopDemandLog::create($updateData);
+            DB::commit();
+            return responseMsgs(true, "Demand Update Successfully !!!",'', "055050", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, $e->getMessage(), [], "055046", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055050", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
