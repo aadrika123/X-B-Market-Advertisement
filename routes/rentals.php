@@ -22,6 +22,7 @@ Route::controller(ShopController::class)->group(function () {
     Route::get('rental/get-payment-amount-of-shop/{shopId}/{fyYear}', 'getPaymentAmountofShop');                // 40 Calculate Shop Amount According to Financial Year Wise
     Route::get('rental/get-generate-referal-url-payment/{shopId}/{fyYear}', 'getGenerateReferalUrlForPayment'); // 41 Generate Refferal Url for Without Login Payment
     Route::get('rental/get-search-shop-by-mobile-no/{mobileNo}', 'getsearchShopByMobileNo');                    // 42 Search Shop By Mobile No Without Login
+    Route::post('rental/get-search-shop-by-mobile-no-name-shop', 'getsearchShopByMobileNoNameShopNo');          // 54 Search Shop By Mobile No, Name, or Shop No Without Login
     Route::post('rental/sendSms', 'sendSms');
 
 
@@ -80,7 +81,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/tc-wise-collection', 'tcwisecollection');                                           // 48  Tc Wise Collection Details
         Route::post('rental/bulk-payment-reciept', 'bulkPaymentReciept');                                       // 50  Bulk Payment Reciept
         Route::post('rental/search-demand-for-update', 'searchDemandForUpdate');                                // 51  Search Demand For Update
-        Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                // 52  Update Shop Demand
+        Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                           // 52  Update Shop Demand
+        Route::post('rental/dcb-financial-year-wise', 'dcbFinancialYearWise');                                  // 53  DCB Financial Year Wise
     });
 
     /**

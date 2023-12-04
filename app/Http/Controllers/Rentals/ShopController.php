@@ -903,7 +903,11 @@ class ShopController extends Controller
                 $total[$sType]['totalDemand'] = number_format($demand, 2);
                 $total[$sType]['totalCollection'] = number_format($collection, 2);
                 $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
-                $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                if ($demand > 0) {
+                    $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                } else {
+                    $total[$sType]['totalCollectInPercent'] = number_format(0, 2);
+                }
 
                 $total[$sType]['totalDemandGraph'] = $demand;
                 $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
@@ -1661,7 +1665,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | Get Shop Collection Summary by Payment Mode Wise 
      * | API - 36
@@ -1783,10 +1786,14 @@ class ShopController extends Controller
                 $total[$sType]['totalDemand'] = number_format($demand, 2);
                 $total[$sType]['totalCollection'] = number_format($collection, 2);
                 $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
-                $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                if ($demand > 0) {
+                    $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                } else {
+                    $total[$sType]['totalCollectInPercent'] = number_format(0, 2);
+                }
 
                 $total[$sType]['totalDemandGraph'] = $demand;
-                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCurrentCollectoion($st['id'], $currentYear);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
             $totalDCB['arrear'] = $total;
@@ -1800,10 +1807,14 @@ class ShopController extends Controller
                 $total[$sType]['totalDemand'] = number_format($demand, 2);
                 $total[$sType]['totalCollection'] = number_format($collection, 2);
                 $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
-                $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                if ($demand > 0) {
+                    $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                } else {
+                    $total[$sType]['totalCollectInPercent'] = number_format(0, 2);
+                }
 
                 $total[$sType]['totalDemandGraph'] = $demand;
-                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCurrentCollectoion($st['id'], $currentYear);
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
             $totalDCB['current'] = $total;
@@ -2130,7 +2141,6 @@ class ShopController extends Controller
         }
     }
 
-
     /**
      * | List De-active Transaction
      * | API - 48
@@ -2286,25 +2296,99 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         try {
             DB::beginTransaction();
-            $mMarShopDemand = MarShopDemand::find($req->id); 
-            $demandAmt=$mMarShopDemand->amount;
-            $mMarShopDemand->amount=$req->amount;
-            $mMarShopDemand->save();  
-            
-            $updateData=[
-                'shop_id'=>$req->shopId,
-                'user_id'=>$req->auth['id'],
-                'financial_year'=>$req->financialYear,
-                'previous_amount'=>$demandAmt,
-                'amount'=>$req->amount,
-                'date'=>Carbon::now()
+            $mMarShopDemand = MarShopDemand::find($req->id);
+            $demandAmt = $mMarShopDemand->amount;
+            $mMarShopDemand->amount = $req->amount;
+            $mMarShopDemand->save();
+
+            $updateData = [
+                'shop_id' => $req->shopId,
+                'user_id' => $req->auth['id'],
+                'financial_year' => $req->financialYear,
+                'previous_amount' => $demandAmt,
+                'amount' => $req->amount,
+                'date' => Carbon::now()
             ];
             MarShopDemandLog::create($updateData);
             DB::commit();
-            return responseMsgs(true, "Demand Update Successfully !!!",'', "055050", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Demand Update Successfully !!!", '', "055050", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055050", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function dcbFinancialYearWise(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fyYear' => 'nullable|string',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $shopType = MarShopType::select('shop_type', 'id')->where('status', '1')->orderBy('id')->get();
+            $mMarShopDemand = new MarShopDemand();
+            $mMarShopPayment = new MarShopPayment();
+            $mShop = new Shop();
+            $totalDCB = $total = array();
+            if ($req->fyYear) {
+                $currentYear = $req->fyYear;
+            } else {
+                $currentYear = getCurrentSesstion(date('Y-m-d'));
+            }
+            $total = array();
+            foreach ($shopType as $key => $st) {
+                $sType = str_replace(" ", "_", $st['shop_type']);
+                $total[$sType]['shopCategoryId'] = $st['id'];
+                $total[$sType]['totalShop'] = $mShop->totalShop($st['id']);
+                $demand = (float)$mMarShopDemand->totalCurrentDemand($st['id'], $currentYear);
+                $collection = (float)$mMarShopPayment->totalCurrentCollectoion($st['id'], $currentYear);
+                $total[$sType]['totalDemand'] = number_format($demand, 2);
+                $total[$sType]['totalCollection'] = number_format($collection, 2);
+                $total[$sType]['totalBalance'] = number_format($demand - $collection, 2);
+                if ($demand > 0) {
+                    $total[$sType]['totalCollectInPercent'] = number_format(($collection / $demand) * 100, 2);
+                } else {
+                    $total[$sType]['totalCollectInPercent'] = number_format(0, 2);
+                }
+
+                $total[$sType]['totalDemandGraph'] = $demand;
+                $total[$sType]['totalCollectionGraph'] = $mMarShopPayment->totalCollectoion($st['id']);
+                $total[$sType]['totalBalanceGraph'] = $demand - $collection;
+            }
+            $totalDCB['current'] = $total;
+            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055038", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055038", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    public function getsearchShopByMobileNoNameShopNo(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            "searchType" => "required|string|in:shopNo,mobileNo,name",
+            "value" => "required|string",
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $mshop = new Shop();
+            $listShop = $mshop->getShopData();
+            if($req->searchType=='mobileNo'){
+                $listShop = $listShop->where('contact_no',$req->value);
+            }
+            if($req->searchType=='shopNo'){
+                $val=strtoupper($req->value);
+                $listShop = $listShop->where('shop_no',$val);
+            }
+            if($req->searchType=='name'){
+                $listShop = $listShop->where('allottee',$req->value);
+            }
+            $listShop = $listShop->get();
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055042", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055042", "1.0", responseTime(), "POST");
         }
     }
 

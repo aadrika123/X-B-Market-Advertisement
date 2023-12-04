@@ -16,7 +16,7 @@ class MarShopDemand extends Model
      */
     public function getDemandByShopId($shopId)
     {
-        return self::select('financial_year', 'amount', 'payment_status', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'tran_id')->where('shop_id', $shopId)->orderBy('financial_year','ASC')->get();
+        return self::select('id','financial_year', 'amount', 'payment_status', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'tran_id')->where('shop_id', $shopId)->orderBy('financial_year','ASC')->get();
     }
 
     /**
