@@ -2054,22 +2054,24 @@ class ShopController extends Controller
     public function bulkDemandReciept(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'marketId' => 'nullable|integer',
+            'marketId' => 'required|integer',
+            'shopCategoryId' => 'required|integer',
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
             // $mShop=new Shop();
-            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('id', '<', '15')->orderBy('id')->get();
+            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('shop_category_id',$req->shopCategoryId)->orderBy('id')->get();
             $receipts = array();
             foreach ($shopIds as $val) {
                 $mMarShopDemand = new MarShopDemand();
                 $shopDemand = $mMarShopDemand->payBeforeAllDemand($val->id);                            // Demand Details Before Payment 
-                if (!empty($shopDemand)) {
-                    $demands['shopDemand'] = $shopDemand;
-                    $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
-                    if ($demands['totalAmount'] > 0)
-                        $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+                // if (empty($shopDemand)) {
+                $demands['shopDemand'] = $shopDemand;
+                $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
+                if ($demands['totalAmount'] > 0) {
+                    $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+
                     $shopDetails = $this->_mShops->getShopDetailById($val->id);                                               // Get Shop Details By Shop Id
                     $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
                     $demands['shopNo'] = $shopDetails->shop_no;
@@ -2093,7 +2095,13 @@ class ShopController extends Controller
         }
     }
 
-    public function tcwisecollectionDetails(Request $req){
+    /**
+     * | List De-active Transaction
+     * | API - 47
+     * | Function - 47
+     */
+    public function tcwisecollectionDetails(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
@@ -2115,18 +2123,24 @@ class ShopController extends Controller
             // $list = $list->groupBy('mar_shop_payments.user_id', 'user.name', 'circle_id', 'user.mobile');
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('total_amount');
-            return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Shop Collection Summary Fetch Successfully !!!", $list, "055147", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "05547", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
 
-    public function tcwisecollection(Request $req){
+
+    /**
+     * | List De-active Transaction
+     * | API - 48
+     * | Function - 48
+     */
+    public function tcwisecollection(Request $req)
+    {
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => $req->fromDate == NULL ? 'nullable|date_format:Y-m-d' : 'required|date_format:Y-m-d',
         ]);
-
         if ($validator->fails()) {
             return  $validator->errors();
         }
@@ -2140,14 +2154,64 @@ class ShopController extends Controller
             }
             $mMarShopPayment = new MarShopPayment();
             $list = $mMarShopPayment->getListTCwise()->whereBetween('payment_date', [$fromDate, $toDate]);                     // Get Payment List
-            $list = $list->groupBy('user.id','user.name');
+            $list = $list->groupBy('user.id', 'user.name');
             $list = paginator($list, $req);
             $list['totalCollection'] = collect($list['data'])->sum('total_amount');
-            return responseMsgs(true, "TC Wise Collection Summary !!!", $list, "055131", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "TC Wise Collection Summary !!!", $list, "055148", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055131", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055148", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | List De-active Transaction
+     * | API - 49
+     * | Function - 49
+     */
+    public function bulkPaymentReciept(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'marketId' => 'required|integer',
+            'marketId' => 'required|integer',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            // $mShop=new Shop();
+            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->orderBy('id')->get();
+            $receipts = array();
+            foreach ($shopIds as $val) {
+                $mMarShopDemand = new MarShopDemand();
+                $shopDemand = $mMarShopDemand->payBeforeAllDemand($val->id);                            // Demand Details Before Payment 
+                // if (empty($shopDemand)) {
+                $demands['shopDemand'] = $shopDemand;
+                $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
+                if ($demands['totalAmount'] > 0) {
+                    $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+
+                    $shopDetails = $this->_mShops->getShopDetailById($val->id);                                               // Get Shop Details By Shop Id
+                    $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+                    $demands['shopNo'] = $shopDetails->shop_no;
+                    $demands['amcShopNo'] = $shopDetails->amc_shop_no;
+                    $demands['allottee'] = $shopDetails->allottee;
+                    $demands['market'] = $shopDetails->market_name;
+                    $demands['shopType'] = $shopDetails->shop_type;
+                    $demands['ulbName'] = $ulbDetails->ulb_name;
+                    $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
+                    $demands['website'] = $ulbDetails->current_website;
+                    $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+                    $demands['rentType'] =  $shopDetails->rent_type;
+                    $demands['aggrementEndDate'] =  $shopDetails->alloted_upto;
+                    $receipts[] = $demands;
+                }
+            }
+            return responseMsgs(true, "Bulk Reciept Generated Successfully !!!", $receipts, "055046", "1.0", responseTime(), "POST");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055046", "1.0", responseTime(), "POST");
+        }
+    }
+
     /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 46
