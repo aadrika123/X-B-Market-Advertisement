@@ -2318,7 +2318,11 @@ class ShopController extends Controller
         }
     }
 
-
+    /**
+     * | Search Demand For Update
+     * | API - 51
+     * | Function - 51
+     */
     public function dcbFinancialYearWise(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -2358,12 +2362,16 @@ class ShopController extends Controller
                 $total[$sType]['totalBalanceGraph'] = $demand - $collection;
             }
             $totalDCB['current'] = $total;
-            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055038", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "DCB Reports !!!", $totalDCB, "055051", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055038", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(false, $e->getMessage(), [], "055051", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-
+    /**
+     * | Search Demand For Update
+     * | API - 52
+     * | Function - 52
+     */
     public function getsearchShopByMobileNoNameShopNo(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -2375,20 +2383,20 @@ class ShopController extends Controller
         try {
             $mshop = new Shop();
             $listShop = $mshop->getShopData();
-            if($req->searchType=='mobileNo'){
-                $listShop = $listShop->where('contact_no',$req->value);
+            if ($req->searchType == 'mobileNo') {
+                $listShop = $listShop->where('contact_no', $req->value);
             }
-            if($req->searchType=='shopNo'){
-                $val=strtoupper($req->value);
-                $listShop = $listShop->where('shop_no',$val);
+            if ($req->searchType == 'shopNo') {
+                $val = strtoupper($req->value);
+                $listShop = $listShop->where('shop_no', $val);
             }
-            if($req->searchType=='name'){
-                $listShop = $listShop->where('allottee',$req->value);
+            if ($req->searchType == 'name') {
+                $listShop = $listShop->where('allottee', $req->value);
             }
             $listShop = $listShop->get();
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055042", "1.0", responseTime(), "POST");
+            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055052", "1.0", responseTime(), "POST");
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055042", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], "055052", "1.0", responseTime(), "POST");
         }
     }
 
