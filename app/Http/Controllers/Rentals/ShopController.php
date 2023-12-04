@@ -2278,7 +2278,7 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|integer',
-            '6' => 'required|integer',
+            'shopId' => 'required|integer',
             'financialYear' => 'required|string',
             'amount' => 'required|numeric',
         ]);
