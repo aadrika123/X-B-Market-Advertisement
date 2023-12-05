@@ -2426,12 +2426,12 @@ class ShopController extends Controller
                     'paid_to' => $req->toFYear,
                     'payment_date' => Carbon::now(),
                     'payment_status' => '1',
-                    'user_id' => $req->auth['id'] ?? NULL,
+                    'user_id' => $req->userId ?? NULL,
                     'ulb_id' => $shopDetails->ulb_id,
                     'remarks' => $req->remarks,
                     'pmt_mode' => $req->paymentMode,
                     'shop_category_id' => $shopDetails->shop_category_id,
-                    'payment_details' => json_decode($req),
+                    'payment_details' => json_encode($req->all()),
                     'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,                       // Transaction id is a combination of time funcation of PHP and ULB ID and Shop ID
                 ];
                 $tran_id = MarShopPayment::create($paymentReqs)->id;                                                       // Add Transaction Details in Market Shop Payment Table
