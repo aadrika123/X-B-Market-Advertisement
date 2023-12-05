@@ -2401,6 +2401,68 @@ class ShopController extends Controller
     }
 
     /**
+     * | Payment From Pinelab 
+     * | API - 53
+     * | Function - 53
+     */
+    public function updateFromPinelabData(Request $req)
+    {
+        try {
+            DB::beginTransaction();
+            if ($req->Response['ResponseCode'] == 0) {
+                $financialYear = DB::table('mar_shop_demands')                                               // Get First Financial Year For Payment
+                    ->where('shop_id', $req->shopId)
+                    ->where('payment_status', 0)
+                    ->where('financial_year', '<=', $req->toFYear)
+                    ->where('amount', '>', '0')
+                    ->orderBy('financial_year', 'ASC')
+                    ->first('financial_year');
+
+                $shopDetails = DB::table('mar_shops')->select('*')->where('id', $req->shopId)->first();      // Get Shop Details By Shop Id
+                $paymentReqs = [
+                    'shop_id' => $req->shopId,
+                    'amount' => $req->amount,
+                    'paid_from' => $financialYear->financial_year,
+                    'paid_to' => $req->toFYear,
+                    'payment_date' => Carbon::now(),
+                    'payment_status' => '1',
+                    'user_id' => $req->auth['id'] ?? NULL,
+                    'ulb_id' => $shopDetails->ulb_id,
+                    'remarks' => $req->remarks,
+                    'pmt_mode' => $req->paymentMode,
+                    'shop_category_id' => $shopDetails->shop_category_id,
+                    'payment_details' => json_decode($req),
+                    'transaction_id' => time() . $shopDetails->ulb_id . $req->shopId,                       // Transaction id is a combination of time funcation of PHP and ULB ID and Shop ID
+                ];
+                $tran_id = MarShopPayment::create($paymentReqs)->id;                                                       // Add Transaction Details in Market Shop Payment Table
+                // DB::enableQueryLog();
+              $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
+                    ->where('financial_year', '>=', $financialYear->financial_year)
+                    ->where('financial_year', '<=',  $req->toFYear)
+                    ->where('amount', '>', 0)
+                    ->orderBy('financial_year', 'ASC')
+                    ->get();
+                    // return [DB::getQueryLog()];
+                foreach ($UpdateDetails as $updateData) {
+                    $updateRow = MarShopDemand::find($updateData->id);
+                    $updateRow->payment_date = Carbon::now()->format('Y-m-d');
+                    $updateRow->payment_status = 1;
+                    $updateRow->tran_id = $tran_id;
+                    $updateRow->save();
+                }
+                $shop = $mshop = Shop::find($req->shopId);
+                $lastTranId = $mshop->last_tran_id = $tran_id;
+                $mshop->save();
+                DB::commit();
+                return responseMsgs(true, "Shop List Fetch Successfully !!!", ['transactionId' => $tran_id], "055053", "1.0", responseTime(), "POST");
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), [], "055053", "1.0", responseTime(), "POST");
+        }
+    }
+
+    /**
      * | Calculate Shop Rate At The Time of Shop Entry
      * | Function - 46
      */

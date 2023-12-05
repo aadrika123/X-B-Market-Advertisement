@@ -23,6 +23,7 @@ Route::controller(ShopController::class)->group(function () {
     Route::get('rental/get-generate-referal-url-payment/{shopId}/{fyYear}', 'getGenerateReferalUrlForPayment'); // 41 Generate Refferal Url for Without Login Payment
     Route::get('rental/get-search-shop-by-mobile-no/{mobileNo}', 'getsearchShopByMobileNo');                    // 42 Search Shop By Mobile No Without Login
     Route::post('rental/get-search-shop-by-mobile-no-name-shop', 'getsearchShopByMobileNoNameShopNo');          // 54 Search Shop By Mobile No, Name, or Shop No Without Login
+    Route::post('rental/update-from-pinelab-data', 'updateFromPinelabData');                                    // 55 Search Shop By Mobile No, Name, or Shop No Without Login
     Route::post('rental/sendSms', 'sendSms');
 
 
