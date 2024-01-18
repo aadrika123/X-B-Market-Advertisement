@@ -125,7 +125,7 @@ class Shop extends Model
       'mst.shop_type',
       'msp.amount as last_payment_amount',
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
