@@ -1065,7 +1065,7 @@ class ShopController extends Controller
             $shopDetails = $this->_mShops->getShopDetailById($data->shop_id);                                               // Get Shop Details By Shop Id
             $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
             $reciept = array();
-            $reciept['shopNo'] = $shopDetails->shop_no;
+            // $reciept['shopNo'] = $shopDetails->shop_no;
             $reciept['amcShopNo'] = $shopDetails->amc_shop_no;
             $reciept['paidFrom'] = $data->paid_from;
             $reciept['paidTo'] = $data->paid_to;
