@@ -180,6 +180,7 @@ class MarShopPayment extends Model
             't2.shop_no',
             't2.allottee',
             't2.market_id',
+            't2.shop_owner_name as ownerName',
             'mst.shop_type',
             'mkt.market_name',
             'mc.circle_name',

@@ -1091,6 +1091,7 @@ class ShopController extends Controller
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque/DD Bounce" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
             $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;                                             // Convert digits to words 
+            $reciept['ownerName']= $shopDetails->shop_owner_name;
 
             // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();
@@ -1565,7 +1566,8 @@ class ShopController extends Controller
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque Bounse" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
             $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;
-            $receipt['amcShopNo']   = $shopDetails->amc_shop_no;
+            // $reciept['amcShopNo']   = $shopDetails->amc_shop_no;
+            $reciept['ownerName']   = $shopDetails->shop_owner_name;
 
             // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();
