@@ -177,7 +177,7 @@ class MarShopPayment extends Model
             'mar_shop_payments.paid_from',
             'mar_shop_payments.paid_to',
             't2.shop_category_id',
-            't2.shop_no',
+            't2.amc_shop_no as shop_no',
             't2.allottee',
             't2.market_id',
             't2.shop_owner_name as ownerName',
