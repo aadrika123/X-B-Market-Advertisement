@@ -806,7 +806,7 @@ class ShopController extends Controller
         }
         // return $req->all();
         try {
-            // $paymentMode = null;
+            $paymentMode = null;
             if (!isset($req->fromDate))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
@@ -815,14 +815,16 @@ class ShopController extends Controller
                 $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
             else
                 $toDate = $req->toDate;
-            
+
             if ($req->paymentMode) {
                 $paymentMode = $req->paymentMode;
             }
             $mMarShopPayment = new MarShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,$paymentMode);                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
+            if ($req->paymentMode != 0)
+                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
             if ($req->marketId != 0)
                 $data = $data->where('t2.market_id', $req->marketId);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
@@ -1091,7 +1093,7 @@ class ShopController extends Controller
             $reciept['paymentStatus'] = $data->payment_status == 1 ? "Success" : ($data->payment_status == 2 ? "Payment Made By " . strtolower($data->pmt_mode) . " are considered provisional until they are successfully cleared." : ($data->payment_status == 3 ? "Cheque/DD Bounce" : "No Any Payment"));
             $reciept['amountInWords'] = getIndianCurrency($data->amount) . "Only /-";
             $reciept['aggrementEndDate'] =  $shopDetails->alloted_upto;                                             // Convert digits to words 
-            $reciept['ownerName']= $shopDetails->shop_owner_name;
+            $reciept['ownerName'] = $shopDetails->shop_owner_name;
 
             // If Payment By Cheque then Cheque Details is Added Here
             $reciept['chequeDetails'] = array();

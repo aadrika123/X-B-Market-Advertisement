@@ -167,7 +167,7 @@ class MarShopPayment extends Model
    /**
     * | List of shop collection between two given date
     */
-   public function listShopCollection($fromDate, $toDate,$paymentMode)
+   public function listShopCollection($fromDate, $toDate)
    {
       return DB::table('mar_shop_payments')
          ->select(
@@ -193,7 +193,6 @@ class MarShopPayment extends Model
          ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
          ->where('mar_shop_payments.payment_date', '>=', $fromDate)
          ->where('mar_shop_payments.payment_date', '<=', $toDate)
-         ->where('mar_shop_payments.pmt_mode',$paymentMode)
          ->where('mar_shop_payments.payment_status', '1');
    }
 
