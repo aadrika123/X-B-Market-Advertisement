@@ -799,11 +799,14 @@ class ShopController extends Controller
             'marketId' => 'required|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'  => 'nullable'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
         }
+        // return $req->all();
         try {
+            // $paymentMode = null;
             if (!isset($req->fromDate))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
@@ -812,8 +815,12 @@ class ShopController extends Controller
                 $toDate = Carbon::now()->format('Y-m-d');                                                  // if date Is not pass then to Date take current Date
             else
                 $toDate = $req->toDate;
+            
+            if ($req->paymentMode) {
+                $paymentMode = $req->paymentMode;
+            }
             $mMarShopPayment = new MarShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,$paymentMode);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->marketId != 0)
@@ -2437,13 +2444,13 @@ class ShopController extends Controller
                 ];
                 $tran_id = MarShopPayment::create($paymentReqs)->id;                                                       // Add Transaction Details in Market Shop Payment Table
                 // DB::enableQueryLog();
-              $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
+                $UpdateDetails = MarShopDemand::where('shop_id',  $req->shopId)
                     ->where('financial_year', '>=', $financialYear->financial_year)
                     ->where('financial_year', '<=',  $req->toFYear)
                     ->where('amount', '>', 0)
                     ->orderBy('financial_year', 'ASC')
                     ->get();
-                    // return [DB::getQueryLog()];
+                // return [DB::getQueryLog()];
                 foreach ($UpdateDetails as $updateData) {
                     $updateRow = MarShopDemand::find($updateData->id);
                     $updateRow->payment_date = Carbon::now()->format('Y-m-d');
