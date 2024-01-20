@@ -616,7 +616,7 @@ class ShopController extends Controller
             'ddNo' => $req->chequeNo == NULL ? 'required|integer' : 'nullable|integer',
             "toFYear" => 'required|string',
             "paymentMode" => 'required|string',
-            "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(2)->format('d-m-Y'),
+            "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(3)->format('d-m-Y'),
             'photo'  =>   'required|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
