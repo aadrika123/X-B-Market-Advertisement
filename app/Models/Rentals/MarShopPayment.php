@@ -125,7 +125,7 @@ class MarShopPayment extends Model
             DB::raw("TO_CHAR(mar_shop_payments.cheque_date, 'DD-MM-YYYY') as recieve_date"),
             'mar_shop_payments.bank_name',
             'mar_shop_payments.branch_name',
-            't1.shop_no',
+            't1.amc_shop_no as shop_no',
             't1.allottee',
             't1.contact_no'
          )
