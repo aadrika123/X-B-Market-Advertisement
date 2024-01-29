@@ -795,8 +795,8 @@ class ShopController extends Controller
     public function listShopCollection(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'shopCategoryId' => 'required|integer',
-            'marketId' => 'required|integer',
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
             'paymentMode'  => 'nullable'
