@@ -612,12 +612,12 @@ class ShopController extends Controller
             'shopId' => 'required|integer',
             'bankName' => 'required|string',
             'branchName' => 'required|string',
-            'chequeNo' => $req->ddNo == NULL ? 'required|numeric' : 'nullable|numeric',
-            'ddNo' => $req->chequeNo == NULL ? 'required|numeric' : 'nullable|numeric',
+            'chequeNo' => $req->ddNo == NULL ? 'required|integer' : 'nullable|integer',
+            'ddNo' => $req->chequeNo == NULL ? 'required|integer' : 'nullable|integer',
             "toFYear" => 'required|string',
             "paymentMode" => 'required|string',
             "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(3)->format('d-m-Y'),
-            'photo'  =>   'required|image|mimes:jpg,jpeg,png',
+            'photo'  =>   'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
             return responseMsgs(false, $validator->errors()->first(), [], "055014", "1.0", responseTime(), "POST", $req->deviceId);
@@ -2521,7 +2521,7 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
     }
-
+ 
     /**
      * | this is for test whatsappp mesaging
      */
