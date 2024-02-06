@@ -62,9 +62,7 @@ class TollsController extends Controller
             $toll = $this->_mToll::find($req->tollId);
             if (collect($toll)->isEmpty())
                 throw new Exception("Toll Not Available for this ID");
-            if($toll){
-                throw new Exception("Toll payment already done !!");
-            }
+            
             $dateFrom = Carbon::parse($req->dateFrom);
             $dateUpto = Carbon::parse($req->dateUpto);
 
