@@ -852,7 +852,7 @@ class ShopController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return  $validator->errors();
+            return $validator->errors();
         }
 
         try {
@@ -887,9 +887,11 @@ class ShopController extends Controller
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
 
-            $totalAmount = $data->sum('amount');
+            $result = $data->get(); // Retrieve the actual result set
 
-            return responseMsgs(true, "Shop Collection List Fetch Successfully !!!", ['data' => $data, 'collectAmount' => $totalAmount], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+            $totalAmount = $result->sum('amount');
+
+            return responseMsgs(true, "Shop Collection List Fetch Successfully !!!", ['data' => $result, 'collectAmount' => $totalAmount], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }

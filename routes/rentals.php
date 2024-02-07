@@ -84,7 +84,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-demand-for-update', 'searchDemandForUpdate');                                // 51  Search Demand For Update
         Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                           // 52  Update Shop Demand
         Route::post('rental/balance-sheet-financial-year-wise', 'dcbFinancialYearWise');                        // 53  DCB Financial Year Wise
-        Route::post('rental/list-shop-collections','listShopCollectionv2');                                     // 54 list shop collection !pagination
+        Route::post('rental/list-collections','listShopCollectionv2');                                     // 54 list shop collection !pagination
     });
 
     /**
