@@ -172,6 +172,7 @@ class MarShopPayment extends Model
       return DB::table('mar_shop_payments')
          ->select(
             'mar_shop_payments.amount',
+            'mar_shop_payments.transaction_id as tran_number',
             'mar_shop_payments.user_id as collected_by',
             DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
             'mar_shop_payments.paid_from',

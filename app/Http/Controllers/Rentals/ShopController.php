@@ -612,8 +612,8 @@ class ShopController extends Controller
             'shopId' => 'required|integer',
             'bankName' => 'required|string',
             'branchName' => 'required|string',
-            'chequeNo' => $req->ddNo == NULL ? 'required|integer' : 'nullable|integer',
-            'ddNo' => $req->chequeNo == NULL ? 'required|integer' : 'nullable|integer',
+            'chequeNo' => $req->ddNo == NULL ? 'required|numeric' : 'nullable|numeric',
+            'ddNo' => $req->chequeNo == NULL ? 'required|numeric' : 'nullable|numeric',
             "toFYear" => 'required|string',
             "paymentMode" => 'required|string',
             "chequeDdDate" => 'required|date_format:Y-m-d|after_or_equal:' . Carbon::now()->subMonth(3)->format('d-m-Y'),
@@ -832,6 +832,64 @@ class ShopController extends Controller
             $list = paginator($data, $req);
             $list['collectAmount'] = $data->sum('amount');
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | List shop Collection between two dates
+     * | API - 17
+     * | Function - 17
+     */
+    public function listShopCollectionv2(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'  => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+
+        try {
+            $paymentMode = null;
+
+            if (!isset($req->fromDate))
+                $fromDate = Carbon::now()->format('Y-m-d');
+            else
+                $fromDate = $req->fromDate;
+
+            if (!isset($req->toDate))
+                $toDate = Carbon::now()->format('Y-m-d');
+            else
+                $toDate = $req->toDate;
+
+            if ($req->paymentMode) {
+                $paymentMode = $req->paymentMode;
+            }
+
+            $mMarShopPayment = new MarShopPayment();
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
+
+            if ($req->shopCategoryId != 0)
+                $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
+
+            if ($req->paymentMode != 0)
+                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+
+            if ($req->marketId != 0)
+                $data = $data->where('t2.market_id', $req->marketId);
+
+            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
+                $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+
+            $totalAmount = $data->sum('amount');
+
+            return responseMsgs(true, "Shop Collection List Fetch Successfully !!!", ['data' => $data, 'collectAmount' => $totalAmount], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
@@ -2521,7 +2579,7 @@ class ShopController extends Controller
         DB::table('m_market')->where('id', $marketId)->update(['shop_counter' => $counter]);
         return $id = "SHOP-" . $market . "-" . (1000 + $idDetails->shop_counter);                           // SHOP- ,three character of market name, 1000 + current counter 
     }
- 
+
     /**
      * | this is for test whatsappp mesaging
      */
