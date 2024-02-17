@@ -15,6 +15,7 @@ use App\Http\Controllers\Params\ParamController;
 use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Advertisements\AdvertisementController;
+use App\Http\Controllers\AdevertisementNew\AgencyNewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +32,7 @@ use App\Http\Controllers\Advertisements\AdvertisementController;
  * | Routers for Advertisement Modules
  * | Created On-14-12-2022 
  * | Created By- Anshu Kumar
- * | Changes By- Bikash Kumar (17 Jan 2023)
+ * | Changes By- Bikash Kumar (17 Jan 2023) 
  * | Module Id for Advetisements=05
  * | Status - Closed By Bikash on 25 Apr 2023  , Re-Open For Bandobastee on 26 Apr 2023
  */
@@ -90,7 +91,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/self/verify-or-reject-doc', 'verifyOrRejectDoc');                               // 30 ( Verify or Reject Document )
         Route::post('advert/self/back-to-citizen', 'backToCitizen');                                        // 31 ( Application Back to Citizen )
         Route::post('advert/self/list-btc-inbox', 'listBtcInbox');                                          // 32 ( list Back to citizen )
-        // Route::post('advert/self/check-full-upload', 'checkFullUpload');                                 // 19 ( Application Details For Payments )
+        // Route::post('advert/self/check-full-upload', 'checkFullUpload');                                  // 19 ( Application Details For Payments )
         Route::post('advert/self/reupload-document', 'reuploadDocument');                                   // 33 ( Reupload Rejected Document )
         Route::post('advert/self/search-by-name-or-mobile', 'searchByNameorMobile');                        // 34 ( Search application by name and mobile no )
         Route::post('advert/self/get-application-between-date', 'getApplicationBetweenDate');               // 35 ( Get Application Between two date )
@@ -220,7 +221,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advert/agency/list-applied-applications', 'listAppliedApplications');     // 06 ( Get Applied Applications List )
         Route::post('advert/agency/escalate-application', 'escalateApplication');  // 07 ( Escalate or De-escalate Application )
         Route::post('advert/agency/list-escalated', 'listEscalated');  // 08 ( Special Inbox Applications )
-        Route::post('advert/agency/forward-next-level', 'forwardNextLevel');  // 09 ( Forward or Backward Application )
+        Route::post('advert/agency/forwar d-next-level', 'forwardNextLevel');  // 09 ( Forward or Backward Application )
         Route::post('advert/agency/comment-application', 'commentApplication');  // 10 ( Independent Comment )
         Route::post('advert/agency/view-agency-documents', 'viewAgencyDocuments');  // 11 ( Get Uploaded Document By Application ID )
         Route::post('advert/agency/view-active-document', 'viewActiveDocument');  // 12 ( Get Uploaded Document By Advertisement ID )
@@ -540,5 +541,40 @@ Route::group(['middleware' => ['checkToken']], function () {
     Route::controller(SearchController::class)->group(function () {
         Route::post('advert/search/list-all-advertisement-records', 'listAllAdvertisementRecords');                              // 01   ( All Advertisement records List  of citizen )
         Route::post('advert/search/list-all-market-records', 'listAllMarketRecords');                                     // 02   ( All Market records List  of citizen )
+    });
+
+    /**
+     * |controller- 13
+     * |created By - Arshad
+     * |Date - 16-02-2024
+     * |status - open 
+     */
+    Route::controller(AgencyNewController::class)->group(function (){
+        Route::post('advertisement/addnew-agency','addNewAgency');
+        Route::post('advertisement/get_all','getAll');
+        Route::post('advertisement/update-agency-dtls','updateAgencydtl');
+        Route::post('advertisement/delete-agency-dtls','AgencyDelete');          // soft delete 
+        Route::post('advertisement/addnew-hoarding','addNewHoarding');
+        Route::post('advertisement/get-all-hoarding','getAllHoard');
+        Route::post('advertisement/update-hoard-dtl','updatehoardingdtl');
+        Route::post('advertisement/delete-hoard-dtl','HoardDelete');                 // soft delete 
+        Route::post('advertisement/add-new-brand','addBrand');                       // add brand 
+        Route::post('advertisement/get-all-brand','getAllBrand');                    // get details of brand 
+        Route::post('advertisement/update-brand','updateBrand');                     // update brand 
+        Route::post('advertisement/delete-brand-dtl','DeleteBrand');                 // soft delete brand 
+        Route::post('advertisement/add-advertisement-type','addAdvertisementType');  // add advertisement type
+        Route::post('advertisement/getall-adevert-type','getAllAdvertisement');      // get advertisement type 
+        Route::post('advertisement/update-advertisements','updateAdvertisemnet');    // update Advertisement data
+        Route::post('advertisement/deactive-advertisement','deactiveAdvertisement');   // deactive advertisement  
+        Route::post('advertisement/add-new-location','addNewLocations');               // add new locations
+        Route::post('advertisement/get-all-location','getAllDtls');                   // get all locations
+        Route::post('advertisement/update-location','updatedtl');                     // update advertisement 
+        Route::post('advertisement/deactive-locations','deactiveLocation');            // deactive location
+        Route::post('advertisement/add-new-advertiser','addNewAdvertiser');            // add new advertiser
+        Route::post('advertisement/get-all-advertiser','getALLAdvertiser');            // get all advertiser 
+        Route::post('advertisement/update-advertiser','updateAdvertiserdtl');            // update  dtls  advertiser 
+        Route::post('advertisement/deactive-advertiser','deactiveAdvertiser');          // deactive advertiser 
+        Route::post('advertisement/apply-hoarding','applyHoarding');                  /**==apply hoarding== */ 
+
     });
 });

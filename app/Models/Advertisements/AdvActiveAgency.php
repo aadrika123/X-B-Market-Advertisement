@@ -86,7 +86,7 @@ class AdvActiveAgency extends Model
      */
     public function addNew($req)
     {
-        $directors = $req->directors;
+         $directors = $req->directors;
         // $bearerToken = $req->bearerToken();
         $bearerToken = $req->token;
         $metaReqs = $this->metaReqs($req);

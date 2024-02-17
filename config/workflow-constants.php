@@ -137,4 +137,16 @@ return [
 "API_KEY" => "eff41ef6-d430-4887-aa55-9fcf46c72c99",
 "FILE_URL" => env("FILE_URL"),
 
+"APP_APPLY_FROM" => [
+  "1" => "Online",
+],
+
+"REF_USER_TYPE" => [
+  "1" => "Citizen",
+  "2" => "JSK",
+  "3" => "TC",
+  "4" => "Pseudo",
+  "5" => "Employee"
+],
+
 ];
