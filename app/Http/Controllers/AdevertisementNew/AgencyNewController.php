@@ -107,14 +107,6 @@ class AgencyNewController extends Controller
         }
         try {
             $document = $request->profile;
-            // $agencyMaster =  $this->_modelObj;
-            // if ($request->auth['user_type'] == 'JSK') {
-            //     $userId = ['userId' => $request->auth['id']];                            // Find Jsk Id
-            //     $request->request->add($userId);
-            // } else {
-            //     $citizenId = ['citizenId' => $request->auth['id']];                       // Find CItizen Id
-            //     $request->request->add($citizenId);
-            // }
             DB::beginTransaction();
             $metaRequest = [
                 'agency_name'             => $request->agencyName,
@@ -128,7 +120,6 @@ class AgencyNewController extends Controller
                 // 'profile'                 => $request->agencyCode,
             ];
             $agencyId = $this->_modelObj->createData($metaRequest);
-            $this->uploadDocument($agencyId, $document, $request);
             DB::commit();
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'agecnyId' => $agencyId], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
         } catch (Exception $e) {
@@ -904,26 +895,20 @@ class AgencyNewController extends Controller
             }
             // dd($mAgency);
             # Save data in track
-        //     $metaReqs = new Request(
-        //         [
-        //             'citizenId'         => $refRequest['citizenId'] ?? null,
-        //             'moduleId'          => 2,
-        //             'workflowId'        => $ulbWorkflowId['id'],
-        //             'refTableDotId'     => 'agency_hoardings.id',                                     // Static
-        //             'refTableIdValue'   => $var['relatedId'],
-        //             'user_id'           => $user->id,
-        //             'ulb_id'            => $ulbId,
-        //             'senderRoleId'      => $senderRoleId ?? null,
-        //             'receiverRoleId'    => $receiverRoleId ?? null
-        //         ]
-        //     );
-        //    $mWorkflowTrack->saveTrack($metaReqs);
-         
-        //     $returnData = [
-        //         'applicationNo'         => $applicationNo,
-        //         // "Id"                    => $metaRequest['relatedId'],
-        //         // 'applicationDetails'    => $metaRequest,
-        //     ];
+             $metaReqs = new Request(
+                [
+                    'citizenId'         => $refRequest['citizenId'] ?? null,
+                    'moduleId'          => 2,
+                    'workflowId'        => $ulbWorkflowId['id'],
+                    'refTableDotId'     => 'agency_hoardings.id',                                     // Static
+                    'refTableIdValue'   => $var['relatedId'],
+                    'user_id'           => $user->id,
+                    'ulb_id'            => $ulbId,
+                    'senderRoleId'      => $senderRoleId ?? null,
+                    'receiverRoleId'    => $receiverRoleId ?? null
+                ]
+            );
+           $mWorkflowTrack->saveTrack($metaReqs);
             DB::commit();
             return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {
