@@ -5,8 +5,18 @@
  * | Created by-Anshu Kumar
  */
 return [
+    "PROPERTY_MODULE_ID"      => "1",
+    "WATER_MODULE_ID"         => "2",
+    "TRADE_MODULE_ID"         => "3",
+    "SWM_MODULE_ID"           => "4",
+    "ADVERTISEMENT_MODULE_ID" => "5",
+    "API_KEY"                 => env('API_KEY'),
+    "DOC_URL"                 => env('DOC_URL'),
+
+
     "SELF_ADVERTISENTS" => "18",
     "ADVERTISMENT_MODULE_ID" => 5,
+    "ADVERTISMENT_MODULE"    => 14,
     "ADVERTISEMENT_WORKFLOWS" => "18",
     "SELF_ADVERTISMENT_DOC_CODE" => "SELF_ADVERT",
     "SELF_ADVERTISMENT_DOC_CODE_RENEW" => "SELF_ADVERT_RENEW",
@@ -44,6 +54,7 @@ return [
      */
     "AGENCY_HORDING" => "22",
     "AGENCY_HORDING_WORKFLOWS" => "22",
+    "ADVERTISEMENT-HOARDING" => "40",
     "AGENCY_REG_PRICE" => "20000",
     "AGENCY_RENEW_PRICE" => "10000",
     "AGENCY_HORDING_DOC_CODE" => "AGENCY_HORDING_LICENSE",

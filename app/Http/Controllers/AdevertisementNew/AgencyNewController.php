@@ -30,6 +30,7 @@ use App\Models\Advertisements\WfActiveDocument;
 use Illuminate\Support\Facades\Validator;
 use App\Models\AdvertisementNew\HoardingMaster;
 use App\Models\AdvertisementNew\Location;
+use App\Models\Advertisements\AdvActiveHoarding;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -56,6 +57,8 @@ class AgencyNewController extends Controller
     protected $_locatObj;
     protected $_advObj;
     protected $_agencyObj;
+    protected $_activeHObj;
+    protected $_applicationDate;
 
     public function __construct(iSelfAdvetRepo $agency_repo)
     {
@@ -66,6 +69,8 @@ class AgencyNewController extends Controller
         $this->_locatObj  = new Location();
         $this->_advObj     = new AdvertiserMaster();
         $this->_agencyObj = new AgencyHoarding();
+        $this->_activeHObj = new AdvActiveHoarding();
+        $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
@@ -812,11 +817,17 @@ class AgencyNewController extends Controller
                 'allotmentDate'        => "nullable",
                 'from'                 => "nullable",
                 'to'                   => "nullable",
-                "rate"                 => "nullable"
+                "rate"                 => "nullable",
+                'fatherName'           => "nullable",
+                "email"                => 'nullable',
+                'residenceAddress'     => 'nullable',
+                'workflowId'           => 'nullable'
+
             ]
         );
         if ($validated->fails())
             return validationError($validated);
+        // return $request->all();
 
         try {
             $user                           = authUser($request);
@@ -825,11 +836,11 @@ class AgencyNewController extends Controller
             $mWorkflowTrack                 = new WorkflowTrack();
             $refUserType                    = Config::get('workflow-constants.REF_USER_TYPE');
             $refApplyFrom                   = Config::get('workflow-constants.APP_APPLY_FROM');
-            $refWorkflow                    = Config::get('workflow-constants.AGENCY_HORDING_WORKFLOWS');
-            $confModuleId                   = Config::get('module-constants.ADVERTISMENT_MODULE_ID');
+            $refWorkflow                    = Config::get('workflow-constants.ADVERTISEMENT-HOARDING');
+            $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
 
-            $ulbId      = $request->ulbId ?? 5;
+            $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
             if (!$ulbWorkflowId) {
@@ -850,7 +861,7 @@ class AgencyNewController extends Controller
                 if (!$roleDetails) {
                     throw new Exception("Role detail Not found!");
                 }
-                $roleId = $roleDetails['wf_role_id'];
+                // $roleId = $roleDetails['wf_role_id'];
                 $refRequest = [
                     "applyFrom" => $user->user_type,
                     "empId"     => $user->id
@@ -877,30 +888,122 @@ class AgencyNewController extends Controller
             // $mWfWorkflow=new WfWorkflow();
             // $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             // $request->request->add($WfMasterId);
-            $mAgency        = $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo);
+            $mAgency        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo);
+            // dd($mAgency);
             # Save data in track
-            $metaReqs = new Request(
-                [
-                    'citizenId'         => $refRequest['citizenId'] ?? null,
-                    'moduleId'          => $confModuleId,
-                    'workflowId'        => $ulbWorkflowId->id,
-                    'user_id'           => $refRequest['empId'] ?? null,
-                    'ulb_id'            => $ulbId,
-                    'senderRoleId'      => $refRequest['empId'] ?? null,
-                    'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
-                ]
-            );
-            $mWorkflowTrack->saveTrack($metaReqs);
-            $returnData = [
-                'applicationNo'         => $applicationNo,
-                // "Id"                    => $metaRequest['relatedId'],
-                // 'applicationDetails'    => $metaRequest,
-            ];
+            // $metaReqs = new Request(
+            //     [
+            //         'citizenId'         => $refRequest['citizenId'] ?? null,
+            //         'moduleId'          => $confModuleId,
+            //         'workflowId'        => $ulbWorkflowId->id,
+            //         'user_id'           => $refRequest['empId'] ?? null,
+            //         'ulb_id'            => $ulbId,
+            //         'senderRoleId'      => $refRequest['empId'] ?? null,
+            //         'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
+            //     ]
+            // );
+            // $mWorkflowTrack->saveTrack($metaReqs);
+            // $returnData = [
+            //     'applicationNo'         => $applicationNo,
+            //     // "Id"                    => $metaRequest['relatedId'],
+            //     // 'applicationDetails'    => $metaRequest,
+            // ];
             DB::commit();
-            return responseMsgs(true, "applications apply sucesfully !", $returnData, "", "02", ".ms", "POST", $request->deviceId);
+            return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {
-            $this->rollback();
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
         }
     }
+    // /**
+    //  * 
+    //  */
+    // public function addNew($req)
+    // {
+    //     // Variable Initializing
+    //     $bearerToken = $req->bearerToken();
+    //     $LicencesMetaReqs = $this->MetaReqs($req);
+    //     // $workflowId = $this->_workflowId;
+    //     // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
+    //     $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
+    //     $ulbWorkflows = $ulbWorkflows['data'];
+    //     // $ipAddress = getClientIpAddress();
+    //     // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
+    //     $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
+    //         'workflow_id' => $ulbWorkflows['id'],
+    //         'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
+    //         'last_role_id' => $ulbWorkflows['initiator_role_id'],
+    //         'current_role_id' => $ulbWorkflows['initiator_role_id'],
+    //         'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
+    //     ];
+
+    //     // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
+
+    //     $LicencesMetaReqs = array_merge(
+    //         [
+    //             'ulb_id' => $req->ulbId,
+    //             'citizen_id' => $req->citizenId,
+    //             'application_date' => $this->_applicationDate,
+    //             'ip_address' => $req->ipAddress,
+    //             'application_type' => "New Apply"
+    //         ],
+    //         $this->MetaReqs($req),
+    //         $ulbWorkflowReqs
+    //     );
+
+
+    //     $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
+    //     // $licenceId = 5;
+
+    //     $mDocuments = $req->documents;
+    //     // $mDocuments = str_replace(']"'," ",$mDocuments);
+    //     // $this->uploadDocument($licenceId, $mDocuments, $req->auth);
+
+    //     return $req->application_no;
+    // }
+    // public function MetaReqs($req)
+    // {
+    //     $metaReqs = [
+    //         // 'zone_id' => $req->zoneId,
+    //         // 'license_year' => $req->licenseYear,
+            
+    //         // 'typology' => $req->HordingType,               // Hording Type is Convert Into typology
+    //         // 'display_location' => $req->displayLocation,
+    //         // 'width' => $req->width,
+    //         // 'length' => $req->length,
+    //         // 'display_area' => $req->displayArea,
+    //         // 'longitude' => $req->longitude,
+    //         // 'latitude' => $req->latitude,
+    //         // 'material' => $req->material,
+    //         // 'illumination' => $req->illumination,
+    //         // 'indicate_facing' => $req->indicateFacing,
+    //         // 'property_type' => $req->propertyType,
+    //         // 'display_land_mark' => $req->displayLandMark,
+    //         // 'property_owner_name' => $req->propertyOwnerName,
+    //         // 'property_owner_address' => $req->propertyOwnerAddress,
+    //         // 'property_owner_city' => $req->propertyOwnerCity,
+    //         // 'property_owner_whatsapp_no' => $req->propertyOwnerWhatsappNo,
+    //         // 'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
+    //         // 'user_id' => $req->userId,
+    //         'applicant_name'  => $req->applicantName,
+    //         'advt_peroriod'   => $req->advtPeriod,
+    //         'faher_name'      => $req->fatherName,
+    //         'adress'=> $req->residenceAddress,
+    //         'agency_name'      => $req->agencyName,
+    //         'hoarding_type'   => $req->hoardingType,
+    //         'allotment_date'  => $req->allotmentDate,
+    //         'from_date'       => $req->from,
+    //         'to_date'         => $req->to,
+    //         'rate'            => $req->rate,
+    //         'application_no' => $req->application_no,
+
+
+
+
+
+    //     ];
+    //     return $metaReqs;
+    // }
+
+
 }

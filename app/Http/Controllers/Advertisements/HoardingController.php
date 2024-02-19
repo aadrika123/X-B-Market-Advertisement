@@ -125,9 +125,9 @@ class HoardingController extends Controller
     public function addNew(Request $req)
     {
         try {
-            $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
-            if ($checkPaymentStatus == 0)
-                throw new Exception("Agency Registration Payment Not Complete !!!");
+            // $checkPaymentStatus = $this->checkPaymentCompleteOrNot($req->auth['email']);
+            // if ($checkPaymentStatus == 0)
+            //     throw new Exception("Agency Registration Payment Not Complete !!!");
 
             // Variable initialization
             $mAdvActiveHoarding = new AdvActiveHoarding();
@@ -138,6 +138,7 @@ class HoardingController extends Controller
                 $citizenId = ['citizenId' => $req->auth['id']];
                 $req->request->add($citizenId);
             }
+            // return $req->all();
 
             $ulbId = ['ulbId' => $req->auth['ulb_id']];
             $req->request->add($ulbId);
