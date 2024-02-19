@@ -92,7 +92,6 @@ class AgencyNewController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'agencyName' => 'required|',
-            'agencyCode' => 'required|',
             'correspondingAddress' => 'required|',
             'mobileNo' => 'required|numeric|digits:10',
             'email' => 'nullable|email',
@@ -110,7 +109,7 @@ class AgencyNewController extends Controller
             DB::beginTransaction();
             $metaRequest = [
                 'agency_name'             => $request->agencyName,
-                'agency_code'             => $request->agencyCode,
+                'agency_code'             => "AG-" . random_int(100000, 999999) . "/" . random_int(1, 10),
                 'corresponding_address'   => $request->correspondingAddress,
                 'mobile'                  => $request->mobileNo,
                 'email'                   => $request->email,
@@ -197,7 +196,7 @@ class AgencyNewController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            return $agencyId     = $request->UserId;
+             $agencyId     = $request->UserId;
             $checkAgency = $this->_modelObj->checkAgencyById($agencyId);
             if (!$checkAgency) {
                 throw new Exception('agency not found !');
@@ -256,7 +255,6 @@ class AgencyNewController extends Controller
     public function addNewHoarding(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'hoardingNo' => 'required|',
             'hoardingType' => 'required|',
             'latitude' => 'required|',
             'longitude' => 'required|',
@@ -277,8 +275,8 @@ class AgencyNewController extends Controller
 
             DB::beginTransaction();
             $metaReqs = [
-                'hoarding_no' => $req->hoardingNo,
-                'hoarding_type_id' => $req->hoardingType,
+                'hoarding_no' => "HO-" . random_int(100000, 999999) . "/" . random_int(1, 10),
+                'hoarding_type' => $req->hoardingType,
                 'latitude' => $req->latitude,
                 'longitude' => $req->longitude,
                 'length' => $req->length,
@@ -317,15 +315,14 @@ class AgencyNewController extends Controller
     public function updatehoardingdtl(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'hoardingNo' => 'nullable|',
-            'hoardingType' => 'nullable|numeric',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'length' => 'nullable|numeric',
-            'width' => 'nullable|numeric',
+            'hoardingType' => 'nullable|',
+            'latitude' => 'nullable|',
+            'longitude' => 'nullable|',
+            'length' => 'nullable|',
+            'width' => 'nullable|',
             'remarks' => 'nullable',
-            'locationId' => 'nullable|numeric',
-            'agencyId' => 'nullable|numeric',
+            'locationId' => 'nullable|',
+            'agencyId' => 'nullable|',
             'documents' => 'nullable',
             'userId' => 'required'
         ]);
@@ -341,7 +338,7 @@ class AgencyNewController extends Controller
             DB::beginTransaction();
             $metaRequest = [
                 'hoarding_no' => $request->hoardingNo,
-                'hoarding_type_id' => $request->hoardingType,
+                'hoarding_type' => $request->hoardingType,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
                 'length' => $request->length,
@@ -887,28 +884,25 @@ class AgencyNewController extends Controller
 
             ];
             # save for  work flow track
-            // if ($user->user_type == "Citizen") {                                                        // Static
-            //     $receiverRoleId = $advtRole['DA'];
-            // }
-            // if ($user->user_type != "Citizen") {                                                        // Static
-            //     $receiverRoleId = collect($initiatorRoleId)->first()->role_id;
-            // }
-            // dd($mAgency);
-            # Save data in track
-        //      $metaReqs = new Request(
-        //         [
-        //             'citizenId'         => $refRequest['citizenId'] ?? null,
-        //             'moduleId'          => 2,
-        //             'workflowId'        => $ulbWorkflowId['id'],
-        //             'refTableDotId'     => 'agency_hoardings.id',                                     // Static
-        //             'refTableIdValue'   => $var['relatedId'],
-        //             'user_id'           => $user->id,
-        //             'ulb_id'            => $ulbId,
-        //             'senderRoleId'      => $senderRoleId ?? null,
-        //             'receiverRoleId'    => $receiverRoleId ?? null
-        //         ]
-        //     );
-        //    $mWorkflowTrack->saveTrack($metaReqs);
+            if ($user->user_type == "Citizen") {                                                        // Static
+                $receiverRoleId = $advtRole['DA'];
+            }
+            if ($user->user_type != "Citizen") {                                                        // Static
+                $receiverRoleId = collect($initiatorRoleId)->first()->role_id;
+            }
+            
+            $metaReqs['citizenId'] =  $refRequest['citizenId'] ?? null;
+            $metaReqs['moduleId'] =  14; 
+            $metaReqs['workflowId'] =  $ulbWorkflowId['id'];
+            $metaReqs['refTableDotId'] = 'agency_hoardings.id';
+            $metaReqs['refTableIdValue'] = $var['relatedId'];
+            $metaReqs['senderRoleId'] = $senderRoleId ?? null;
+            $metaReqs['receiverRoleId'] = $receiverRoleId ?? null;
+            $metaReqs['user_id'] = $user->id;
+            $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
+            $request->request->add($metaReqs);
+            // dd($metaReqs)\;
+           $mWorkflowTrack->saveTrack($request);
             DB::commit();
             return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {
