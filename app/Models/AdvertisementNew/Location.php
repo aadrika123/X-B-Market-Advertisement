@@ -32,6 +32,7 @@ class Location extends Model
     public function getAllDtls()
     {
         return self::where('status', '1')
+        ->orderByDesc('id')
         ->get();
     }
     /**

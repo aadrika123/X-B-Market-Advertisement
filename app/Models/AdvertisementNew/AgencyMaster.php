@@ -52,6 +52,7 @@ class AgencyMaster extends Model
     public function getaLL()
     {
         return self::where('status', '1')
+            ->orderByDesc('id')
             ->get();
     }
     /**

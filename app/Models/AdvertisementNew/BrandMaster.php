@@ -34,6 +34,7 @@ class BrandMaster extends Model
     public function getaLLbrand()
     {
         return self::where('status', '1')
+        ->orderByDesc('id')
         ->get();
     }
     /**

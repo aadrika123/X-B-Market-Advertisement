@@ -49,7 +49,7 @@ class HoardingMaster extends Model
     public function getaLLHording()
     {
         return self::where('status', 1)
-            ->orderBy('id')
+            ->orderByDesc('id')
             ->get();
     }
     public function updateHoarddtl($metaRequest, $agencyId)
