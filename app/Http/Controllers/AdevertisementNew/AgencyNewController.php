@@ -899,7 +899,7 @@ class AgencyNewController extends Controller
             //         'user_id'           => $refRequest['empId'] ?? null,
             //         'ulb_id'            => $ulbId,
             //         'senderRoleId'      => $refRequest['empId'] ?? null,
-            //         'receiverRoleId'    => collect($initiatorRoleId)->first()->role_id,
+            //         'receiverRoleId'    => collect($initiator    RoleId)->first()->role_id,
             //     ]
             // );
             // $mWorkflowTrack->saveTrack($metaReqs);
