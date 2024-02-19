@@ -839,6 +839,7 @@ class AgencyNewController extends Controller
             $refWorkflow                    = Config::get('workflow-constants.ADVERTISEMENT-HOARDING');
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
+            $advtRole                    = Config::get("workflow-constants.ROLE-LABEL");
 
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
@@ -889,25 +890,40 @@ class AgencyNewController extends Controller
             // $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             // $request->request->add($WfMasterId);
             $mAgency        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo);
+            $var = [
+                'relatedId' => $mAgency->id,
+                "Status"    => 2,
+
+            ];
+            # save for  work flow track
+            if ($user->user_type == "Citizen") {                                                        // Static
+                $receiverRoleId = $advtRole['DA'];
+            }
+            if ($user->user_type != "Citizen") {                                                        // Static
+                $receiverRoleId = collect($initiatorRoleId)->first()->role_id;
+            }
             // dd($mAgency);
             # Save data in track
-            // $metaReqs = new Request(
-            //     [
-            //         'citizenId'         => $refRequest['citizenId'] ?? null,
-            //         'moduleId'          => $confModuleId,
-            //         'workflowId'        => $ulbWorkflowId->id,
-            //         'user_id'           => $refRequest['empId'] ?? null,
-            //         'ulb_id'            => $ulbId,
-            //         'senderRoleId'      => $refRequest['empId'] ?? null,
-            //         'receiverRoleId'    => collect($initiator    RoleId)->first()->role_id,
-            //     ]
-            // );
-            // $mWorkflowTrack->saveTrack($metaReqs);
-            // $returnData = [
-            //     'applicationNo'         => $applicationNo,
-            //     // "Id"                    => $metaRequest['relatedId'],
-            //     // 'applicationDetails'    => $metaRequest,
-            // ];
+        //     $metaReqs = new Request(
+        //         [
+        //             'citizenId'         => $refRequest['citizenId'] ?? null,
+        //             'moduleId'          => 2,
+        //             'workflowId'        => $ulbWorkflowId['id'],
+        //             'refTableDotId'     => 'agency_hoardings.id',                                     // Static
+        //             'refTableIdValue'   => $var['relatedId'],
+        //             'user_id'           => $user->id,
+        //             'ulb_id'            => $ulbId,
+        //             'senderRoleId'      => $senderRoleId ?? null,
+        //             'receiverRoleId'    => $receiverRoleId ?? null
+        //         ]
+        //     );
+        //    $mWorkflowTrack->saveTrack($metaReqs);
+         
+        //     $returnData = [
+        //         'applicationNo'         => $applicationNo,
+        //         // "Id"                    => $metaRequest['relatedId'],
+        //         // 'applicationDetails'    => $metaRequest,
+        //     ];
             DB::commit();
             return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {

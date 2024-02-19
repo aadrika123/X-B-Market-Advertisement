@@ -85,8 +85,6 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->doc_status                     = $request->doc_status ?? null;
         $mAgencyHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
         $mAgencyHoarding->save();
-        return [
-            "id" => $mAgencyHoarding->id
-        ];
+        return $mAgencyHoarding;
     }
 }
