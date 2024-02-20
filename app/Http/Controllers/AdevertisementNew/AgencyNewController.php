@@ -196,7 +196,7 @@ class AgencyNewController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-             $agencyId     = $request->UserId;
+            $agencyId     = $request->UserId;
             $checkAgency = $this->_modelObj->checkAgencyById($agencyId);
             if (!$checkAgency) {
                 throw new Exception('agency not found !');
@@ -890,9 +890,9 @@ class AgencyNewController extends Controller
             if ($user->user_type != "Citizen") {                                                        // Static
                 $receiverRoleId = collect($initiatorRoleId)->first()->role_id;
             }
-            
+
             $metaReqs['citizenId'] =  $refRequest['citizenId'] ?? null;
-            $metaReqs['moduleId'] =  14; 
+            $metaReqs['moduleId'] =  14;
             $metaReqs['workflowId'] =  $ulbWorkflowId['id'];
             $metaReqs['refTableDotId'] = 'agency_hoardings.id';
             $metaReqs['refTableIdValue'] = $var['relatedId'];
@@ -902,7 +902,7 @@ class AgencyNewController extends Controller
             $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
             $request->request->add($metaReqs);
             // dd($metaReqs)\;
-           $mWorkflowTrack->saveTrack($request);
+            $mWorkflowTrack->saveTrack($request);
             DB::commit();
             return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {
@@ -961,7 +961,7 @@ class AgencyNewController extends Controller
     //     $metaReqs = [
     //         // 'zone_id' => $req->zoneId,
     //         // 'license_year' => $req->licenseYear,
-            
+
     //         // 'typology' => $req->HordingType,               // Hording Type is Convert Into typology
     //         // 'display_location' => $req->displayLocation,
     //         // 'width' => $req->width,

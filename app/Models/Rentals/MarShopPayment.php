@@ -194,7 +194,8 @@ class MarShopPayment extends Model
          ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
          ->where('mar_shop_payments.payment_date', '>=', $fromDate)
          ->where('mar_shop_payments.payment_date', '<=', $toDate)
-         ->where('mar_shop_payments.payment_status', '1');
+         ->whereIn('mar_shop_payments.payment_status', [1, 2]);
+
    }
 
    /**
