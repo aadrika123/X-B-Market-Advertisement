@@ -80,7 +80,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->workflow_id                    = $refRequest['ulbWorkflowId'];
         $mAgencyHoarding->ulb_id                         = $request->ulbId;
         $mAgencyHoarding->finisher                       = $refRequest['finisherRoleId'];
-        $mAgencyHoarding->current_role                   = $refRequest['initiatorRoleId'];
+        $mAgencyHoarding->current_role_id                   = $refRequest['initiatorRoleId'];
         $mAgencyHoarding->application_no                 = $applicationNo;
         $mAgencyHoarding->address                        = $request->residenceAddress;
         $mAgencyHoarding->doc_status                     = $request->doc_status ?? null;
@@ -88,4 +88,71 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->save();
         return $mAgencyHoarding;
     }
+    /**
+     * | Get Application Inbox List by Role Ids
+     * | @param roleIds $roleIds
+     */
+    public function listInbox($roleIds, $ulbId)
+    {
+        $inbox = DB::table('agency_hoardings')
+            ->select('agency_hopardings.*'
+            )
+            ->orderByDesc('id')
+            ->where('parked', NULL)
+            ->where('ulb_id', $ulbId)
+            ->whereIn('current_role_id', $roleIds);
+        // ->get();
+        return $inbox;
+    }
+     public function getApplicationId($applicationId){
+        return self::select (
+            'agency_hoardings.*'
+        )
+        ->where('id',$applicationId)
+        ->where('status',1); 
+     }
+         /**
+     * | Deactivate the doc Upload Status 
+     */
+    public function updateUploadStatus($applicationId, $status)
+    {
+       return  AgencyHoarding::where('id', $applicationId)
+            ->where('status', true )
+            ->update([
+                "doc_upload_status" => $status
+            ]);
+    }
+     /** 
+     * | Update the Doc related status in active table 
+     */
+    public function updateDocStatus($applicationId, $status)
+    {
+        AgencyHoarding::where('id', $applicationId)
+            ->update([
+                // 'doc_upload_status' => true,
+                'doc_verify_status' => $status
+            ]);
+    }
+    /**
+     * get details by id for workflow view 
+     */
+    public function getFullDetails($request){
+    return self::select (
+        'agency_hoardings.*',
+        'ulb_masters.ulb_name',
+        'wf_roles.role_name AS current_role_name',
+        'hoarding_masters.ward_id'
+        // 'agency_masters.agency_name',
+        // 'ulb_ward_masters.ward_name'
+
+    )
+    // ->join('ulb_ward_masters','ulb_ward_masters.id','hoarding_masters.ward_id')
+    // ->join('agency_masters','agency_masters.id','agency_hoardings.agency_id')
+    ->join('hoarding_masters','hoarding_masters.id','agency_hoardings.hoarding_id')
+    ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+    ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
+    ->where('agency_hoardings.id',$request->applicationId)
+    ->where('agency_hoardings.status',true);
+}
+
 }

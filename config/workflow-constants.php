@@ -75,6 +75,8 @@ return [
     "TEMP_LAND_ID" => "19",
     "TEMP_HOR_ID" => "20",
     "TEMP_AGY_ID" => "21",
+    "TEMP_AG_ID"  => "50",
+
 
 
     
@@ -166,6 +168,18 @@ return [
   "JE" => 12,     // 40
   "SH" => 13,
   "AE" => 14,
+  "EO" => 10
+],
+
+"DOC_REQ_CATAGORY" => [
+  "1" => "R",
+  "2" => "OR",
+  "3" => "O"
+],
+
+"ROLE_LABEL" => [
+  "BO" => 11,
+  "DA" => 6,
   "EO" => 10
 ],
 

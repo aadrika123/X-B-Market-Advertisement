@@ -31,11 +31,13 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\AdvertisementNew\HoardingMaster;
 use App\Models\AdvertisementNew\Location;
 use App\Models\Advertisements\AdvActiveHoarding;
+use App\Models\Advertisements\RefRequiredDocument;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use App\Models\User;
+use App\Models\Workflows\WfRole;
 
 class AgencyNewController extends Controller
 {
@@ -49,6 +51,7 @@ class AgencyNewController extends Controller
     protected $_tempParamId;
     protected $_paramId;
     protected $_baseUrl;
+    protected $_docUrl;
     protected $_wfMasterId;
     protected $_fileUrl;
     protected $_hoarObj;
@@ -59,8 +62,10 @@ class AgencyNewController extends Controller
     protected $_agencyObj;
     protected $_activeHObj;
     protected $_applicationDate;
+    protected $_userType;
+    protected $_docReqCatagory;
 
-    public function __construct(iSelfAdvetRepo $agency_repo)
+    public function __construct()
     {
         $this->_modelObj = new AgencyMaster();
         $this->_hoarObj  = new HoardingMaster();
@@ -74,11 +79,14 @@ class AgencyNewController extends Controller
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
-        $this->_tempParamId = Config::get('workflow-constants.TEMP_AGY_ID');
+        $this->_tempParamId = Config::get('workflow-constants.TEMP_AG_ID');
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_docUrl = Config::get('workflow-constants.DOC_URL');
         $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
-        $this->Repository = $agency_repo;
+        $this->_userType            = Config::get("workflow-constants.REF_USER_TYPE");
+        $this->_docReqCatagory      = Config::get("workflow-constants.DOC_REQ_CATAGORY");
+        // $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
     }
@@ -99,17 +107,20 @@ class AgencyNewController extends Controller
             'gstNo' => 'nullable|',
             'panNo' => 'nullable|',
             'profile' => 'nullable|',
+            "ulbId"   => 'nullable'
             // 'documents' => 'required|array',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $document = $request->profile;
+            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $request->ulbId);    // Id Generation 
+            $generatedId = $idGeneration->generateId();
+            $applicationNo = $generatedId;
             DB::beginTransaction();
-            $metaRequest = [
+            return  $metaRequest = [
                 'agency_name'             => $request->agencyName,
-                'agency_code'             => "AG-" . random_int(100000, 999999) . "/" . random_int(1, 10),
+                'agency_code'             => $applicationNo,
                 'corresponding_address'   => $request->correspondingAddress,
                 'mobile'                  => $request->mobileNo,
                 'email'                   => $request->email,
@@ -126,42 +137,6 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-    /**
-     * | Upload document after application is submit
-     */
-    public function uploadDocument($tempId, $documents, $auth)
-    {
-        collect($documents)->map(function ($doc) use ($tempId, $auth) {
-            $metaReqs = array();
-            $docUpload = new DocumentUpload;
-            $mWfActiveDocument = new WfActiveDocument();
-            $mAdvActiveAgency = new AgencyMaster();
-            $relativePath = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
-            $getApplicationDtls = $mAdvActiveAgency->checkAgencyById($tempId);
-            $refImageName = $doc['docCode'];
-            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
-            $documentImg = $doc['image'];
-            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
-
-            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
-            $metaReqs['activeId'] = $getApplicationDtls->id;
-            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
-            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
-            $metaReqs['relativePath'] = $relativePath;
-            $metaReqs['document'] = $imageName;
-            $metaReqs['docCode'] = $doc['docCode'];
-            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
-            $a = new Request($metaReqs);
-            // $mWfActiveDocument->postDocuments($a,$auth);
-            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
-            // $mWfActiveDocument->create($metaReqs);
-            foreach ($metaReqs as $key => $val) {
-                $mWfActiveDocument->$key = $val;
-            }
-            $mWfActiveDocument->save();
-        });
-    }
-
     /**\
      * get all agency data 
      */
@@ -256,14 +231,16 @@ class AgencyNewController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'hoardingType' => 'required|',
-            'latitude' => 'required|',
-            'longitude' => 'required|',
+            'latitude' => 'nullable|',
+            'longitude' => 'nullable|',
             'length' => 'required|',
             'width' => 'nullable|numeric',
             'remarks' => 'nullable',
             'locationId' => 'nullable|',
             'agencyId' => 'nullable|',
             'documents' => 'nullable',
+            "zoneId" => 'required',
+            "wardId" => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -284,6 +261,8 @@ class AgencyNewController extends Controller
                 'agency_id' => $req->agencyId,
                 'location_id' => $req->locationId,
                 'remarks' => $req->remarks,
+                "zone_id" => $req->zoneId,
+                "ward_id" => $req->wardId
             ];
             $hoarding = $this->_hoarObj->creteData($metaReqs);
 
@@ -790,10 +769,7 @@ class AgencyNewController extends Controller
      * | 
      * | @param request
      * | @var 
-        | Not Working
-        | Serial No : 06
-        | Differenciate btw citizen and user 
-        | check if the ulb is same as the consumer details 
+       
      */
     public function applyHoarding(Request $request)
     {
@@ -910,95 +886,458 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
         }
     }
-    // /**
-    //  * 
-    //  */
-    // public function addNew($req)
-    // {
-    //     // Variable Initializing
-    //     $bearerToken = $req->bearerToken();
-    //     $LicencesMetaReqs = $this->MetaReqs($req);
-    //     // $workflowId = $this->_workflowId;
-    //     // $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);        // Workflow Trait Function
-    //     $ulbWorkflows = $this->getUlbWorkflowId($bearerToken, $req->ulbId, $req->WfMasterId);                 // Workflow Trait Function
-    //     $ulbWorkflows = $ulbWorkflows['data'];
-    //     // $ipAddress = getClientIpAddress();
-    //     // $mLecenseNo = ['license_no' => 'LICENSE-' . random_int(100000, 999999)];                  // Generate Lecence No
-    //     $ulbWorkflowReqs = [                                                                           // Workflow Meta Requests
-    //         'workflow_id' => $ulbWorkflows['id'],
-    //         'initiator_role_id' => $ulbWorkflows['initiator_role_id'],
-    //         'last_role_id' => $ulbWorkflows['initiator_role_id'],
-    //         'current_role_id' => $ulbWorkflows['initiator_role_id'],
-    //         'finisher_role_id' => $ulbWorkflows['finisher_role_id'],
-    //     ];
 
-    //     // $LicencesMetaReqs=$this->uploadLicenseDocument($req,$LicencesMetaReqs);
+    public function listInbox(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'perPage' => 'nullable|integer',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
-    //     $LicencesMetaReqs = array_merge(
-    //         [
-    //             'ulb_id' => $req->ulbId,
-    //             'citizen_id' => $req->citizenId,
-    //             'application_date' => $this->_applicationDate,
-    //             'ip_address' => $req->ipAddress,
-    //             'application_type' => "New Apply"
-    //         ],
-    //         $this->MetaReqs($req),
-    //         $ulbWorkflowReqs
-    //     );
+        try {
+            $user                   = authUser($req);
+            $pages                  = $req->perPage ?? 10;
+            $userId                 = $user->id;
+            $ulbId                  = $user->ulb_id;
+            $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
 
+            $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
+            $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
-    //     $licenceId = AdvActiveHoarding::create($LicencesMetaReqs)->id;
-    //     // $licenceId = 5;
+            $inboxDetails = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+                ->whereIn('agency_hoardings.current_role_id', $roleId)
+                ->where('agency_hoardings.is_escalate', false)
+                ->where('agency_hoardings.parked', false)
+                ->orderByDesc('agency_hoardings.id')
+                ->paginate($pages);
 
-    //     $mDocuments = $req->documents;
-    //     // $mDocuments = str_replace(']"'," ",$mDocuments);
-    //     // $this->uploadDocument($licenceId, $mDocuments, $req->auth);
-
-    //     return $req->application_no;
-    // }
-    // public function MetaReqs($req)
-    // {
-    //     $metaReqs = [
-    //         // 'zone_id' => $req->zoneId,
-    //         // 'license_year' => $req->licenseYear,
-
-    //         // 'typology' => $req->HordingType,               // Hording Type is Convert Into typology
-    //         // 'display_location' => $req->displayLocation,
-    //         // 'width' => $req->width,
-    //         // 'length' => $req->length,
-    //         // 'display_area' => $req->displayArea,
-    //         // 'longitude' => $req->longitude,
-    //         // 'latitude' => $req->latitude,
-    //         // 'material' => $req->material,
-    //         // 'illumination' => $req->illumination,
-    //         // 'indicate_facing' => $req->indicateFacing,
-    //         // 'property_type' => $req->propertyType,
-    //         // 'display_land_mark' => $req->displayLandMark,
-    //         // 'property_owner_name' => $req->propertyOwnerName,
-    //         // 'property_owner_address' => $req->propertyOwnerAddress,
-    //         // 'property_owner_city' => $req->propertyOwnerCity,
-    //         // 'property_owner_whatsapp_no' => $req->propertyOwnerWhatsappNo,
-    //         // 'property_owner_mobile_no' => $req->propertyOwnerMobileNo,
-    //         // 'user_id' => $req->userId,
-    //         'applicant_name'  => $req->applicantName,
-    //         'advt_peroriod'   => $req->advtPeriod,
-    //         'faher_name'      => $req->fatherName,
-    //         'adress'=> $req->residenceAddress,
-    //         'agency_name'      => $req->agencyName,
-    //         'hoarding_type'   => $req->hoardingType,
-    //         'allotment_date'  => $req->allotmentDate,
-    //         'from_date'       => $req->from,
-    //         'to_date'         => $req->to,
-    //         'rate'            => $req->rate,
-    //         'application_no' => $req->application_no,
+            $isDataExist = collect($inboxDetails)->last();
+            if (!$isDataExist || $isDataExist == 0) {
+                throw new Exception('Data not Found!');
+            }
+            return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | common function for workflow
+     * | Get consumer active application details 
+        | Serial No : 04
+        | Working
+     */
+    public function getConsumerWfBaseQuerry($workflowIds, $ulbId)
+    {
+        return AgencyHoarding::select('agency_hoardings.*')
+            ->where('agency_hoardings.status', true)
+            ->where('agency_hoardings.ulb_id', $ulbId)
+            ->whereIn('agency_hoardings.workflow_id', $workflowIds);
+    }
 
 
+    public function listOutbox(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'perPage' => 'nullable|integer',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $user                   = authUser($req);
+            $pages                  = $req->perPage ?? 10;
+            $userId                 = $user->id;
+            $ulbId                  = $user->ulb_id;
+            $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
+
+            $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
+            $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $inboxDetails = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+                ->whereIn('agency_hoardings.current_role_id', $roleId)
+                ->where('agency_hoardings.is_escalate', false)
+                ->where('agency_hoardings.parked', false)
+                ->orderByDesc('agency_hoardings.id')
+                ->paginate($pages);
+
+            $isDataExist = collect($inboxDetails)->last();
+            if (!$isDataExist || $isDataExist == 0) {
+                throw new Exception('Data not Found!');
+            }
+            return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+    /**
+     * 
+     */
+    public function getDocList(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mgemncyHoardApplication  = new AgencyHoarding();
+            // $mWaterApplicant    = new WaterApplicant();
+
+            $refhoardApplication = $mgemncyHoardApplication->checkdtlsById($req->applicationId);                      // Get Saf Details
+            if (!$refhoardApplication) {
+                throw new Exception("Application Not Found for this id");
+            }
+            // $refWaterApplicant = $mWaterApplicant->getOwnerList($req->applicationId)->get();
+            $documentList = $this->getAgencyDocLists($refhoardApplication, $req);
+            $hoardTypeDocs['listDocs'] = collect($documentList)->map(function ($value, $key) use ($refhoardApplication) {
+                return $this->filterDocument($value, $refhoardApplication)->first();
+            });
+
+            $totalDocLists = collect($hoardTypeDocs); //->merge($waterOwnerDocs);
+            $totalDocLists['docUploadStatus'] = $refhoardApplication->doc_upload_status;
+            $totalDocLists['docVerifyStatus'] = $refhoardApplication->doc_status;
+            return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
+    /**
+     * |---------------------------- List of the doc to upload ----------------------------|
+     * | Calling function
+     * | 01.01
+        | Serial No :  
+     */
+    public function getAgencyDocLists($application, $req)
+    {
+        // $user           = authUser($req);
+        $mRefReqDocs    = new RefRequiredDocument();
+        $moduleId       = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $refUserType    = Config::get('workflow-constants.REF_USER_TYPE');
+
+        $type = ["Hording_content"];
+
+        // // Check if user_type is not equal to 1
+        // if ($user->user_type == $refUserType['1']) {
+        //     // Modify $type array for user_type not equal to 1
+        //     $type = ["Hording_content"];
+        // }
+
+        return $mRefReqDocs->getCollectiveDocByCode($moduleId, $type);
+    }
 
 
+    /**
+     * |---------------------------- Filter The Document For Viewing ----------------------------|
+     * | @param documentList
+     * | @param refWaterApplication
+     * | @param ownerId
+     * | @var mWfActiveDocument
+     * | @var applicationId
+     * | @var workflowId
+     * | @var moduleId
+     * | @var uploadedDocs
+     * | Calling Function 01.01.01/ 01.02.01
+        | Serial No : 
+     */
+    public function filterDocument($documentList, $refWaterApplication, $ownerId = null)
+    {
+        $mWfActiveDocument  = new WfActiveDocument();
+        $applicationId      = $refWaterApplication->id;
+        $workflowId         = $refWaterApplication->workflow_id;
+        $moduleId            = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $uploadedDocs        = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
 
-    //     ];
-    //     return $metaReqs;
-    // }
+        $explodeDocs = collect(explode('#', $documentList->requirements));
+        $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $ownerId, $documentList) {
+
+            # var defining
+            $document   = explode(',', $explodeDoc);
+            $key        = array_shift($document);
+            $label      = array_shift($document);
+            $documents  = collect();
+
+            collect($document)->map(function ($item) use ($uploadedDocs, $documents, $ownerId, $documentList) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $item)
+                    ->where('owner_dtl_id', $ownerId)
+                    ->first();
+                if ($uploadedDoc) {
+                    $path = $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                    $response = [
+                        "uploadedDocId" => $uploadedDoc->id ?? "",
+                        "documentCode"  => $item,
+                        "ownerId"       => $uploadedDoc->owner_dtl_id ?? "",
+                        "docPath"       => $fullDocPath ?? "",
+                        "verifyStatus"  => $uploadedDoc->verify_status ?? "",
+                        "remarks"       => $uploadedDoc->remarks ?? "",
+                    ];
+                    $documents->push($response);
+                }
+            });
+            $reqDoc['docType']      = $key;
+            $reqDoc['uploadedDoc']  = $documents->last();
+            $reqDoc['docName']      = substr($label, 1, -1);
+            // $reqDoc['refDocName'] = substr($label, 1, -1);
+
+            $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
+                $strLower = strtolower($doc);
+                $strReplace = str_replace('_', ' ', $strLower);
+                if (isset($uploadedDoc)) {
+                    $path =  $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                }
+                $arr = [
+                    "documentCode"  => $doc,
+                    "docVal"        => ucwords($strReplace),
+                    "uploadedDoc"   => $fullDocPath ?? "",
+                    "uploadedDocId" => $uploadedDoc->id ?? "",
+                    "verifyStatus'" => $uploadedDoc->verify_status ?? "",
+                    "remarks"       => $uploadedDoc->remarks ?? "",
+                ];
+                return $arr;
+            });
+            return $reqDoc;
+        });
+        return $filteredDocs;
+    }
+    /**
+     * |----------------------------- Read the server url ------------------------------|
+        | Serial No : 
+     */
+    public function readDocumentPath($path)
+    {
+        $path = (config('app.url') . "/" . $path);
+        return $path;
+    }
+
+    /**
+     * | document upload for hoarding register by agency 
+     */
+    public function uploadDocument(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                "applicationId" => "required|numeric",
+                "document"      => "required|mimes:pdf,jpeg,png,jpg|max:2048",
+                "docCode"       => "required",
+                "docCategory"   => "required",                                  // Recheck in case of undefined
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
 
 
+        try {
+            // $user                       = authUser($req);
+            // $metaReqs                   = array();
+            $applicationId              = $req->applicationId;
+            $document                   = $req->document;
+            $refDocUpload               = new DocumentUpload;
+            $mWfActiveDocument          = new WfActiveDocument();
+            $magencyHoard               = new AgencyHoarding();
+            $relativePath               = Config::get('constants.AGENCY_ADVET');
+            $moduleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+            $confUserType               = $this->_userType;
+
+            $getAgencyDetails  = $magencyHoard->getApplicationId($applicationId)->firstOrFail();
+            $refImageName   = $req->docCode;
+            $refImageName = $getAgencyDetails->id . '-' . str_replace(' ', '_', $refImageName);
+            $imageName      = $refDocUpload->upload($refImageName, $document, $relativePath['RELATIVE_PATH']);
+
+            $metaReqs = [
+                'moduleId'      => $moduleId,
+                'activeId'      => $getAgencyDetails->id,
+                'workflowId'    => $getAgencyDetails->workflow_id,
+                'ulbId'         => $getAgencyDetails->ulb_id,
+                'relativePath'  => $relativePath['RELATIVE_PATH'],
+                'document'      => $imageName,
+                'docCode'       => $req->docCode,
+                'ownerDtlId'    => $req->ownerId ?? null,
+                'docCategory'   => $req->docCategory
+            ];
+            // if ($user->user_type == $confUserType['1']) {
+            //     $isCitizen = true;
+            //     $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
+            // } else {
+            //     $isCitizen = false;
+            //     $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
+            // }
+
+            DB::beginTransaction();
+            $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getAgencyDetails->ref_application_id, $getAgencyDetails->workflow_id, $moduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
+            $metaReqs = new Request($metaReqs);
+            if (collect($ifDocExist)->isEmpty()) {
+                $mWfActiveDocument->postAgencyDocuments($metaReqs);
+            }
+            if ($ifDocExist) {
+                $mWfActiveDocument->editDocuments($ifDocExist, $metaReqs);
+            }
+            #check full doc upload
+            $refCheckDocument = $this->checkFullDocUpload($req);
+
+            if ($refCheckDocument->contains(false) && $getAgencyDetails->doc_upload_status == true) {
+                $getAgencyDetails->updateUploadStatus($applicationId, false);
+            }
+            if ($refCheckDocument->unique()->count() === 1 && $refCheckDocument->unique()->first() === true) {
+                $getAgencyDetails->updateUploadStatus($req->applicationId, true);
+            }
+
+            DB::commit();
+            return responseMsgs(true, "Document Uploadation Successful", "", "", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+    public function checkParamForDocUpload($isCitizen, $applicantDetals, $user)
+    {
+        $refWorkFlowMaster = Config::get('workflow-constants.WATER_MASTER_ID');
+        switch ($isCitizen) {
+            case (true): # For citizen 
+                if (!is_null($applicantDetals->current_role) && $applicantDetals->parked == true) {
+                    return true;
+                }
+                if (!is_null($applicantDetals->current_role)) {
+                    throw new Exception("You aren't allowed to upload document!");
+                }
+                break;
+            case (false): # For user
+                // $userId = $user->id;
+                // $ulbId = $applicantDetals->ulb_id;
+                // $role = $this->getUserRoll($userId, $ulbId, $refWorkFlowMaster);
+                // if (is_null($role)) {
+                //     throw new Exception("You dont have any role!");
+                // }
+                // if ($role->can_upload_document != true) {
+                //     throw new Exception("You dont have permission to upload Document!");
+                // }
+                break;
+        }
+    }
+    public function getUserRoll($user_id, $ulb_id, $workflow_id)
+    {
+        try {
+            // DB::enableQueryLog();
+            $data = WfRole::select(
+                DB::raw(
+                    "wf_roles.id as role_id,wf_roles.role_name,
+                                            wf_workflowrolemaps.is_initiator, wf_workflowrolemaps.is_finisher,
+                                            wf_workflowrolemaps.forward_role_id,forword.role_name as forword_name,
+                                            wf_workflowrolemaps.backward_role_id,backword.role_name as backword_name,
+                                            wf_workflowrolemaps.allow_full_list,wf_workflowrolemaps.can_escalate,
+                                            wf_workflowrolemaps.serial_no,wf_workflowrolemaps.is_btc,
+                                            wf_workflowrolemaps.can_upload_document,
+                                            wf_workflowrolemaps.can_verify_document,
+                                            wf_workflowrolemaps.can_backward,
+                                            wf_workflows.id as workflow_id,wf_masters.workflow_name,
+                                            ulb_masters.id as ulb_id, ulb_masters.ulb_name,
+                                            ulb_masters.ulb_type"
+                )
+            )
+                ->join("wf_roleusermaps", function ($join) {
+                    $join->on("wf_roleusermaps.wf_role_id", "=", "wf_roles.id")
+                        ->where("wf_roleusermaps.is_suspended", "=", FALSE);
+                })
+                ->join("users", "users.id", "=", "wf_roleusermaps.user_id")
+                ->join("wf_workflowrolemaps", function ($join) {
+                    $join->on("wf_workflowrolemaps.wf_role_id", "=", "wf_roleusermaps.wf_role_id")
+                        ->where("wf_workflowrolemaps.is_suspended", "=", FALSE);
+                })
+                ->leftjoin("wf_roles AS forword", "forword.id", "=", "wf_workflowrolemaps.forward_role_id")
+                ->leftjoin("wf_roles AS backword", "backword.id", "=", "wf_workflowrolemaps.backward_role_id")
+                ->join("wf_workflows", function ($join) {
+                    $join->on("wf_workflows.id", "=", "wf_workflowrolemaps.workflow_id")
+                        ->where("wf_workflows.is_suspended", "=", FALSE);
+                })
+                ->join("wf_masters", function ($join) {
+                    $join->on("wf_masters.id", "=", "wf_workflows.wf_master_id")
+                        ->where("wf_masters.is_suspended", "=", FALSE);
+                })
+                ->join("ulb_masters", "ulb_masters.id", "=", "wf_workflows.ulb_id")
+                ->where("wf_roles.is_suspended", false)
+                ->where("wf_roleusermaps.user_id", $user_id)
+                ->where("wf_workflows.ulb_id", $ulb_id)
+                ->where("wf_workflows.wf_master_id", $workflow_id)
+                ->orderBy("wf_roleusermaps.id", "desc")
+                ->first();
+            // dd(DB::getQueryLog());
+            return $data;
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+    public function checkFullDocUpload($req)
+    {
+        # Check the Document upload Status
+        $confDocReqCatagory = $this->_docReqCatagory;
+        $documentList = $this->getDocList($req);
+        $refDoc = collect($documentList)['original']['data']['listDocs'];
+        $checkDocument = collect($refDoc)->map(function ($value)
+        use ($confDocReqCatagory) {
+            if ($value['docType'] == $confDocReqCatagory['1'] || $value['docType'] == $confDocReqCatagory['2']) {
+                $doc = collect($value['uploadedDoc'])->first();
+                if (is_null($doc)) {
+                    return true;
+                }
+                return true;
+            }
+            return true;
+        });
+        return $checkDocument;
+    }
+   
+    /**
+     * |Get the upoaded docunment
+        | Serial No : 
+        | Working
+     */
+    public function getUploadDocuments(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $mWfActiveDocument = new WfActiveDocument();
+            $mHoardApplication = new AgencyHoarding();
+            $moduleId          = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+
+            $hoardDetails = $mHoardApplication->checkdtlsById($req->applicationId)->first();
+            if (!$hoardDetails)
+                throw new Exception("Application Not Found for this application Id");
+
+            $workflowId = $hoardDetails->workflow_id;
+
+            $documents = $mWfActiveDocument->getagencyDocsByAppNo($req->applicationId, $workflowId, $moduleId)->get();
+            $returnData = collect($documents)->map(function ($value) {                          // Static
+                $path =  $this->readDocumentPath($value->ref_doc_path);
+                $value->doc_path = !empty(trim($value->ref_doc_path)) ? trim($path,"/") : null;
+                return $value;
+            });
+            return responseMsgs(true, "Uploaded Documents", remove_null($returnData), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }
+

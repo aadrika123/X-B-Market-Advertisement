@@ -723,8 +723,9 @@ class ShopController extends Controller
             $shopPayment = $mMarShopPayment = MarShopPayment::find($req->chequeId);                                    // Get Entry Cheque Details                        
             // $mMarShopPayment->payment_date = Carbon::now()->format('Y-m-d');
             $mMarShopPayment->payment_status = $req->status;
-            $mMarShopPayment->bounce_amount = $req->amount;
-            $mMarShopPayment->bounce_reason = $req->bounceReason;
+            $mMarShopPayment->is_verified    = $req->status;
+            $mMarShopPayment->bounce_amount  = $req->amount;
+            $mMarShopPayment->bounce_reason  = $req->bounceReason;
             $mMarShopPayment->clear_or_bounce_date = $req->date;
             $mMarShopPayment->save();
             if ($req->status == 3) {

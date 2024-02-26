@@ -82,4 +82,16 @@ class AgencyMaster extends Model
                 'status' => 0
             ]);
     }
+    #get agency details from email
+    public function getagencyDetails($email){
+        return self::select(
+            'agency_masters.*',
+            'hoarding_masters.*'
+        )
+        ->join('hoarding_masters','hoarding_masters.agency_id','agency_masters.id')
+        ->where('agency_masters.email',$email)
+        ->where('agency_masters.status',1)
+        ->where('hoarding_masters.status',1)
+        ->get();
+    }
 }

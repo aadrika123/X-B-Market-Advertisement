@@ -37,4 +37,5 @@ class RefRequiredDocument extends Model
             ->whereIn('code', $docCodes)
             ->get();
     }
+    
 }

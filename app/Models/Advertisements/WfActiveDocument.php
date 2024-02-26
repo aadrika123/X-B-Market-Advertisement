@@ -72,6 +72,30 @@ class WfActiveDocument extends Model
         }
         $mWfActiveDocument->save();
     }
+     /**
+     * | Post Workflow Document
+     */
+    public function postAgencyDocuments($req)
+    {
+        $mWfActiveDocument = new WfActiveDocument();
+        $mWfActiveDocument->active_id         = $req->activeId;
+        $mWfActiveDocument->workflow_id       = $req->workflowId;
+        $mWfActiveDocument->ulb_id            = $req->ulbId;
+        $mWfActiveDocument->module_id         = $req->moduleId;
+        $mWfActiveDocument->relative_path     = $req->relativePath;
+        $mWfActiveDocument->document          = $req->document;
+        // $mWfActiveDocument->uploaded_by       = authUser($req)->id;
+        // $mWfActiveDocument->uploaded_by_type  = authUser($req)->user_type;
+        $mWfActiveDocument->remarks           = $req->remarks ?? null;
+        $mWfActiveDocument->doc_code          = $req->docCode;
+        // $mWfActiveDocument->owner_dtl_id      = $req->ownerDtlId;
+        $mWfActiveDocument->doc_category      = $req->docCategory ?? null;
+        if (isset($req->verifyStatus)) {
+            $mWfActiveDocument->verify_status = $req->verifyStatus;
+        }
+        $mWfActiveDocument->save();
+        return $mWfActiveDocument->active_id ;
+    }
 
     /**
      * | view Uploaded documents
@@ -107,6 +131,14 @@ class WfActiveDocument extends Model
         $document->verify_status = $req['verify_status'];
         $document->action_taken_by = $req['action_taken_by'];
         $document->save();
+    }
+     /**
+     * | Document Verify Reject
+     */
+    public function docVerifyRejectv2($id, $req)
+    {
+        $document = WfActiveDocument::find($id);
+        $document->update($req);
     }
 
     /**
@@ -179,8 +211,8 @@ class WfActiveDocument extends Model
             'module_id'         => $req->moduleId,
             'relative_path'     => $req->relativePath,
             'document'          => $req->document,
-            'uploaded_by'       => authUser()->id,
-            'uploaded_by_type'  => authUser()->user_type,
+            'uploaded_by'       => authUser($req)->id,
+            'uploaded_by_type'  => authUser($req)->user_type,
             'remarks'           => $req->remarks ?? null,
             'doc_code'          => $req->docCode,
             'owner_dtl_id'      => $req->ownerDtlId,
@@ -211,7 +243,7 @@ class WfActiveDocument extends Model
      * | @param workflowId
      * | @param moduleId
      */
-    public function getWaterDocsByAppNo($applicationId, $workflowId, $moduleId)
+    public function getagencyDocsByAppNo($applicationId, $workflowId, $moduleId)
     {
         return DB::table('wf_active_documents as d')
             ->select(

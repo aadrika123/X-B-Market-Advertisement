@@ -16,6 +16,7 @@ use Illuminate\Routing\RouteGroup;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Advertisements\AdvertisementController;
 use App\Http\Controllers\AdevertisementNew\AgencyNewController;
+use App\Http\Controllers\AdevertisementNew\AgencyWorkflowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -572,9 +573,28 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/deactive-locations','deactiveLocation');            // deactive location
         Route::post('advertisement/add-new-advertiser','addNewAdvertiser');            // add new advertiser
         Route::post('advertisement/get-all-advertiser','getALLAdvertiser');            // get all advertiser 
-        Route::post('advertisement/update-advertiser','updateAdvertiserdtl');            // update  dtls  advertiser 
+        Route::post('advertisement/update-advertiser','updateAdvertiserdtl');             // update  dtls  advertiser 
         Route::post('advertisement/deactive-advertiser','deactiveAdvertiser');          // deactive advertiser 
         Route::post('advertisement/apply-hoarding','applyHoarding');                  /**==apply hoarding== */ 
+        Route::post('advertisement/list-inbox1', 'listInbox');
+        Route::post('advertisement/list-outbox', 'listOutbox');
+        Route::post('advertisement/get-doc-list', 'getDocList');
+        Route::post('advertisement/upload-document','uploadDocument');                  // upload docment for advertisements 
+        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');  
 
     });
+    /**
+     * created by = Arshad Hussain 
+     * workflow controller for new advertisement module
+     */
+    Route::controller(AgencyWorkflowController::class)->group(function () {
+        Route::post('advertisement/post-next-level', 'postNextLevel');                                        
+        Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');     
+        Route::post('advertisement/get-details-by-id', 'getWorkflow');    
+        Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');  
+        Route::post('advertisement/get-agency-details','getAgencyDetails'); 
+        Route::post('advertisement/get-all-agency','getAllAgency');
+
+    }); 
+
 });

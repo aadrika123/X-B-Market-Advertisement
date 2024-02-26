@@ -28,7 +28,7 @@ class HoardingMaster extends Model
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
     }
 
-    
+
     /**
      * | Get Agency Details by application id
      */
@@ -39,17 +39,28 @@ class HoardingMaster extends Model
             ->first();
     }
 
-    public function creteData($metaReqs){
+    public function creteData($metaReqs)
+    {
         HoardingMaster::create($metaReqs);
     }
-   
-     /**
+
+    /**
      * GET ALL AGENCY
      */
     public function getaLLHording()
     {
-        return self::where('status', 1)
-            ->orderByDesc('id')
+        return self::select(
+            'hoarding_masters.hoarding_no',
+            'hoarding_masters.hoarding_type',
+            'hoarding_masters.length',
+            'hoarding_masters.width',
+            'm_circle.circle_name as zone_name',
+            'ulb_ward_masters.ward_name'
+        )
+            ->join('m_circle','m_circle.id','hoarding_masters.zone_id')
+            ->join('ulb_ward_masters','ulb_ward_masters.id','hoarding_masters.ward_id')
+            ->where('hoarding_masters.status', 1)
+            ->orderByDesc('hoarding_masters.id')
             ->get();
     }
     public function updateHoarddtl($metaRequest, $agencyId)
@@ -60,17 +71,18 @@ class HoardingMaster extends Model
     /**
      * 
      */
-    public function checkHoardById($agencyId){
-        return self::where('id',$agencyId)
-        ->where('status',1)
-        ->first();
+    public function checkHoardById($agencyId)
+    {
+        return self::where('id', $agencyId)
+            ->where('status', 1)
+            ->first();
     }
-     # update status 
-     public function updateStatus($agencyId){
-        return self ::where('id',$agencyId)
-        ->update([
-           'status'=> 0
-        ]);
+    # update status 
+    public function updateStatus($agencyId)
+    {
+        return self::where('id', $agencyId)
+            ->update([
+                'status' => 0
+            ]);
     }
-    
 }
