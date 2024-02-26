@@ -36,8 +36,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
-use App\Models\User;
-use App\Models\Workflows\WfRole;
+use App\Models\User;   
 
 class AgencyNewController extends Controller
 {
@@ -863,7 +862,7 @@ class AgencyNewController extends Controller
             if ($user->user_type == "Citizen") {                                                        // Static
                 $receiverRoleId = $advtRole['DA'];
             }
-            if ($user->user_type != "Citizen") {                                                        // Static
+            if ($user->user_type != "Citizen") {                                                        // statis
                 $receiverRoleId = collect($initiatorRoleId)->first()->role_id;
             }
 
