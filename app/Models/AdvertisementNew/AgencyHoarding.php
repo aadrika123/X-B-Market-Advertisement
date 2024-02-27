@@ -175,12 +175,13 @@ class AgencyHoarding extends Model
     public function getByItsDetailsV2($req, $key, $refNo)
     {
         return self::select(
-            "agency_hoardings.id as agencyHoardId",
+            "agency_hoardings.id",
             "agency_hoardings.rate",
             "agency_hoardings.from_date",
             "agency_hoardings.to_date",
             "agency_hoardings.hoarding_type",
             "agency_hoardings.address",
+            "agency_hoardings.approve",
             "agency_hoardings.application_no",
             "agency_hoardings.apply_date",
             "agency_hoardings.registration_no",
