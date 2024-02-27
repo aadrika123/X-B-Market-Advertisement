@@ -36,7 +36,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
-use App\Models\User;   
+use App\Models\User;
+use App\Models\Workflows\WfRole;
 
 class AgencyNewController extends Controller
 {
@@ -63,6 +64,7 @@ class AgencyNewController extends Controller
     protected $_applicationDate;
     protected $_userType;
     protected $_docReqCatagory;
+    protected $_tempId;
 
     public function __construct()
     {
@@ -79,6 +81,7 @@ class AgencyNewController extends Controller
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_AG_ID');
+        $this->_tempId = Config::get('workflow-constants.TEMP_ID');
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_docUrl = Config::get('workflow-constants.DOC_URL');
@@ -107,17 +110,17 @@ class AgencyNewController extends Controller
             'panNo' => 'nullable|',
             'profile' => 'nullable|',
             "ulbId"   => 'nullable'
-            // 'documents' => 'required|array',
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
-            $idGeneration = new PrefixIdGenerator($this->_tempParamId, $request->ulbId);    // Id Generation 
-            $generatedId = $idGeneration->generateId();
-            $applicationNo = $generatedId;
+            $ulbId = $request->ulbId ?? 2;
+            $idGeneration       = new PrefixIdGenerator($this->_tempId, $ulbId);
+            $applicationNo      = $idGeneration->generate();
+            $applicationNo      = str_replace('/', '-', $applicationNo);
             DB::beginTransaction();
-            return  $metaRequest = [
+            $metaRequest = [
                 'agency_name'             => $request->agencyName,
                 'agency_code'             => $applicationNo,
                 'corresponding_address'   => $request->correspondingAddress,
@@ -126,7 +129,6 @@ class AgencyNewController extends Controller
                 'contact_person'          => $request->contactPerson,
                 'gst_no'                  => $request->gstNo,
                 'pan_no'                  => $request->panNo
-                // 'profile'                 => $request->agencyCode,
             ];
             $agencyId = $this->_modelObj->createData($metaRequest);
             DB::commit();
@@ -235,20 +237,16 @@ class AgencyNewController extends Controller
             'length' => 'required|',
             'width' => 'nullable|numeric',
             'remarks' => 'nullable',
-            'locationId' => 'nullable|',
+            'address' => 'nullable|',
             'agencyId' => 'nullable|',
             'documents' => 'nullable',
             "zoneId" => 'required',
             "wardId" => 'required'
         ]);
-
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
-
         try {
-
-
             DB::beginTransaction();
             $metaReqs = [
                 'hoarding_no' => "HO-" . random_int(100000, 999999) . "/" . random_int(1, 10),
@@ -258,7 +256,7 @@ class AgencyNewController extends Controller
                 'length' => $req->length,
                 'width' => $req->width,
                 'agency_id' => $req->agencyId,
-                'location_id' => $req->locationId,
+                'address' => $req->address,
                 'remarks' => $req->remarks,
                 "zone_id" => $req->zoneId,
                 "ward_id" => $req->wardId
@@ -281,7 +279,7 @@ class AgencyNewController extends Controller
     {
         try {
             $getAll = $this->_hoarObj->getaLLHording();
-            return responseMsgs(true, "get HORDING succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
+            return responseMsgs(true, "get hoarding succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
@@ -775,6 +773,8 @@ class AgencyNewController extends Controller
         $validated = Validator::make(
             $request->all(),
             [
+                'agencyId'             => 'required',
+                'hoardingId'           => 'required',
                 'agencyName'           => "nullable|",
                 'hoardingType'         => "nullable|",
                 'allotmentDate'        => "nullable",
@@ -784,7 +784,11 @@ class AgencyNewController extends Controller
                 'fatherName'           => "nullable",
                 "email"                => 'nullable',
                 'residenceAddress'     => 'nullable',
-                'workflowId'           => 'nullable'
+                'workflowId'           => 'nullable',
+                'documents' => 'required|array',
+                'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
+                'documents.*.docCode' => 'required|string',
+                'documents.*.ownerDtlId' => 'nullable|integer'
 
             ]
         );
@@ -795,6 +799,7 @@ class AgencyNewController extends Controller
         try {
             $user                           = authUser($request);
             $refRequest                     = array();
+            $mDocuments                     = $request->documents;
             $ulbWorkflowObj                 = new WfWorkflow();
             $mWorkflowTrack                 = new WorkflowTrack();
             $refUserType                    = Config::get('workflow-constants.REF_USER_TYPE');
@@ -852,12 +857,14 @@ class AgencyNewController extends Controller
             // $mWfWorkflow=new WfWorkflow();
             // $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
             // $request->request->add($WfMasterId);
-            $mAgency        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo);
+            $AgencyId        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
             $var = [
-                'relatedId' => $mAgency->id,
+                'relatedId' => $AgencyId,
                 "Status"    => 2,
 
             ];
+            $this->uploadHoardDocument($AgencyId, $mDocuments, $request->auth);
+            $this->_agencyObj->updateUploadStatus($AgencyId, true);                       //update status when doc upload 
             # save for  work flow track
             if ($user->user_type == "Citizen") {                                                        // Static
                 $receiverRoleId = $advtRole['DA'];
@@ -884,6 +891,43 @@ class AgencyNewController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
         }
+    }
+    /*
+     * upload Document By agency At the time of Registration
+     * @param Request $req
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadHoardDocument($AgencyId, $documents, $auth)
+    {
+        $docUpload = new DocumentUpload;
+        $mWfActiveDocument = new WfActiveDocument();
+        $mAgencyHoarding = new AgencyHoarding();
+        $relativePath   = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+
+        collect($documents)->map(function ($doc) use ($AgencyId, $docUpload, $mWfActiveDocument, $mAgencyHoarding, $relativePath, $auth) {
+            $metaReqs = array();
+            $getApplicationDtls = $mAgencyHoarding->getApplicationDtls($AgencyId);
+            $refImageName = $doc['docCode'];
+            $refImageName = $getApplicationDtls->id . '-' . $refImageName;
+            $documentImg = $doc['image'];
+            $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+            $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+            $metaReqs['activeId'] = $getApplicationDtls->id;
+            $metaReqs['workflowId'] = $getApplicationDtls->workflow_id;
+            $metaReqs['ulbId'] = $getApplicationDtls->ulb_id;
+            $metaReqs['relativePath'] = $relativePath;
+            $metaReqs['document'] = $imageName;
+            $metaReqs['docCode'] = $doc['docCode'];
+            $metaReqs['ownerDtlId'] = $doc['ownerDtlId'];
+            $a = new Request($metaReqs);
+            // $mWfActiveDocument->postDocuments($a, $auth);
+            $metaReqs =  $mWfActiveDocument->metaReqs($metaReqs);
+            $mWfActiveDocument->create($metaReqs);
+            // foreach ($metaReqs as $key => $val) {
+            //     $mWfActiveDocument->$key = $val;
+            // }
+            // $mWfActiveDocument->save();
+        });
     }
 
     public function listInbox(Request $req)
@@ -912,6 +956,7 @@ class AgencyNewController extends Controller
                 ->whereIn('agency_hoardings.current_role_id', $roleId)
                 ->where('agency_hoardings.is_escalate', false)
                 ->where('agency_hoardings.parked', false)
+                ->where('agency_hoardings.approve', 0)
                 ->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
 
@@ -932,7 +977,11 @@ class AgencyNewController extends Controller
      */
     public function getConsumerWfBaseQuerry($workflowIds, $ulbId)
     {
-        return AgencyHoarding::select('agency_hoardings.*')
+        return AgencyHoarding::select(
+            'agency_hoardings.*',
+            'agency_masters.agency_name as agencyName'
+        )
+            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->where('agency_hoardings.status', true)
             ->where('agency_hoardings.ulb_id', $ulbId)
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
@@ -961,7 +1010,7 @@ class AgencyNewController extends Controller
             $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
             $inboxDetails = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
-                ->whereIn('agency_hoardings.current_role_id', $roleId)
+                ->whereNotIn('agency_hoardings.current_role_id', $roleId)
                 ->where('agency_hoardings.is_escalate', false)
                 ->where('agency_hoardings.parked', false)
                 ->orderByDesc('agency_hoardings.id')
@@ -1140,10 +1189,9 @@ class AgencyNewController extends Controller
         if ($validated->fails())
             return validationError($validated);
 
-
         try {
-            // $user                       = authUser($req);
-            // $metaReqs                   = array();
+            $user                       = authUser($req);
+            $metaReqs                   = array();
             $applicationId              = $req->applicationId;
             $document                   = $req->document;
             $refDocUpload               = new DocumentUpload;
@@ -1169,13 +1217,13 @@ class AgencyNewController extends Controller
                 'ownerDtlId'    => $req->ownerId ?? null,
                 'docCategory'   => $req->docCategory
             ];
-            // if ($user->user_type == $confUserType['1']) {
-            //     $isCitizen = true;
-            //     $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
-            // } else {
-            //     $isCitizen = false;
-            //     $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
-            // }
+            if ($user->user_type == $confUserType['1']) {
+                $isCitizen = true;
+                $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
+            } else {
+                $isCitizen = false;
+                $this->checkParamForDocUpload($isCitizen, $getAgencyDetails, $user);
+            }
 
             DB::beginTransaction();
             $ifDocExist = $mWfActiveDocument->isDocCategoryExists($getAgencyDetails->ref_application_id, $getAgencyDetails->workflow_id, $moduleId, $req->docCategory, $req->ownerId);   // Checking if the document is already existing or not
@@ -1299,7 +1347,7 @@ class AgencyNewController extends Controller
         });
         return $checkDocument;
     }
-   
+
     /**
      * |Get the upoaded docunment
         | Serial No : 
@@ -1330,7 +1378,7 @@ class AgencyNewController extends Controller
             $documents = $mWfActiveDocument->getagencyDocsByAppNo($req->applicationId, $workflowId, $moduleId)->get();
             $returnData = collect($documents)->map(function ($value) {                          // Static
                 $path =  $this->readDocumentPath($value->ref_doc_path);
-                $value->doc_path = !empty(trim($value->ref_doc_path)) ? trim($path,"/") : null;
+                $value->doc_path = !empty(trim($value->ref_doc_path)) ? trim($path, "/") : null;
                 return $value;
             });
             return responseMsgs(true, "Uploaded Documents", remove_null($returnData), "010102", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1338,5 +1386,30 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+    /**
+     * |assign hoarding to agency 
+     */
+    public function assignAgency(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'roleId' => 'required|numeric',
+                'userId' => 'required|numeric'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $roleId         = $req->roleId;
+            $userId         = $req->userId;
+            $hoardDetails = $this->_hoarObj->checkHoardById($userId);
+            if (!$hoardDetails)
+                throw new Exception("Application Not Found for this application Id");
+            $agencyHoarding =  $this->_hoarObj->assignAgency($roleId, $userId);
+            return responseMsgs(true, "agency assiggned", remove_null($agencyHoarding), "010102", "1.0", "", "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }
-

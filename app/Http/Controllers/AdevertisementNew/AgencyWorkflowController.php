@@ -350,7 +350,7 @@ class AgencyWorkflowController extends Controller
         }
         # Ward Name
         $refApplication = collect($applicationDetails)->first();
-        $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
+        // $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
         $aplictionList = [
             'application_no' => collect($applicationDetails)->first()->application_no,
             'apply_date' => collect($applicationDetails)->first()->allotment_date
@@ -408,7 +408,7 @@ class AgencyWorkflowController extends Controller
         $custom = $mCustomDetails->getCustomDetails($request);
         $departmentPost['departmentalPost'] = collect($custom)->has('original') ? collect($forwardBackward)['original']['data'] : null;
         # Payments Details
-        $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $timelineData,$roleDetails,$departmentPost);
+        $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $timelineData, $roleDetails, $departmentPost);
         return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", "");
     }
     /**
@@ -418,9 +418,11 @@ class AgencyWorkflowController extends Controller
     {
         $collectionApplications = collect($applicationDetails)->first();
         return new Collection([
-            ['displayString' => 'Agency Name',            'key' => 'agencyName',              'value' => $collectionApplications->agency_name],
-            ['displayString' => 'Ubl Id',                  'key' => 'ulbId',               'value' => $collectionApplications->ulb_id],
+            ['displayString' => 'Agency Name',            'key' => 'agencyName',              'value' => $collectionApplications->agencyName],
+            // ['displayString' => 'Ubl Id',                  'key' => 'ulbId',               'value' => $collectionApplications->ulb_id],
             ['displayString' => 'ApplyDate',               'key' => 'applyDate',          'value' => $collectionApplications->apply_date],
+            ['displayString' => 'FromDate',               'key' => 'fromDate',          'value' => $collectionApplications->from_date],
+            ['displayString' => 'ToDate',               'key' => 'toDate',          'value' => $collectionApplications->to_date],
         ]);
     }
     /**
@@ -435,6 +437,7 @@ class AgencyWorkflowController extends Controller
         $collectionApplications = collect($applicationDetails)->first();
         return new Collection([
             ['displayString' => 'Ward No.',             'key' => 'WardNo.',           'value' => $collectionApplications->ward_name],
+            ['displayString' => 'zone Name.',             'key' => 'zoneName.',           'value' => $collectionApplications->zone_name],
             ['displayString' => 'Application No.',      'key' => 'ApplicationNo.',    'value' => $collectionApplications->application_no],
             ['displayString' => 'Rate',                  'key' => 'rate',              'value' => $collectionApplications->rate],
 
@@ -474,15 +477,15 @@ class AgencyWorkflowController extends Controller
             if ($roleId != $application->current_role_id) {
                 throw new Exception("You are not the Finisher!");
             }
-            if ($application->doc_upload_status == false )
+            if ($application->doc_upload_status == false)
                 throw new Exception("Document Not Fully Uploaded ");                                                                      // DA Condition
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
 
             # Change the concept 
             if ($req->status == 1) {
-                 $regNo = "Hoard" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
-                AgencyHoarding::where('id',$req->applicationId)
+                $regNo = "Hoard" . Carbon::createFromDate()->milli . carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+                AgencyHoarding::where('id', $req->applicationId)
                     ->update([
                         "approve" => 1,
                         "registration_no" => $regNo
@@ -506,7 +509,8 @@ class AgencyWorkflowController extends Controller
     /**
      * |get agency details via email
      */
-     public function getAgencyDetails(Request $request){
+    public function getAgencyDetails(Request $request)
+    {
         try {
             $agencydetails = $this->_modelObj->getagencyDetails($request->auth['email']);
             if (!$agencydetails) {
@@ -519,18 +523,114 @@ class AgencyWorkflowController extends Controller
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
-     }
-     /**
+    }
+    /**
       This function for get All Agency
-      */
-      public function getAllAgency(Request $req){
+     */
+    public function getAllAgency(Request $req)
+    {
         try {
             $agencydetails = $this->_modelObj->getaLLagency();
             return responseMsgs(true, "Agency Details", $agencydetails, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
+    }
+    /**
+       get all hoarding address related ton agency
+     */
+    public function agencyhoardingAddress(Request $request)
+    {
+        try {
+            $agencydetails = $this->_modelObj->agencyhoardingAddress($request->auth['email']);
+            if (!$agencydetails) {
+                throw new Exception('You Have No Any Agency !!!');
+            }
+            remove_null($agencydetails);
+            $data1['data'] = $agencydetails;
 
-      }
+            return responseMsgs(true, "Agency Details", $data1, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+    /**
+     * |---------------------------- Search Application ----------------------------|
+     * | Search Application using provided condition For the Admin 
+        | Serial No : 
+     */
+    public function searchHoarding(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'required',
+                'parameter' => 'required',
+                'pages'     => 'nullable',
+                'wardId'    => 'nullable',
+                'zoneId'    => 'nullable'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $mWaterConsumer = new AgencyMaster();
+            $mHoardingMaster = new HoardingMaster();
+            $mAgencyHoarding = new AgencyHoarding();
+            $key            = $request->filterBy;
+            $paramenter     = $request->parameter;
+            $pages          = $request->perPage ? $request->perPage : 10;
+            $string         = preg_replace("/([A-Z])/", "_$1", $key);
+            $refstring      = strtolower($string);
+            switch ($key) {
+                case ("applicationNo"):                                                                        // Static
+                    $ReturnDetails = $mAgencyHoarding->getByItsDetailsV2($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($ReturnDetails)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("mobileNo"):
+                    $ReturnDetails = $mHoardingMaster->getByItsDetailsV2($request, $refstring, $paramenter)->paginate($pages);
+                    $checkVal = collect($ReturnDetails)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                default:
+                    throw new Exception("Data provided in filterBy is not valid!");
+            }
+            $list = [
+                "current_page" => $ReturnDetails->currentPage(),
+                "last_page" => $ReturnDetails->lastPage(),
+                "data" => $ReturnDetails->items(),
+                "total" => $ReturnDetails->total(),
+            ];
+            return responseMsgs(true, " Data According To Parameter!", remove_null($list), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+    /**
+     this function for to get approve applications 
 
-   }
+     */
+    public function getApproveApplications(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "applicationId" => "required"
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $data =  $this->_agencyObj->getApproveDetails($request)->first();
+            if (!$data) {
+                throw new Exception("Application Not Found!");
+            }
+            return responseMsgs(true, " Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+}

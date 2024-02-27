@@ -471,4 +471,20 @@ if (!function_exists('getClientIpAddress')) {
             // return ($data);
         }
     }
+    
+    /**
+     * | Search Filter for Shop Rental Data
+     */
+
+     if (!function_exists("searchHoardingFilter")) {
+        function searchHoardingFilter($orm, $req)
+        {
+            $key = trim($req->key);
+            return $orm->where(function ($query) use ($key) {
+                $query->orwhere('hoarding_no', 'ILIKE', '%' . $key . '%')
+                    ->orwhere("mobile_no", 'ILIKE', '%' . $key . '%');
+                // ->orwhere("toll_no", 'ILIKE', '%' . $key . '%');
+            });
+        }
+    }
 }

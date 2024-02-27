@@ -46,14 +46,14 @@ trait WorkflowTrait
      */
     public function getRoleByUserId($userId)
     {
-          $roles = WfRoleusermap::select('id', 'wf_role_id', 'user_id')
+        $roles = WfRoleusermap::select('id', 'wf_role_id', 'user_id')
             ->where('user_id', $userId)
             ->where('is_suspended', false)
             ->get();
         return $roles;
     }
 
-     /**
+    /**
      * | get Ward By Logged in User Id
      * -------------------------------------------
      * | @param userId > Current Logged In User Id
@@ -66,7 +66,7 @@ trait WorkflowTrait
         return $occupiedWard;
     }
 
-         /**
+    /**
      * | get workflow role Id by logged in User Id
      * -------------------------------------------
      * @param userId > current Logged in User
@@ -95,7 +95,7 @@ trait WorkflowTrait
 
         return remove_null($role);
     }
-     /**
+    /**
      * | Get Initiator Id While Sending to level Pending For the First Time
      * | @param mixed $wfWorkflowId > Workflow Id of Modules
      * | @var string $query
@@ -109,6 +109,7 @@ trait WorkflowTrait
                     FROM wf_roles r
                     INNER JOIN (SELECT * FROM wf_workflowrolemaps WHERE workflow_id=$wfWorkflowId) w ON w.wf_role_id=r.id
                     WHERE w.is_initiator=TRUE 
+                    AND  w.is_suspended =FALSE
                     ";
         return $query;
     }
@@ -125,7 +126,8 @@ trait WorkflowTrait
                     r.role_name AS role_name 
                     FROM wf_roles r
                     INNER JOIN (SELECT * FROM wf_workflowrolemaps WHERE workflow_id=$wfWorkflowId) w ON w.wf_role_id=r.id
-                    WHERE w.is_finisher=TRUE ";
+                    WHERE w.is_finisher=TRUE
+                    AND w.is_suspended =FALSE";
         return $query;
     }
 }

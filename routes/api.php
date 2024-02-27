@@ -580,7 +580,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/list-outbox', 'listOutbox');
         Route::post('advertisement/get-doc-list', 'getDocList');
         Route::post('advertisement/upload-document','uploadDocument');                  // upload docment for advertisements 
-        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');  
+        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
+        Route::post('advertisement/assign-agency','assignAgency');                     // assign hoarding to agency  
 
     });
     /**
@@ -594,7 +595,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');  
         Route::post('advertisement/get-agency-details','getAgencyDetails'); 
         Route::post('advertisement/get-all-agency','getAllAgency');
-
+        Route::post('advertisement/agency-hoarding-address','agencyhoardingAddress'); 
+        Route::post('advertisement/search-hoarding','searchHoarding'); 
+        Route::post('advertisement/get-approve-applications','getApproveApplications'); 
     }); 
 
 });

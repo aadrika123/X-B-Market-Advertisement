@@ -61,45 +61,5 @@ class PrefixIdGenerator implements iIdGenerator
         }
 
         return $prefixString . '-' . $id . $flag;
-    }
-    /**
-     * |created by - Arshad Hussain 
-     * |created on - 22-02-2024 
-     * |changes due new advertisement concept 
-     */
-    public function generateId(): string
-    {
-        $paramId = $this->paramId;
-        $mIdGenerationParams = new ModelsIdGenerationParam();
-        $mUlbMaster = new UlbMaster();
-        $ulbDtls = $mUlbMaster::findOrFail($this->ulbId);
-
-        $ulbDistrictCode = $ulbDtls->district_code;
-        $ulbCategory = $ulbDtls->category;
-        $code = $ulbDtls->code;
-        $shortName = $ulbDtls->short_name;
-
-        $params = $mIdGenerationParams->getParams($paramId);
-        $prefixString = $params->string_val;
-        $stringVal = $ulbDistrictCode . $ulbCategory . $code;
-       
-
-        $stringSplit = collect(str_split($stringVal));
-        $flag = ($stringSplit->sum()) % 9;
-        $intVal = $params->int_val;
-        // Case for the Increamental
-        if ($this->incrementStatus == true) {
-            $id = $stringVal . str_pad($intVal, 7, "0", STR_PAD_LEFT);
-            $intVal += 1;
-            $params->int_val = $intVal;
-            $params->save();
-        }
-        if ($this->incrementStatus == false) {
-            $id = $stringVal  . str_pad($intVal, 7, "0", STR_PAD_LEFT);
-        }
-
-        return $prefixString . '/' . $shortName ."/". $id . $flag;
-    }
-    
-    
+    }  
 }
