@@ -297,7 +297,7 @@ class AgencyNewController extends Controller
             'length' => 'nullable|',
             'width' => 'nullable|',
             'remarks' => 'nullable',
-            'locationId' => 'nullable|',
+            'address' => 'nullable|',
             'agencyId' => 'nullable|',
             'documents' => 'nullable',
             'userId' => 'required'
@@ -320,7 +320,7 @@ class AgencyNewController extends Controller
                 'length' => $request->length,
                 'width' => $request->width,
                 'agency_id' => $request->agencyId,
-                'location_id' => $request->locationId,
+                'address' => $request->address,
                 'remarks' => $request->remarks,
             ]; // 'profile'                 => $request->agencyCode,
             $this->_hoarObj->updateHoarddtl($metaRequest, $hoardingId);
