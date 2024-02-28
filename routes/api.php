@@ -550,54 +550,56 @@ Route::group(['middleware' => ['checkToken']], function () {
      * |Date - 16-02-2024
      * |status - open 
      */
-    Route::controller(AgencyNewController::class)->group(function (){
-        Route::post('advertisement/addnew-agency','addNewAgency');
-        Route::post('advertisement/get_all','getAll');
-        Route::post('advertisement/update-agency-dtls','updateAgencydtl');
-        Route::post('advertisement/delete-agency-dtls','AgencyDelete');          // soft delete 
-        Route::post('advertisement/addnew-hoarding','addNewHoarding');
-        Route::post('advertisement/get-all-hoarding','getAllHoard');
-        Route::post('advertisement/update-hoard-dtl','updatehoardingdtl');
-        Route::post('advertisement/delete-hoard-dtl','HoardDelete');                 // soft delete 
-        Route::post('advertisement/add-new-brand','addBrand');                       // add brand 
-        Route::post('advertisement/get-all-brand','getAllBrand');                    // get details of brand 
-        Route::post('advertisement/update-brand','updateBrand');                     // update brand 
-        Route::post('advertisement/delete-brand-dtl','DeleteBrand');                 // soft delete brand 
-        Route::post('advertisement/add-advertisement-type','addAdvertisementType');  // add advertisement type
-        Route::post('advertisement/getall-adevert-type','getAllAdvertisement');      // get advertisement type 
-        Route::post('advertisement/update-advertisements','updateAdvertisemnet');    // update Advertisement data
-        Route::post('advertisement/deactive-advertisement','deactiveAdvertisement');   // deactive advertisement  
-        Route::post('advertisement/add-new-location','addNewLocations');               // add new locations
-        Route::post('advertisement/get-all-location','getAllDtls');                   // get all locations
-        Route::post('advertisement/update-location','updatedtl');                     // update advertisement 
-        Route::post('advertisement/deactive-locations','deactiveLocation');            // deactive location
-        Route::post('advertisement/add-new-advertiser','addNewAdvertiser');            // add new advertiser
-        Route::post('advertisement/get-all-advertiser','getALLAdvertiser');            // get all advertiser 
-        Route::post('advertisement/update-advertiser','updateAdvertiserdtl');             // update  dtls  advertiser 
-        Route::post('advertisement/deactive-advertiser','deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding','applyHoarding');                  /**==apply hoarding== */ 
-        Route::post('advertisement/list-inbox1', 'listInbox');
-        Route::post('advertisement/list-outbox', 'listOutbox');
-        Route::post('advertisement/get-doc-list', 'getDocList');
-        Route::post('advertisement/upload-document','uploadDocument');                  // upload docment for advertisements 
-        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
-        Route::post('advertisement/assign-agency','assignAgency');                     // assign hoarding to agency  
-
+    Route::controller(AgencyNewController::class)->group(function () {
+        Route::post('advertisement/addnew-agency', 'addNewAgency');
+        Route::post('advertisement/get_all', 'getAll');
+        Route::post('advertisement/update-agency-dtls', 'updateAgencydtl');
+        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');          // soft delete 
+        Route::post('advertisement/addnew-hoarding', 'addNewHoarding');
+        Route::post('advertisement/get-all-hoarding', 'getAllHoard');
+        Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');
+        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                 // soft delete 
+        Route::post('advertisement/add-new-brand', 'addBrand');                       // add brand 
+        Route::post('advertisement/get-all-brand', 'getAllBrand');                    // get details of brand 
+        Route::post('advertisement/update-brand', 'updateBrand');                     // update brand 
+        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                 // soft delete brand 
+        Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');  // add advertisement type
+        Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');      // get advertisement type 
+        Route::post('advertisement/update-advertisements', 'updateAdvertisemnet');    // update Advertisement data
+        Route::post('advertisement/deactive-advertisement', 'deactiveAdvertisement');   // deactive advertisement  
+        Route::post('advertisement/add-new-location', 'addNewLocations');               // add new locations
+        Route::post('advertisement/get-all-location', 'getAllDtls');                   // get all locations
+        Route::post('advertisement/update-location', 'updatedtl');                     // update advertisement 
+        Route::post('advertisement/deactive-locations', 'deactiveLocation');            // deactive location
+        Route::post('advertisement/add-new-advertiser', 'addNewAdvertiser');            // add new advertiser
+        Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
+        Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
+        Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');
+        /**==apply hoarding== */
     });
     /**
      * created by = Arshad Hussain 
      * workflow controller for new advertisement module
      */
     Route::controller(AgencyWorkflowController::class)->group(function () {
-        Route::post('advertisement/post-next-level', 'postNextLevel');                                        
-        Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');     
-        Route::post('advertisement/get-details-by-id', 'getWorkflow');    
-        Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');  
-        Route::post('advertisement/get-agency-details','getAgencyDetails'); 
-        Route::post('advertisement/get-all-agency','getAllAgency');
-        Route::post('advertisement/agency-hoarding-address','agencyhoardingAddress'); 
-        Route::post('advertisement/search-hoarding','searchHoarding'); 
-        Route::post('advertisement/get-approve-applications','getApproveApplications'); 
-    }); 
-
+        Route::post('advertisement/list-inbox1', 'listInbox');
+        Route::post('advertisement/list-outbox', 'listOutbox');
+        Route::post('advertisement/get-doc-list', 'getDocList');
+        Route::post('advertisement/upload-document', 'uploadDocument');
+        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
+        Route::post('advertisement/assign-agency', 'assignAgency');
+        Route::post('advertisement/post-next-level', 'postNextLevel');
+        Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');
+        Route::post('advertisement/get-details-by-id', 'getWorkflow');
+        Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');
+        Route::post('advertisement/get-agency-details', 'getAgencyDetails');
+        Route::post('advertisement/get-all-agency', 'getAllAgency');
+        Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');
+        Route::post('advertisement/search-hoarding', 'searchHoarding');
+        Route::post('advertisement/get-approve-applications', 'getApproveApplications');
+    });
+});
+Route::controller(AgencyWorkflowController::class)->group(function () {
+    Route::post('advertisement/approve-applications', 'getApproveApplications');
 });

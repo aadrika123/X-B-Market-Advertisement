@@ -85,7 +85,10 @@ class AgencyMaster extends Model
     public function getagencyDetails($email){
         return self::select(
             'agency_masters.*',
-            'hoarding_masters.*',
+            'hoarding_masters.id as hoardingId',
+            'hoarding_masters.hoarding_type',
+            'hoarding_masters.hoarding_no',
+            'hoarding_masters.address',
             'm_circle.circle_name as zone_name',
             'ulb_ward_masters.ward_name'
         )
