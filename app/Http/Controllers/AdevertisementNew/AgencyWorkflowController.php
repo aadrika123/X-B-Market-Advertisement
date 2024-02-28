@@ -136,6 +136,23 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+    /**
+     * | common function for workflow
+     * | Get consumer active application details 
+        | Serial No : 04
+        | Working
+     */
+    public function getConsumerWfBaseQuerry($workflowIds, $ulbId)
+    {
+        return AgencyHoarding::select(
+            'agency_hoardings.*',
+            'agency_masters.agency_name as agencyName'
+        )
+            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->where('agency_hoardings.status', true)
+            ->where('agency_hoardings.ulb_id', $ulbId)
+            ->whereIn('agency_hoardings.workflow_id', $workflowIds);
+    }
 
     public function listOutbox(Request $req)
     {
@@ -174,6 +191,81 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+     /**
+     * |---------------------------- Filter The Document For Viewing ----------------------------|
+     * | @param documentList
+     * | @param refWaterApplication
+     * | @param ownerId
+     * | @var mWfActiveDocument
+     * | @var applicationId
+     * | @var workflowId
+     * | @var moduleId
+     * | @var uploadedDocs
+     * | Calling Function 01.01.01/ 01.02.01
+        | Serial No : 
+     */
+    public function filterDocument($documentList, $refWaterApplication, $ownerId = null)
+    {
+        $mWfActiveDocument  = new WfActiveDocument();
+        $applicationId      = $refWaterApplication->id;
+        $workflowId         = $refWaterApplication->workflow_id;
+        $moduleId            = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $uploadedDocs        = $mWfActiveDocument->getDocByRefIds($applicationId, $workflowId, $moduleId);
+
+        $explodeDocs = collect(explode('#', $documentList->requirements));
+        $filteredDocs = $explodeDocs->map(function ($explodeDoc) use ($uploadedDocs, $ownerId, $documentList) {
+
+            # var defining
+            $document   = explode(',', $explodeDoc);
+            $key        = array_shift($document);
+            $label      = array_shift($document);
+            $documents  = collect();
+
+            collect($document)->map(function ($item) use ($uploadedDocs, $documents, $ownerId, $documentList) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $item)
+                    ->where('owner_dtl_id', $ownerId)
+                    ->first();
+                if ($uploadedDoc) {
+                    $path = $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                    $response = [
+                        "uploadedDocId" => $uploadedDoc->id ?? "",
+                        "documentCode"  => $item,
+                        "ownerId"       => $uploadedDoc->owner_dtl_id ?? "",
+                        "docPath"       => $fullDocPath ?? "",
+                        "verifyStatus"  => $uploadedDoc->verify_status ?? "",
+                        "remarks"       => $uploadedDoc->remarks ?? "",
+                    ];
+                    $documents->push($response);
+                }
+            });
+            $reqDoc['docType']      = $key;
+            $reqDoc['uploadedDoc']  = $documents->last();
+            $reqDoc['docName']      = substr($label, 1, -1);
+            // $reqDoc['refDocName'] = substr($label, 1, -1);
+
+            $reqDoc['masters'] = collect($document)->map(function ($doc) use ($uploadedDocs) {
+                $uploadedDoc = $uploadedDocs->where('doc_code', $doc)->first();
+                $strLower = strtolower($doc);
+                $strReplace = str_replace('_', ' ', $strLower);
+                if (isset($uploadedDoc)) {
+                    $path =  $this->readDocumentPath($uploadedDoc->doc_path);
+                    $fullDocPath = !empty(trim($uploadedDoc->doc_path)) ? $path : null;
+                }
+                $arr = [
+                    "documentCode"  => $doc,
+                    "docVal"        => ucwords($strReplace),
+                    "uploadedDoc"   => $fullDocPath ?? "",
+                    "uploadedDocId" => $uploadedDoc->id ?? "",
+                    "verifyStatus'" => $uploadedDoc->verify_status ?? "",
+                    "remarks"       => $uploadedDoc->remarks ?? "",
+                ];
+                return $arr;
+            });
+            return $reqDoc;
+        });
+        return $filteredDocs;
+    }
     /**
      * 
      */
@@ -210,6 +302,30 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
+     /**
+     * |---------------------------- List of the doc to upload ----------------------------|
+     * | Calling function
+     * | 01.01
+        | Serial No :  
+     */
+    public function getAgencyDocLists($application, $req)
+    {
+        // $user           = authUser($req);
+        $mRefReqDocs    = new RefRequiredDocument();
+        $moduleId       = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $refUserType    = Config::get('workflow-constants.REF_USER_TYPE');
+
+        $type = ["Hording_content"];
+
+        // // Check if user_type is not equal to 1
+        // if ($user->user_type == $refUserType['1']) {
+        //     // Modify $type array for user_type not equal to 1
+        //     $type = ["Hording_content"];
+        // }
+
+        return $mRefReqDocs->getCollectiveDocByCode($moduleId, $type);
+    }
+
     /**
      * | document upload for hoarding register by agency 
      */

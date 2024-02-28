@@ -575,20 +575,19 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
         Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
         Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding', 'applyHoarding');
-        /**==apply hoarding== */
-    });
-    /**
-     * created by = Arshad Hussain 
-     * workflow controller for new advertisement module
-     */
-    Route::controller(AgencyWorkflowController::class)->group(function () {
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');/**==apply hoarding== */
         Route::post('advertisement/list-inbox1', 'listInbox');
         Route::post('advertisement/list-outbox', 'listOutbox');
         Route::post('advertisement/get-doc-list', 'getDocList');
         Route::post('advertisement/upload-document', 'uploadDocument');
         Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
         Route::post('advertisement/assign-agency', 'assignAgency');
+    });
+    /**
+     * created by = Arshad Hussain 
+     * workflow controller for new advertisement module
+     */
+    Route::controller(AgencyWorkflowController::class)->group(function () {
         Route::post('advertisement/post-next-level', 'postNextLevel');
         Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');
         Route::post('advertisement/get-details-by-id', 'getWorkflow');
