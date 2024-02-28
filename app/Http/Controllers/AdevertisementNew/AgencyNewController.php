@@ -292,8 +292,6 @@ class AgencyNewController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'hoardingType' => 'nullable|',
-            'latitude' => 'nullable|',
-            'longitude' => 'nullable|',
             'length' => 'nullable|',
             'width' => 'nullable|',
             'remarks' => 'nullable',
@@ -315,8 +313,6 @@ class AgencyNewController extends Controller
             $metaRequest = [
                 'hoarding_no' => $request->hoardingNo,
                 'hoarding_type' => $request->hoardingType,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
                 'length' => $request->length,
                 'width' => $request->width,
                 'agency_id' => $request->agencyId,
