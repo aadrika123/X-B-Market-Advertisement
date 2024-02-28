@@ -866,7 +866,7 @@ class AgencyWorkflowController extends Controller
                         "approve" => 1,
                         "registration_no" => $regNo
                     ]);
-                return $returnData = [
+                 $returnData = [
                     "applicationId" => $application->application_no,
                     "registration_no" => $regNo
                 ];
