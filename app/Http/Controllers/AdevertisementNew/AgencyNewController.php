@@ -774,6 +774,7 @@ class AgencyNewController extends Controller
                 'agencyName'           => "nullable|",
                 'hoardingType'         => "nullable|",
                 'allotmentDate'        => "nullable",
+                'advertiser'           => "required",
                 'from'                 => "nullable",
                 'to'                   => "nullable",
                 "rate"                 => "nullable",
@@ -901,12 +902,10 @@ class AgencyNewController extends Controller
                 $toDate = Carbon::parse($result->to_date);
 
                 if ($currentDate->lessThan($toDate)) {
-                    throw new \Exception('allready applied .');
+                    throw new \Exception('This Hoarding Alloted Till Date.');
                 }
                 return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
-            } else {
-                throw new \Exception('Record not found.');
-            }
+            } 
     }
     /*
      * upload Document By agency At the time of Registration
