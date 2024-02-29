@@ -172,22 +172,23 @@ class AgencyHoarding extends Model
     /**
      search application by application number 
      */
-    public function getByItsDetailsV2($req, $key, $refNo)
+    public function getByItsDetailsV2($req, $key, $refNo, $email)
     {
         return self::select(
             "agency_hoardings.id",
             "agency_hoardings.rate",
             "agency_hoardings.from_date",
             "agency_hoardings.to_date",
-            "agency_hoardings.hoarding_type",
-            "agency_hoardings.address",
+            "hoarding_masters.hoarding_type",
+            "hoarding_masters.address",
             "agency_hoardings.approve",
             "agency_hoardings.application_no",
             "agency_hoardings.apply_date",
             "agency_hoardings.registration_no",
             "m_circle.circle_name as zone_name",
             "ulb_ward_masters.ward_name",
-            "agency_masters.agency_name"
+            "agency_masters.agency_name",
+            DB::raw('CASE WHEN agency_hoardings.approve = 1 THEN true ELSE false END AS approve_status'),
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
@@ -196,10 +197,11 @@ class AgencyHoarding extends Model
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.status', 1)
-            ->where('agency_hoardings.' . $key, 'LIKE', '%' . $refNo . '%')
-            ->where('agency_hoardings.approve', 1);
+            ->where('agency_masters.email', $email)
+            ->where('agency_masters.status', 1)
+            ->where('agency_hoardings.' . $key, 'LIKE', '%' . $refNo . '%');
     }
-     /**
+    /**
      * get details of approve applications 
      */
     public function getApproveDetails($request)
@@ -223,6 +225,38 @@ class AgencyHoarding extends Model
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.id', $request->applicationId)
             ->where('agency_hoardings.status', true)
-            ->where('agency_hoardings.approve',1);
+            ->where('agency_hoardings.approve', 1);
+    }
+    /**
+     * application details of hoarding
+     */
+    public function getApplicationDtl($email)
+    {
+        return self::select(
+            'agency_hoardings.id',
+            'agency_hoardings.application_no',
+            'agency_hoardings.rate',
+            'agency_hoardings.from_date',
+            'agency_hoardings.to_date',
+            'agency_hoardings.apply_date',
+            'agency_masters.mobile',
+            'ulb_masters.ulb_name',
+            'wf_roles.role_name AS current_role_name',
+            'ulb_ward_masters.ward_name',
+            'm_circle.circle_name as zone_name',
+            'agency_masters.agency_name as agencyName',
+            'hoarding_masters.hoarding_no',
+            'hoarding_masters.hoarding_type'
+        )
+            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
+            ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
+            ->where('agency_masters.email', $email)
+            ->where('agency_hoardings.status', true)
+            ->where('agency_masters.status', 1)
+            ->get();
     }
 }

@@ -575,9 +575,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
         Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
         Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding', 'applyHoarding');/**==apply hoarding== */
-        Route::post('advertisement/list-inbox1', 'listInbox');
-        Route::post('advertisement/list-outbox', 'listOutbox');
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');              /**==apply hoarding== */
         Route::post('advertisement/get-doc-list', 'getDocList');
         Route::post('advertisement/upload-document', 'uploadDocument');
         Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
@@ -588,6 +586,8 @@ Route::group(['middleware' => ['checkToken']], function () {
      * workflow controller for new advertisement module
      */
     Route::controller(AgencyWorkflowController::class)->group(function () {
+        Route::post('advertisement/list-outbox', 'listOutbox');
+        Route::post('advertisement/list-inbox1', 'listInbox');
         Route::post('advertisement/post-next-level', 'postNextLevel');
         Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');
         Route::post('advertisement/get-details-by-id', 'getWorkflow');
@@ -597,6 +597,10 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');
         Route::post('advertisement/search-hoarding', 'searchHoarding');
         Route::post('advertisement/get-approve-applications', 'getApproveApplications');
+        Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                            //get dashboard data of agency
+        Route::post('advertisement/get-agency-application-dtls', 'getAgencyAplicationdtl');                           //get dashboard data of agency
+        Route::post('advertisement/get-hoarding-type', 'hoardingType');                                                // get hoarding type master
+
     });
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
