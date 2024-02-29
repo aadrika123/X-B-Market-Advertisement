@@ -803,8 +803,9 @@ class AgencyNewController extends Controller
             $refWorkflow                    = Config::get('workflow-constants.ADVERTISEMENT-HOARDING');
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
-            $advtRole                    = Config::get("workflow-constants.ROLE-LABEL");
-
+            $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
+            $var = $request->hoardingId;
+            $this->checkHoardingParams($request);                                        //check alloted date 
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
@@ -887,6 +888,25 @@ class AgencyNewController extends Controller
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
         }
+    }
+    /**
+     * check hoarding is already applied or not 
+     * between thier respective date 
+     */
+    public function checkHoardingParams($request)
+    {
+            $currentDate = Carbon::now();
+            $result =  $this->_agencyObj->checkHoarding($request);
+            if ($result) {
+                $toDate = Carbon::parse($result->to_date);
+
+                if ($currentDate->lessThan($toDate)) {
+                    throw new \Exception('allready applied .');
+                }
+                return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            } else {
+                throw new \Exception('Record not found.');
+            }
     }
     /*
      * upload Document By agency At the time of Registration
@@ -979,7 +999,7 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
-      /**
+    /**
      * | document upload for hoarding register by agency 
      */
     public function uploadDocument(Request $req)
@@ -1225,7 +1245,7 @@ class AgencyNewController extends Controller
         });
         return $filteredDocs;
     }
-    
+
     public function listOutbox(Request $req)
     {
         $validated = Validator::make(
@@ -1263,7 +1283,7 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
-   
+
     /**
      * |----------------------------- Read the server url ------------------------------|
         | Serial No : 

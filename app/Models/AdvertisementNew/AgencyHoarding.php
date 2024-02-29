@@ -259,4 +259,17 @@ class AgencyHoarding extends Model
             ->where('agency_masters.status', 1)
             ->get();
     }
+    /**
+     * get details by id for workflow view 
+     */
+    public function checkHoarding($request)
+    {
+        return self::select(
+            'agency_hoardings.*',
+
+        )
+            ->where('agency_hoardings.hoarding_id', $request->hoardingId)
+            ->where('agency_hoardings.status', true)
+            ->first();
+    }
 }

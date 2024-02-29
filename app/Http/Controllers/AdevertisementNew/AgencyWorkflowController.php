@@ -694,7 +694,7 @@ class AgencyWorkflowController extends Controller
     }
     /**
      * get all  applications details by id from workflow
-        |working ,not completed
+        |working 
      */
     public function getWorkflow(Request $request)
     {
