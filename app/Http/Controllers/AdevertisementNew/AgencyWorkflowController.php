@@ -1074,7 +1074,7 @@ class AgencyWorkflowController extends Controller
                   ah.to_date,
                   ah.allotment_date,
                   am.agency_name,
-                  hm.hoarding_type,
+                  ht.type as hoarding_type,
                   hm.hoarding_no,
                   hm.address,
                   ah.approve
@@ -1082,6 +1082,7 @@ class AgencyWorkflowController extends Controller
                   agency_hoardings AS ah
                   JOIN agency_masters AS am ON am.id = ah.agency_id
                   JOIN hoarding_masters AS hm ON hm.id = ah.hoarding_id
+                  JOIN hoarding_types as ht on ht.id=hm.hoarding_type_id
                 WHERE
                   ah.status = true
               )
