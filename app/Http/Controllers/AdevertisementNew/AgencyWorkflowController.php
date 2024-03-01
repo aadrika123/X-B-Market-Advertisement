@@ -733,7 +733,7 @@ class AgencyWorkflowController extends Controller
             'apply_date' => collect($applicationDetails)->first()->allotment_date
         ];
         # DataArray
-        return $basicDetails = $this->getBasicDetails($applicationDetails);
+        $basicDetails = $this->getBasicDetails($applicationDetails);
 
         $firstView = [
             'headerTitle' => 'Basic Details',
