@@ -26,9 +26,8 @@ class HoardingMaster extends Model
     public function __construct()
     {
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
-        
     }
-     /**
+    /**
      * GET ALL hoarding
      */
     public function getaLL()
@@ -62,17 +61,21 @@ class HoardingMaster extends Model
         return self::select(
             'hoarding_masters.id',
             'hoarding_masters.hoarding_no',
-            'hoarding_masters.hoarding_type',
+            'hoarding_types.type as hoarding_type',
+            'hoarding_types.id as hoardingId',
             'hoarding_masters.length',
             'hoarding_masters.width',
             'm_circle.circle_name as zone_name',
+            'm_circle.id as zoneId',
+            'ulb_ward_masters.id as wardId',
             'ulb_ward_masters.ward_name',
             'agency_masters.agency_name',
             'hoarding_masters.address'
         )
-            ->leftjoin('agency_masters','agency_masters.id','hoarding_masters.agency_id')
-            ->join('m_circle','m_circle.id','hoarding_masters.zone_id')
-            ->join('ulb_ward_masters','ulb_ward_masters.id','hoarding_masters.ward_id')
+            ->leftjoin('agency_masters', 'agency_masters.id', 'hoarding_masters.agency_id')
+            ->join('m_circle', 'm_circle.id', 'hoarding_masters.zone_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'hoarding_masters.ward_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->where('hoarding_masters.status', 1)
             ->orderByDesc('hoarding_masters.id')
             ->get();
@@ -89,7 +92,7 @@ class HoardingMaster extends Model
     {
         return self::where('id', $agencyId)
             ->where('status', 1)
-            ->first();  
+            ->first();
     }
     # update status 
     public function updateStatus($agencyId)
@@ -102,17 +105,11 @@ class HoardingMaster extends Model
     /**
      * |assign agency hoarding
      */
-    public function assignAgency($roleId,$userId){
-        return self::where('id',$userId)
-        ->update([
-            'agency_id'=>$roleId
-        ]);
+    public function assignAgency($roleId, $userId)
+    {
+        return self::where('id', $userId)
+            ->update([
+                'agency_id' => $roleId
+            ]);
     }
-    // public function getByItsDetailsV2($req, $key, $refNo)
-    // {
-    //     return HoardingMaster::select("hoarding_masters.*")
-    //         ->where('hoarding_masters.status', 1)
-    //         ->where('hoarding_masters.' . $key, 'LIKE', '%' . $refNo . '%');
-    // }
-
 }

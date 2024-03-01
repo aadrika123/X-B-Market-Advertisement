@@ -65,6 +65,7 @@ class AgencyNewController extends Controller
     protected $_userType;
     protected $_docReqCatagory;
     protected $_tempId;
+    protected $_paramTempId;
 
     public function __construct()
     {
@@ -82,6 +83,7 @@ class AgencyNewController extends Controller
         $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_AG_ID');
         $this->_tempId = Config::get('workflow-constants.TEMP_ID');
+        $this->_paramTempId = Config::get('workflow-constants.HOARD_ID');             //for hoarding Id
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
         $this->_docUrl = Config::get('workflow-constants.DOC_URL');
@@ -247,10 +249,14 @@ class AgencyNewController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            $ulbId = $req->ulbId ?? 2;
+            $idGeneration       = new PrefixIdGenerator( $this->_paramTempId, $ulbId);
+            $applicationNo      = $idGeneration->generate();
+            $applicationNo      = str_replace('/', '-', $applicationNo);
             DB::beginTransaction();
             $metaReqs = [
-                'hoarding_no' => "HO-" . random_int(100000, 999999) . "/" . random_int(1, 10),
-                'hoarding_type' => $req->hoardingType,
+                'hoarding_no' => $applicationNo,
+                'hoarding_type_id' => $req->hoardingType,
                 'latitude' => $req->latitude,
                 'longitude' => $req->longitude,
                 'length' => $req->length,
@@ -896,16 +902,16 @@ class AgencyNewController extends Controller
      */
     public function checkHoardingParams($request)
     {
-            $currentDate = Carbon::now();
-            $result =  $this->_agencyObj->checkHoarding($request);
-            if ($result) {
-                $toDate = Carbon::parse($result->to_date);
+        $currentDate = Carbon::now();
+        $result =  $this->_agencyObj->checkHoarding($request);
+        if ($result) {
+            $toDate = Carbon::parse($result->to_date);
 
-                if ($currentDate->lessThan($toDate)) {
-                    throw new \Exception('This Hoarding Alloted Till Date.');
-                }
-                return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
-            } 
+            if ($currentDate->lessThan($toDate)) {
+                throw new \Exception('This Hoarding Alloted Till Date.');
+            }
+            return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        }
     }
     /*
      * upload Document By agency At the time of Registration

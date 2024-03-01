@@ -733,7 +733,7 @@ class AgencyWorkflowController extends Controller
             'apply_date' => collect($applicationDetails)->first()->allotment_date
         ];
         # DataArray
-        $basicDetails = $this->getBasicDetails($applicationDetails);
+        return $basicDetails = $this->getBasicDetails($applicationDetails);
 
         $firstView = [
             'headerTitle' => 'Basic Details',
@@ -795,10 +795,12 @@ class AgencyWorkflowController extends Controller
     {
         $collectionApplications = collect($applicationDetails)->first();
         return new Collection([
-            ['displayString' => 'Agency Name',            'key' => 'agencyName',              'value' => $collectionApplications->agencyName],
-            ['displayString' => 'Apply Date', 'key' => 'applyDate', 'value'=> Carbon::parse($collectionApplications->apply_date)->format('d/m/Y')],
-            ['displayString' => 'From Date', 'key' => 'fromDate', 'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
-            ['displayString' => 'To Date', 'key' => 'toDate', 'value' => Carbon::parse($collectionApplications->to_date)->format('d/m/Y')],
+            ['displayString' => 'Agency Name',      'key' => 'agencyName',        'value' => $collectionApplications->agencyName],
+            ['displayString' => 'Apply Date',       'key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d/m/Y')],
+            ['displayString' => 'From Date',        'key' => 'fromDate',           'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
+            ['displayString' => 'To Date',          'key' => 'toDate',             'value' => Carbon::parse($collectionApplications->to_date)->format('d/m/Y')],
+            ['displayString' => 'Advertiser',       'key' => 'advertiser',         'value' => $collectionApplications->advertiser],
+            ['displayString' => 'Hoarding Type',       'key' => 'hoardingType',     'value' => $collectionApplications->hoarding_type],
         ]);
     }
     /**
@@ -902,18 +904,6 @@ class AgencyWorkflowController extends Controller
         }
     }
     /**
-      This function for get All Agency
-     */
-    public function getAllAgency(Request $req)
-    {
-        try {
-            $agencydetails = $this->_modelObj->getaLLagency();
-            return responseMsgs(true, "Agency Details", $agencydetails, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
-        }
-    }
-    /**
        get all hoarding address related ton agency
      */
     public function agencyhoardingAddress(Request $request)
@@ -961,13 +951,13 @@ class AgencyWorkflowController extends Controller
             $refstring      = strtolower($string);
             switch ($key) {
                 case ("applicationNo"):                                                                        // Static
-                    $ReturnDetails = $mAgencyHoarding->getByItsDetailsV2($request, $refstring, $paramenter,$request->auth['email'])->paginate($pages);
+                    $ReturnDetails = $mAgencyHoarding->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
                     $checkVal = collect($ReturnDetails)->last();
                     if (!$checkVal || $checkVal == 0)
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
-                case ("mobileNo"):
-                    $ReturnDetails = $mHoardingMaster->getByItsDetailsV2($request, $refstring, $paramenter)->paginate($pages);
+                case ("mobile"):
+                    $ReturnDetails = $mWaterConsumer->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
                     $checkVal = collect($ReturnDetails)->last();
                     if (!$checkVal || $checkVal == 0)
                         throw new Exception("Data according to " . $key . " not Found!");
@@ -1039,10 +1029,11 @@ class AgencyWorkflowController extends Controller
     /**
      * details of agency aplications by email 
      */
-    public function getAgencyAplicationdtl(Request $request){
+    public function getAgencyAplicationdtl(Request $request)
+    {
         try {
             $agencydetails = $this->_agencyObj->getApplicationDtl($request->auth['email']);
-            if(!$agencydetails){
+            if (!$agencydetails) {
                 throw new Exception('agency details not found!');
             }
             return responseMsgs(true, "Agency Details", $agencydetails, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
@@ -1053,17 +1044,95 @@ class AgencyWorkflowController extends Controller
     /**
      * get hoarding type master
      */
-    public function hoardingType(Request $request){
+    public function hoardingType(Request $request)
+    {
         try {
             $mHoardType = new HoardingType();
             $details = $mHoardType->getHoardingType();
-            if(!$details){
+            if (!$details) {
                 throw new Exception('agency details not found!');
             }
-            return responseMsgs(true, "Agency Details", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
-
     }
+    /**
+     * ulb dashboard
+     */
+    public function ulbDashboard(Request $request)
+    {
+        $todate = Carbon::now();
+        try {
+            $data = DB::select("
+            WITH filtered_hoardings AS (
+                SELECT
+                  ah.id,
+                  ah.application_no,
+                  ah.rate,
+                  ah.from_date,
+                  ah.to_date,
+                  ah.allotment_date,
+                  am.agency_name,
+                  hm.hoarding_type,
+                  hm.hoarding_no,
+                  hm.address,
+                  ah.approve
+                FROM
+                  agency_hoardings AS ah
+                  JOIN agency_masters AS am ON am.id = ah.agency_id
+                  JOIN hoarding_masters AS hm ON hm.id = ah.hoarding_id
+                WHERE
+                  ah.status = true
+              )
+              SELECT
+                id,
+                application_no,
+                rate,
+                from_date,
+                to_date,
+                allotment_date,
+                agency_name,
+                hoarding_type,
+                hoarding_no,
+                address,
+                CASE 
+                  WHEN approve = 0 THEN 'Pending'
+                  WHEN approve = 1 THEN 'Approved'
+                  WHEN approve = 2 THEN 'Rejected'
+                  ELSE 'Unknown Status'
+                END AS approval_status,
+                approve 
+              FROM
+                filtered_hoardings
+              ORDER BY
+                id");
+            $totalApplications = count($data);
+            $pendingCount = count(array_filter($data, function ($item) {
+                return $item->approve == 0;
+            }));
+
+            $approvedCount = count(array_filter($data, function ($item) {
+                return $item->approve == 1;
+            }));
+
+            $rejectedCount = count(array_filter($data, function ($item) {
+                return $item->approve == 2;
+            }));
+            $result = [
+                'data' => array_values($data),
+                'pendingCount' => $pendingCount,
+                'approvedCount' => $approvedCount,
+                'rejectedCount' => $rejectedCount,
+                'totalApplications' => $totalApplications,
+                'date' => $todate->format('d/m/Y'),
+            ];
+            return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+    /**
+     * 
+     */
 }

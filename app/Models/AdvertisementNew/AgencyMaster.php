@@ -82,7 +82,8 @@ class AgencyMaster extends Model
                 'status' => 0
             ]);
     }
-    public function getagencyDetails($email){
+    public function getagencyDetails($email)
+    {
         return self::select(
             'agency_masters.*',
             'hoarding_masters.id as hoardingId',
@@ -92,38 +93,67 @@ class AgencyMaster extends Model
             'm_circle.circle_name as zone_name',
             'ulb_ward_masters.ward_name'
         )
-        ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
-        ->join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
-        ->join('ulb_ward_masters','ulb_ward_masters.id','=','hoarding_masters.ward_id')
-        ->where('agency_masters.email', $email)
-        ->where('agency_masters.status', 1)
-        ->where('hoarding_masters.status', 1)
-        ->get();
+            ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
+            ->join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->where('agency_masters.email', $email)
+            ->where('agency_masters.status', 1)
+            ->where('hoarding_masters.status', 1)
+            ->get();
     }
     /**
     get hoarding address
      */
-    public function agencyhoardingAddress($email){
+    public function agencyhoardingAddress($email)
+    {
         return self::select(
             'agency_masters.id as agencyId',
             'agency_masters.agency_name',
             'hoarding_masters.id',
             'hoarding_masters.address',
         )
-        ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
-        ->where('agency_masters.email', $email)
-        ->where('agency_masters.status', 1)
-        ->where('hoarding_masters.status', 1)
-        ->get();
+            ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
+            ->where('agency_masters.email', $email)
+            ->where('agency_masters.status', 1)
+            ->where('hoarding_masters.status', 1)
+            ->get();
     }
     /**
-     
+     * get details by mobile number
      */
-    public function getByItsDetailsV2($req, $key, $refNo)
+    public function getByItsDetailsV2($req, $key, $refNo, $email)
     {
-        return HoardingMaster::select("hoarding_masters.*")
-            ->where('hoarding_masters.status', 1)
-            ->where('hoarding_masters.' . $key, 'LIKE', '%' . $refNo . '%');
+        return self::select(
+            "agency_hoardings.id",
+            "agency_hoardings.rate",
+            "agency_hoardings.from_date",
+            "agency_hoardings.to_date",
+            "hoarding_types.type as hoarding_type",
+            "hoarding_masters.address",
+            "agency_hoardings.approve",
+            "agency_hoardings.application_no",
+            "agency_hoardings.apply_date",
+            "agency_hoardings.registration_no",
+            "m_circle.circle_name as zone_name",
+            "ulb_ward_masters.ward_name",
+            "agency_masters.agency_name",
+            DB::raw("CASE 
+            WHEN agency_hoardings.approve = 0 THEN 'Pending'
+            WHEN agency_hoardings.approve = 1 THEN 'Approved'
+            WHEN agency_hoardings.approve = 2 THEN 'Rejected'
+            ELSE 'Unknown Status'
+          END AS approval_status"),
+        )
+            ->join('agency_hoardings', 'agency_hoardings.agency_id', '=', 'agency_masters.id')
+            ->join('hoarding_masters', 'hoarding_masters.id', '=', 'agency_hoardings.hoarding_id')
+            ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
+            ->where('agency_hoardings.status', 1)
+            ->where('agency_masters.email', $email)
+            ->where('agency_masters.status', 1)
+            ->where('agency_masters.' . $key, 'LIKE', '%' . $refNo . '%');
     }
 }
-    
