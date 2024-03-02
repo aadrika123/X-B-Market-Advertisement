@@ -45,6 +45,7 @@ class HoardingMaster extends Model
     {
         return HoardingMaster::select('*')
             ->where('id', $appId)
+            ->where('status',1)
             ->first();
     }
 
@@ -112,4 +113,15 @@ class HoardingMaster extends Model
                 'agency_id' => $roleId
             ]);
     }
+    /**
+     * | Get Agency Details by application id
+     */
+    public function gethoardingDetailbyId($appId)
+    {
+        return HoardingMaster::select('id','length','width')
+            ->where('id', $appId)
+            ->where('status',1)
+            ->first();
+    }
+
 }

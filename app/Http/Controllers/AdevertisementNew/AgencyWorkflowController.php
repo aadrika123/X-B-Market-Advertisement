@@ -1132,4 +1132,25 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+    /**
+     * VALIDATE HOARDING BY ID 
+     */
+    public function getHoardingDtlsById(Request $req){
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'id' => "required",
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try{
+             $hoardingId =$req->id;
+             $data=$this->_hoarObj->gethoardingDetailbyId($hoardingId);
+             $data['aresSqft'] = $data->length * $data->width;
+            return responseMsgs(true, "Agency Details", $data, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
 }
