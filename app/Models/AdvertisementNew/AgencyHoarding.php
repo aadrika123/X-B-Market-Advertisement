@@ -220,6 +220,7 @@ class AgencyHoarding extends Model
             'ulb_masters.ulb_name',
             'wf_roles.role_name AS current_role_name',
             'hoarding_masters.ward_id',
+            'hoarding_masters.address as hoardingAddress',
             'ulb_ward_masters.ward_name',
             'm_circle.circle_name as zone_name',
             'agency_masters.agency_name as agencyName'

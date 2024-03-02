@@ -908,8 +908,8 @@ class AgencyNewController extends Controller
             $toDate = Carbon::parse($result->to_date);
 
             if ($currentDate->lessThan($toDate)) {
-                throw new \Exception('This Hoarding Alloted Till Date.');
-            }
+                throw new \Exception("This Hoarding Is Allotted Till Date: {$toDate->format('d-m-Y')}");
+            }   
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }

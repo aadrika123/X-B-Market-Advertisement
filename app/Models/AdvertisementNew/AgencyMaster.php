@@ -87,7 +87,7 @@ class AgencyMaster extends Model
         return self::select(
             'agency_masters.*',
             'hoarding_masters.id as hoardingId',
-            'hoarding_masters.hoarding_type',
+            "hoarding_types.type as hoarding_type",
             'hoarding_masters.hoarding_no',
             'hoarding_masters.address',
             'm_circle.circle_name as zone_name',
@@ -96,6 +96,7 @@ class AgencyMaster extends Model
             ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
             ->join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
             ->where('hoarding_masters.status', 1)

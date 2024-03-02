@@ -195,8 +195,6 @@ class AgencyWorkflowController extends Controller
     /**
      * |---------------------------- Filter The Document For Viewing ----------------------------|
      * | @param documentList
-     * | @param refWaterApplication
-     * | @param ownerId
      * | @var mWfActiveDocument
      * | @var applicationId
      * | @var workflowId
@@ -527,7 +525,7 @@ class AgencyWorkflowController extends Controller
 
             $metaReqs['moduleId']           = $this->_moduleId;
             $metaReqs['workflowId']         = $mHoardApplication->workflow_id;
-            $metaReqs['refTableDotId']      = 'pet_active_registrations.id';                                                // Static
+            $metaReqs['refTableDotId']      = 'agency_hoardngs.id';                                                // Static
             $metaReqs['refTableIdValue']    = $req->applicationId;
             $metaReqs['user_id']            = authUser($req)->id;
             $req->request->add($metaReqs);
@@ -775,7 +773,7 @@ class AgencyWorkflowController extends Controller
         ];
         $request->request->add($metaReqs);
         $forwardBackward = $forwardBackward->getRoleDetails($request);
-        $roleDetails['roleDetails'] = collect($forwardBackward)->has('original') ? collect($forwardBackward)['original']['data'] : null;
+        $roleDetails['roleDetails'] = collect($forwardBackward)['original']['data'];
 
 
         # Timeline Data
@@ -866,7 +864,8 @@ class AgencyWorkflowController extends Controller
                 AgencyHoarding::where('id', $req->applicationId)
                     ->update([
                         "approve" => 1,
-                        "registration_no" => $regNo
+                        "registration_no" => $regNo,
+                        "allotment_date"  => $currentDateTime
                     ]);
                 $returnData = [
                     "applicationId" => $application->application_no,
@@ -1133,7 +1132,4 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-    /**
-     * 
-     */
 }
