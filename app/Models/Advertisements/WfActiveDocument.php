@@ -260,7 +260,7 @@ class WfActiveDocument extends Model
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
             ->where('d.module_id', $moduleId)
-            ->where('d.verify_status','!=',2);
+            // ->where('d.verify_status','!=',2);
     }
 
     /**
