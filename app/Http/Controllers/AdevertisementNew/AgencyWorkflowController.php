@@ -42,6 +42,7 @@ use App\Models\Workflows\CustomDetail;
 use App\Models\Workflows\UlbWardMaster;
 use App\Models\Workflows\WfRole;
 use App\Models\Workflows\WorkflowMap;
+use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 
 class AgencyWorkflowController extends Controller
 
@@ -821,7 +822,7 @@ class AgencyWorkflowController extends Controller
         ]);
     }
     /**
-     * | default final applroval 
+     * | default final approval 
         | remove
      */
     public function finalVerificationRejection(Request $req)
@@ -857,30 +858,56 @@ class AgencyWorkflowController extends Controller
                 throw new Exception("Document Not Fully Uploaded ");                                                                      // DA Condition
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
-
-            # Change the concept 
-            if ($req->status == 1) {
-                $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
-                AgencyHoarding::where('id', $req->applicationId)
-                    ->update([
-                        "approve" => 1,
-                        "registration_no" => $regNo,
-                        "allotment_date"  => $currentDateTime
-                    ]);
-                $returnData = [
-                    "applicationId" => $application->application_no,
-                    "registration_no" => $regNo
-                ];
-                return responseMsgs(true, ' register Application Approved!', $returnData);
-            } else {
-                AgencyHoarding::where('id', $req->applicationId)
-                    ->update([
-                        "approve" => 2,
-                    ]);
-                return responseMsgs(true, 'register Application Rejected!', $application->application_no);
-            }
+            DB::beginTransaction();
+            $this->finalApprovalRejection($req, $application);
+            DB::commit();
         } catch (Exception $e) {
+            DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+    # function for approve or reject 
+    public function finalApprovalRejection($req, $application)
+    {
+        $currentDateTime        = Carbon::now();
+        $mAgencyApproval        = new AgencyHoardingApproveApplication();
+        # check 
+        $approveApplications = AgencyHoarding::query()
+            ->where('id', $req->applicationId)
+            ->first();
+        # checking if applications  already exist 
+        $checkExist = $mAgencyApproval->getApproveApplication($req->applicationId);
+        if ($checkExist) {
+            throw new Exception("Access Denied ! Consumer Already Exist!");
+        }
+        # handle status to approve or reject 
+        if ($req->status == 1) {
+            $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+            AgencyHoarding::where('id', $req->applicationId)
+                ->update([
+                    "approve" => 1,                                                                                    // approve                    
+                    "registration_no" => $regNo,
+                    "allotment_date"  => $currentDateTime
+                ]);
+            $returnData = [
+                "applicationId" => $application->application_no,
+                "registration_no" => $regNo
+            ];
+            $approveApplicationRep = $approveApplications->replicate();
+            $approveApplicationRep->setTable('agency_hoarding_approve_applications');
+            $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->save();
+            return responseMsgs(true, 'register Application Approved!', $returnData);
+        } else {
+            AgencyHoarding::where('id', $req->applicationId)
+                ->update([
+                    "approve" => 2,
+                ]);
+            $approveApplicationRep = $approveApplications->replicate();
+            $approveApplicationRep->setTable('agency_hoarding_rejected_applications');
+            $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->save();
+            return responseMsgs(true, 'register Application Rejected!', $application->application_no);
         }
     }
     /**
@@ -1133,9 +1160,10 @@ class AgencyWorkflowController extends Controller
         }
     }
     /**
-     * VALIDATE HOARDING BY ID 
+     * VALIDATE HOARDING  DETAILS BY ID 
      */
-    public function getHoardingDtlsById(Request $req){
+    public function getHoardingDtlsById(Request $req)
+    {
         $validated = Validator::make(
             $req->all(),
             [
@@ -1144,10 +1172,10 @@ class AgencyWorkflowController extends Controller
         );
         if ($validated->fails())
             return validationError($validated);
-        try{
-             $hoardingId =$req->id;
-             $data=$this->_hoarObj->gethoardingDetailbyId($hoardingId);
-             $data['aresSqft'] = $data->length * $data->width;
+        try {
+            $hoardingId = $req->id;
+            $data = $this->_hoarObj->gethoardingDetailbyId($hoardingId);
+            $data['aresSqft'] = $data->length * $data->width;
             return responseMsgs(true, "Agency Details", $data, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");

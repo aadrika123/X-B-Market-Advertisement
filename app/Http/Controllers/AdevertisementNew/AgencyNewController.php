@@ -904,7 +904,7 @@ class AgencyNewController extends Controller
     {
         $currentDate = Carbon::now();
         $result =  $this->_agencyObj->checkHoarding($request);
-        if ($result) {
+        if ($result->approve !== 2) {
             $toDate = Carbon::parse($result->to_date);
 
             if ($currentDate->lessThan($toDate)) {
@@ -1250,45 +1250,6 @@ class AgencyNewController extends Controller
         });
         return $filteredDocs;
     }
-
-    public function listOutbox(Request $req)
-    {
-        $validated = Validator::make(
-            $req->all(),
-            [
-                'perPage' => 'nullable|integer',
-            ]
-        );
-        if ($validated->fails())
-            return validationError($validated);
-        try {
-            $user                   = authUser($req);
-            $pages                  = $req->perPage ?? 10;
-            $userId                 = $user->id;
-            $ulbId                  = $user->ulb_id;
-            $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
-
-            $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
-            $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
-            $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
-
-            $inboxDetails = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
-                ->whereNotIn('agency_hoardings.current_role_id', $roleId)
-                ->where('agency_hoardings.is_escalate', false)
-                ->where('agency_hoardings.parked', false)
-                ->orderByDesc('agency_hoardings.id')
-                ->paginate($pages);
-
-            $isDataExist = collect($inboxDetails)->last();
-            if (!$isDataExist || $isDataExist == 0) {
-                throw new Exception('Data not Found!');
-            }
-            return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
-        }
-    }
-
     /**
      * |----------------------------- Read the server url ------------------------------|
         | Serial No : 
