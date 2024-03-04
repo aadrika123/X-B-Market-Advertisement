@@ -71,6 +71,7 @@ class AgencyWorkflowController extends Controller
     protected $_userType;
     protected $_docReqCatagory;
     protected $_wfroles;
+    // private static $registrationCounter = 1;
 
     public function __construct()
     {
@@ -85,7 +86,7 @@ class AgencyWorkflowController extends Controller
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE');
-        $this->_docCode = Config::get('workflow-constants.AGENCY_DOC_CODE');
+        $this->_docCode = Config::get('workflow-constants.HOARDING_DOC_CODE');
         $this->_tempParamId = Config::get('workflow-constants.TEMP_AG_ID');
         $this->_paramId = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl = Config::get('constants.BASE_URL');
@@ -883,6 +884,7 @@ class AgencyWorkflowController extends Controller
         # handle status to approve or reject 
         if ($req->status == 1) {
             $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+            // $regNo = $this->generateRegistrationNumber();;
             AgencyHoarding::where('id', $req->applicationId)
                 ->update([
                     "approve" => 1,                                                                                    // approve                    
@@ -911,6 +913,16 @@ class AgencyWorkflowController extends Controller
         }
     }
     /**
+     * Generate and return a registration number
+     */
+    private function generateRegistrationNumber()
+    {
+        $randomPart = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        $registrationNumber = "AG/AMC-" . $randomPart;
+
+        return $registrationNumber;
+    }
+    /*
      * |get agency details via email
      */
     public function getAgencyDetails(Request $request)
@@ -1181,4 +1193,155 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+    /**
+     * | send back to citizen
+     * |
+     */
+    public function backToCitizen(Request $req)
+    {
+
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => "required",
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            // Variable initialization
+            $redis = Redis::connection();
+            $mAgencyHoarding = AgencyHoarding::find($req->applicationId);
+            if ($mAgencyHoarding->doc_verify_status == 1)
+                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+            if ($mAgencyHoarding->doc_upload_status == 1)
+                throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
+            $workflowId = $mAgencyHoarding->workflow_id;
+            $backId = json_decode(Redis::get('workflow_initiator_' . $workflowId));
+            if (!$backId) {
+                $backId = WfWorkflowrolemap::where('workflow_id', $workflowId)
+                    ->where('is_initiator', true)
+                    ->first();
+                $redis->set('workflow_initiator_' . $workflowId, json_encode($backId));
+            }
+
+            $mAgencyHoarding->current_role_id = $backId->wf_role_id;
+            $mAgencyHoarding->parked = 1;
+            $mAgencyHoarding->save();
+
+            $metaReqs['moduleId'] = $this->_moduleId;
+            $metaReqs['workflowId'] = $mAgencyHoarding->workflow_id;
+            $metaReqs['refTableDotId'] = "agency_hoardings.id";
+            $metaReqs['refTableIdValue'] = $req->applicationId;
+            $metaReqs['verificationStatus'] = $req->verificationStatus;
+            $metaReqs['senderRoleId'] = $req->currentRoleId;
+            $req->request->add($metaReqs);
+
+            $req->request->add($metaReqs);
+            $track = new WorkflowTrack();
+            $track->saveTrack($req);
+
+            return responseMsgs(true, "Successfully Done", "", "", '050131', '01', responseTime(), 'POST', '');
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050131", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+    /**
+     * | Back to agency Inbox
+     * | Workflow
+     * | @param req
+     * | @var mWfWardUser
+     * | @var userId
+     * | @var ulbId
+     * | @var mDeviceId
+     * | @var workflowRoles
+     * | @var roleId
+     * | @var refWard
+     * | @var wardId
+        | Serial No : 
+        | Use
+     */
+    public function btcInbox(Request $req)
+    {
+        try {
+            $mWfWardUser = new WfWardUser();
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $userId = authUser($req)->id;
+            $ulbId = authUser($req)->ulb_id;
+            $mDeviceId = $req->deviceId ?? "";
+
+            $workflowRoles = $this->getRoleIdByUserId($userId);
+            $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
+                return $value->wf_role_id;
+            });
+
+            $refWard = $mWfWardUser->getWardsByUserId($userId);
+            $wardId = $refWard->map(function ($value) {
+                return $value->ward_id;
+            });
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $waterList = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+                ->where('agency_hoardings.parked', true)
+                ->orderByDesc('agency_hoardings.id')
+                ->get();
+
+            $filterWaterList = collect($waterList)->unique('id');
+            $filterWaterList = $filterWaterList->values();
+            return responseMsgs(true, "BTC Inbox List", remove_null($filterWaterList), "", 1.0, "560ms", "POST", $mDeviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
+        }
+    }
+      /**
+     * | Reuploaded rejected document
+     * | Function - 36
+     * | API - 33
+     */
+    public function reuploadDocument(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+            'image' => 'required|mimes:png,jpeg,pdf,jpg'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }   
+        try {
+            // Variable initialization
+            $magencyHoard = new AgencyHoarding();
+            DB::beginTransaction();
+            $appId = $magencyHoard->reuploadDocument($req);
+            $this->checkFullUpload($appId);
+            DB::commit();
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050133", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    /**
+     * | Cheque full upload document or not
+     * |  Function - 35
+     */
+    public function checkFullUpload($applicationId)
+    {
+        $docCode = $this->_docCode;
+        $mWfActiveDocument = new WfActiveDocument();
+        $moduleId = $this->_moduleId ;
+        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $appDetails = AgencyHoarding::find($applicationId);
+        $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
+        if ($totalRequireDocs == $totalUploadedDocs) {
+            $appDetails->doc_upload_status = true ;
+            $appDetails->doc_verify_status = '0';
+            $appDetails->parked = false;
+            $appDetails->save();
+        } else {
+            $appDetails->doc_upload_status = '0';
+            $appDetails->doc_verify_status = '0';
+            $appDetails->save();
+        }
+    }
+
 }

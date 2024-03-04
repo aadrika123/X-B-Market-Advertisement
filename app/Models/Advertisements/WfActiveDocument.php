@@ -179,6 +179,7 @@ class WfActiveDocument extends Model
         return WfActiveDocument::where('active_id', $applicationId)
             ->where('workflow_id', $workflowId)
             ->where('module_id', $moduleId)
+            ->where('status',1)
             ->where('current_status', '1')
             ->where('verify_status', '!=', 2)
             ->count();
@@ -258,7 +259,8 @@ class WfActiveDocument extends Model
             )
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
-            ->where('d.module_id', $moduleId);
+            ->where('d.module_id', $moduleId)
+            ->where('d.verify_status','!=',2);
     }
 
     /**

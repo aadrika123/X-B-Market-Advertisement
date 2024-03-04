@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use App\MicroServices\DocumentUpload;
+use App\Models\Advertisements\WfActiveDocument;
 use Illuminate\Support\Facades\DB;
 use App\Traits\WorkflowTrait;
 use Illuminate\Http\Request;
@@ -156,7 +157,7 @@ class AgencyHoarding extends Model
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
-            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
@@ -200,7 +201,7 @@ class AgencyHoarding extends Model
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
-            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
             ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
@@ -216,11 +217,13 @@ class AgencyHoarding extends Model
     public function getApproveDetails($request)
     {
         return self::select(
-            'agency_hoardings.*',
+            'agency_hoardings.from_date',
+            'agency_hoardings.to_date',
+            'agency_hoardings.advertiser',
             'ulb_masters.ulb_name',
             'wf_roles.role_name AS current_role_name',
             'hoarding_masters.ward_id',
-            'hoarding_masters.address as hoardingAddress',
+            'hoarding_masters.address',
             'ulb_ward_masters.ward_name',
             'm_circle.circle_name as zone_name',
             'agency_masters.agency_name as agencyName'
@@ -260,7 +263,7 @@ class AgencyHoarding extends Model
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
-            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
@@ -281,5 +284,34 @@ class AgencyHoarding extends Model
             ->where('agency_hoardings.hoarding_id', $request->hoardingId)
             ->where('agency_hoardings.status', true)
             ->first();
+    }
+    /**
+     * | Reupload Documents
+     */
+    public function reuploadDocument($req)
+    {
+        $docUpload = new DocumentUpload;
+        $docDetails = WfActiveDocument::find($req->id);
+        $relativePath   = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
+
+        $refImageName = $docDetails['doc_code'];
+        $refImageName = $docDetails['active_id'] . '-' . $refImageName;
+        $documentImg = $req->image;
+        $imageName = $docUpload->upload($refImageName, $documentImg, $relativePath);
+
+        $metaReqs['moduleId'] = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $metaReqs['activeId'] = $docDetails['active_id'];
+        $metaReqs['workflowId'] = $docDetails['workflow_id'];
+        $metaReqs['ulbId'] = $docDetails['ulb_id'];
+        $metaReqs['relativePath'] = $relativePath;
+        $metaReqs['document'] = $imageName;
+        $metaReqs['docCode'] = $docDetails['doc_code'];
+        $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
+        $a = new Request($metaReqs);
+        $mWfActiveDocument = new WfActiveDocument();
+        $mWfActiveDocument->postDocuments($a, $req->auth);
+        $docDetails->current_status = '0';
+        $docDetails->save();
+        return $docDetails['active_id'];
     }
 }

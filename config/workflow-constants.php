@@ -37,6 +37,7 @@ return [
     "AGENCY" => "20",
     "AGENCY_WORKFLOWS" => "20",
     "AGENCY_DOC_CODE" => "AGENCY",
+    "HOARDING_DOC_CODE" => "HOARDING",
     "AGENCY_DOC_CODE_RENEW" => "AGENCY_RENEW",
 
     "AGENCY_WF_MASTER_ID" => "20",

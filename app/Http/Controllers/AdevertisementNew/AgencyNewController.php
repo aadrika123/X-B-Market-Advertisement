@@ -765,7 +765,7 @@ class AgencyNewController extends Controller
         }
     }
     /**
-     * | 
+     * | apply hoarding for register advertisement
      * | @param request
      * | @var 
        
@@ -998,7 +998,7 @@ class AgencyNewController extends Controller
 
             $totalDocLists = collect($hoardTypeDocs); //->merge($waterOwnerDocs);
             $totalDocLists['docUploadStatus'] = $refhoardApplication->doc_upload_status;
-            $totalDocLists['docVerifyStatus'] = $refhoardApplication->doc_status;
+            $totalDocLists['docVerifyStatus'] = $refhoardApplication->doc_verify_status;
             return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");

@@ -575,7 +575,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
         Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
         Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding', 'applyHoarding');                      /**==apply hoarding== */
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');                   /**==apply hoarding== */
         Route::post('advertisement/get-doc-list', 'getDocList');
         Route::post('advertisement/upload-document', 'uploadDocument');
         Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
@@ -602,7 +602,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-hoarding-type', 'hoardingType');                                                // get hoarding type master
         Route::post('advertisement/get-ulb-dashboard', 'ulbDashboard');                                                // get hoarding type master
         Route::post('advertisement/get-Hordingdtl-by-id', 'getHoardingDtlsById');                                      //validate details by hoarding By ID 
-
+        Route::post('advertisement/back-to-citizen', 'backToCitizen');                                                // back to citizen 
+        Route::post('advertisement/bta-inbox', 'btaInbox');                                                          // back to citizen 
+        Route::post('advertisement/reupload-document', 'reuploadDocument');                                                       
 
     });
 });
