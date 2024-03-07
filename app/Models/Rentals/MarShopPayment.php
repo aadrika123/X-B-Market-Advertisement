@@ -203,7 +203,8 @@ class MarShopPayment extends Model
     */
     public function totalCollectoion($shopType)
     {
-       return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
+      //  return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
+       return MarShopPayment::select('*')->whereIn('mar_shop_payments.payment_status', [1, 2])->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
     }
    /**
     * | find total Arrear collection shop type wise
