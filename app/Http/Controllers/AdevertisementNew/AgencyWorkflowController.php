@@ -1384,24 +1384,9 @@ class AgencyWorkflowController extends Controller
     public function getRjectedDoc(Request $request)
     {
         try {
-            $mWfWardUser = new WfWardUser();
-            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
-            $userId = authUser($request)->id;
-            $ulbId = authUser($request)->ulb_id;
-            $mDeviceId = $request->deviceId ?? "";
-
-            $workflowRoles = $this->getRoleIdByUserId($userId);
-            $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
-                return $value->wf_role_id;
-            });
-
-            $refWard = $mWfWardUser->getWardsByUserId($userId);
-            $wardId = $refWard->map(function ($value) {
-                return $value->ward_id;
-            });
-            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+            $workflowId = 203;                                                                                      //static
             $email=($request->auth['email']);
-            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowIds);
+            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowId);
             if(!$agencydetails){
                 throw new Exception('data not found ');
             }
