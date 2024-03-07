@@ -125,7 +125,7 @@ class AgencyNewController extends Controller
             $metaRequest = [
                 'agency_name'             => $request->agencyName,
                 'agency_code'             => $applicationNo,
-                'corresponding_address'   => $request->correspondingAddress,
+                'address'                 => $request->correspondingAddress,
                 'mobile'                  => $request->mobileNo,
                 'email'                   => $request->email,
                 'contact_person'          => $request->contactPerson,
@@ -250,20 +250,17 @@ class AgencyNewController extends Controller
         }
         try {
             $ulbId = $req->ulbId ?? 2;
-            $idGeneration       = new PrefixIdGenerator( $this->_paramTempId, $ulbId);
+            $idGeneration       = new PrefixIdGenerator($this->_paramTempId, $ulbId);
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
             DB::beginTransaction();
             $metaReqs = [
                 'hoarding_no' => $applicationNo,
                 'hoarding_type_id' => $req->hoardingType,
-                'latitude' => $req->latitude,
-                'longitude' => $req->longitude,
                 'length' => $req->length,
                 'width' => $req->width,
                 'agency_id' => $req->agencyId,
                 'address' => $req->address,
-                'remarks' => $req->remarks,
                 "zone_id" => $req->zoneId,
                 "ward_id" => $req->wardId
             ];
@@ -776,7 +773,7 @@ class AgencyNewController extends Controller
             $request->all(),
             [
                 'agencyId'             => 'required',
-                'hoardingId'           => 'required',
+                'hoardingId'           => 'nullable',
                 'agencyName'           => "nullable|",
                 'hoardingType'         => "nullable|",
                 'allotmentDate'        => "nullable",
@@ -811,8 +808,11 @@ class AgencyNewController extends Controller
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
-            $var = $request->hoardingId;
-            $this->checkHoardingParams($request);                                        //check alloted date 
+
+            $hoardId = $request->hoardingId;
+            if ($hoardId) {
+                $this->checkHoardingParams($request);             //check alloted date 
+            }                                      
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
@@ -909,7 +909,7 @@ class AgencyNewController extends Controller
 
             if ($currentDate->lessThan($toDate)) {
                 throw new \Exception("This Hoarding Is Allotted Till Date: {$toDate->format('d-m-Y')}");
-            }   
+            }
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }
@@ -984,19 +984,19 @@ class AgencyNewController extends Controller
 
         try {
             $mgemncyHoardApplication  = new AgencyHoarding();
-            // $mWaterApplicant    = new WaterApplicant();
 
-            $refhoardApplication = $mgemncyHoardApplication->checkdtlsById($req->applicationId);                      // Get Saf Details
+
+            $refhoardApplication = $mgemncyHoardApplication->checkdtlsById($req->applicationId);
             if (!$refhoardApplication) {
                 throw new Exception("Application Not Found for this id");
             }
-            // $refWaterApplicant = $mWaterApplicant->getOwnerList($req->applicationId)->get();
+
             $documentList = $this->getAgencyDocLists($refhoardApplication, $req);
             $hoardTypeDocs['listDocs'] = collect($documentList)->map(function ($value, $key) use ($refhoardApplication) {
                 return $this->filterDocument($value, $refhoardApplication)->first();
             });
 
-            $totalDocLists = collect($hoardTypeDocs); //->merge($waterOwnerDocs);
+            $totalDocLists = collect($hoardTypeDocs);
             $totalDocLists['docUploadStatus'] = $refhoardApplication->doc_upload_status;
             $totalDocLists['docVerifyStatus'] = $refhoardApplication->doc_verify_status;
             return responseMsgs(true, "", remove_null($totalDocLists), "010203", "", "", 'POST', "");
@@ -1162,6 +1162,7 @@ class AgencyNewController extends Controller
         $mRefReqDocs    = new RefRequiredDocument();
         $moduleId       = Config::get('workflow-constants.ADVERTISMENT_MODULE');
         $refUserType    = Config::get('workflow-constants.REF_USER_TYPE');
+
 
         $type = ["Hording_content"];
 

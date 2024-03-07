@@ -309,9 +309,45 @@ class AgencyHoarding extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth);
-        $docDetails->current_status = '0';
+        $mWfActiveDocument->postDocuments($a, $req->auth,$req);
+        $docDetails->current_status = '1';
+        $docDetails->verify_status = '0';
         $docDetails->save();
         return $docDetails['active_id'];
+    }
+    /**
+     * application details of hoarding
+     */
+    public function getRejectDocs($email)
+    {
+        return self::select(
+            'agency_hoardings.id',
+            'agency_hoardings.application_no',
+            'agency_hoardings.rate',
+            'agency_hoardings.from_date',
+            'agency_hoardings.to_date',
+            'agency_hoardings.apply_date',
+            'agency_hoardings.advertiser',
+            'agency_masters.mobile',
+            'ulb_masters.ulb_name',
+            'ulb_ward_masters.ward_name',
+            'm_circle.circle_name as zone_name',
+            'agency_masters.agency_name as agencyName',
+            'hoarding_masters.hoarding_no',
+            "hoarding_types.type as hoarding_type",
+        )
+            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
+            ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
+            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->join('wf_active_documents','wf_active_documents.active_id','agency_hoardings.id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
+            ->where('agency_masters.email', $email)
+            ->where('wf_active_documents.verify_status',2)
+            ->where('agency_hoardings.status', true)
+            ->where('agency_masters.status', 1)
+            ->get();
     }
 }

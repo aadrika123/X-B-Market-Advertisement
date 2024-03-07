@@ -1031,8 +1031,8 @@ class DharamshalaController extends Controller
 
     /**
      * | Re-upload rejected document by citizen
-     * | Function - 24
-     * | API - 21
+     * | 
+     * | 
      */
     public function reuploadDocument(Request $req)
     {

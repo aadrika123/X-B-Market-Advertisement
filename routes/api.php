@@ -597,14 +597,16 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');
         Route::post('advertisement/search-hoarding', 'searchHoarding');
         Route::post('advertisement/get-approve-applications', 'getApproveApplications');
-        Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                            //get dashboard data of agency
+        Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                              //get dashboard data of agency
         Route::post('advertisement/get-agency-application-dtls', 'getAgencyAplicationdtl');                           //get dashboard data of agency
         Route::post('advertisement/get-hoarding-type', 'hoardingType');                                                // get hoarding type master
         Route::post('advertisement/get-ulb-dashboard', 'ulbDashboard');                                                // get hoarding type master
         Route::post('advertisement/get-Hordingdtl-by-id', 'getHoardingDtlsById');                                      //validate details by hoarding By ID 
         Route::post('advertisement/back-to-citizen', 'backToCitizen');                                                // back to citizen 
         Route::post('advertisement/bta-inbox', 'btaInbox');                                                          // back to citizen 
-        Route::post('advertisement/reupload-document', 'reuploadDocument');                                                       
+        Route::post('advertisement/reupload-document', 'reuploadDocument');   
+        Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                                          //via agency 
+
 
     });
 });

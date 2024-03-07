@@ -31,20 +31,20 @@ class WfActiveDocument extends Model
     /**
      * | Upload document funcation
      */
-    public function postDocuments($req, $auth)
+    public function postDocuments($request, $auth,$req)
     {
-        $metaReqs = new WfActiveDocument();
-        $metaReqs->active_id            = $req->activeId;
-        $metaReqs->workflow_id          = $req->workflowId;
-        $metaReqs->ulb_id               = $req->ulbId;
-        $metaReqs->module_id            = $req->moduleId;
-        $metaReqs->relative_path        = $req->relativePath;
-        $metaReqs->document             = $req->document;
+        $metaReqs = WfActiveDocument::where('id', $req->id)->first();
+        $metaReqs->active_id            = $request->activeId;
+        $metaReqs->workflow_id          = $request->workflowId;
+        $metaReqs->ulb_id               = $request->ulbId;
+        $metaReqs->module_id            = $request->moduleId;
+        $metaReqs->relative_path        = $request->relativePath;
+        $metaReqs->document             = $request->document;
         $metaReqs->uploaded_by          = $auth['id'];
         $metaReqs->uploaded_by_type     = $auth['user_type'];
-        $metaReqs->remarks              = $req->remarks ?? null;
-        $metaReqs->doc_code             = $req->docCode;
-        $metaReqs->owner_dtl_id         = $req->ownerDtlId;
+        $metaReqs->remarks              = $request->remarks ?? null;
+        $metaReqs->doc_code             = $request->docCode;
+        $metaReqs->owner_dtl_id         = $request->ownerDtlId;
         $metaReqs->save();
     }
 
@@ -162,10 +162,11 @@ class WfActiveDocument extends Model
     /**
      * | Get Total no of document for upload
      */
-    public function totalNoOfDocs($docCode)
+    public function totalNoOfDocs($docCode,$moduleId)
     {
         $noOfDocs = RefRequiredDocument::select('requirements')
             ->where('code', $docCode)
+            ->where('module_id',$moduleId)
             ->first();
         $totalNoOfDocs = explode("#", $noOfDocs);
         return count($totalNoOfDocs);
@@ -208,7 +209,7 @@ class WfActiveDocument extends Model
         $wfActiveDocument->update([
             'active_id'         => $req->activeId,
             'workflow_id'       => $req->workflowId,
-            'ulb_id'            => $req->ulbId,
+            'ulb_id'            => $req->ulbId, 
             'module_id'         => $req->moduleId,
             'relative_path'     => $req->relativePath,
             'document'          => $req->document,
@@ -259,8 +260,8 @@ class WfActiveDocument extends Model
             )
             ->where('d.active_id', $applicationId)
             ->where('d.workflow_id', $workflowId)
-            ->where('d.module_id', $moduleId);
-            // ->where('d.verify_status','!=',2);
+            ->where('d.module_id', $moduleId)
+            ->where('d.verify_status','!=',2);
     }
 
     /**

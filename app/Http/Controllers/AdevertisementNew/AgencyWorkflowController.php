@@ -594,8 +594,6 @@ class AgencyWorkflowController extends Controller
         );
         if ($validated->fails())
             return validationError($validated);
-
-
         try {
             # Variable Assignments
             $mWfDocument                = new WfActiveDocument();
@@ -639,6 +637,7 @@ class AgencyWorkflowController extends Controller
                 # For Rejection Doc Upload Status and Verify Status will disabled 
                 $status = 2;
                 $applicationDtl->doc_upload_status = 0;
+                $applicationDtl->doc_verify_status = false;
                 $applicationDtl->save();
             }
             $reqs = [
@@ -686,8 +685,8 @@ class AgencyWorkflowController extends Controller
 
         $req = new Request($refReq);
         $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $ifPropDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifPropDocUnverified == true)
+        $ifDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifDocUnverified == true)
             return 0;
         else
             return 1;
@@ -782,10 +781,10 @@ class AgencyWorkflowController extends Controller
         $timelineData['timelineData'] = collect($request);
 
         # Departmental Post
-        $custom = $mCustomDetails->getCustomDetails($request);
-        $departmentPost['departmentalPost'] = collect($custom)->has('original') ? collect($forwardBackward)['original']['data'] : null;
+        // $custom = $mCustomDetails->getCustomDetails($request);
+        // $departmentPost['departmentalPost'] = collect($custom)->has('original') ? collect($forwardBackward)['original']['data'] : null;
         # Payments Details
-        $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $timelineData, $roleDetails, $departmentPost);
+        $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $timelineData, $roleDetails,);
         return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", "");
     }
     /**
@@ -1293,7 +1292,7 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
         }
     }
-      /**
+    /**
      * | Reuploaded rejected document
      * | Function - 36
      * | API - 33
@@ -1306,7 +1305,7 @@ class AgencyWorkflowController extends Controller
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
-        }   
+        }
         try {
             // Variable initialization
             $magencyHoard = new AgencyHoarding();
@@ -1328,12 +1327,13 @@ class AgencyWorkflowController extends Controller
     {
         $docCode = $this->_docCode;
         $mWfActiveDocument = new WfActiveDocument();
-        $moduleId = $this->_moduleId ;
-        $totalRequireDocs = $mWfActiveDocument->totalNoOfDocs($docCode);
+        $mRefRequirement = new RefRequiredDocument();
+        $moduleId = $this->_moduleId;
+        $totalRequireDocs = $mRefRequirement->totalNoOfDocs($moduleId);
         $appDetails = AgencyHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         if ($totalRequireDocs == $totalUploadedDocs) {
-            $appDetails->doc_upload_status = true ;
+            $appDetails->doc_upload_status = true;
             $appDetails->doc_verify_status = '0';
             $appDetails->parked = false;
             $appDetails->save();
@@ -1343,5 +1343,20 @@ class AgencyWorkflowController extends Controller
             $appDetails->save();
         }
     }
-
+    /**
+     * |get rejected doument via agency 
+     */
+    public function getRjectedDoc(Request $request)
+    {
+        try {
+            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email']);
+            if(!$agencydetails){
+                throw new Exception('data not found ');
+            }
+            return responseMsgs(true, "Document Uploaded Successfully", "", "050133", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }
