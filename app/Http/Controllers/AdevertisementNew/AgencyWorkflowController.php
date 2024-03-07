@@ -1384,12 +1384,14 @@ class AgencyWorkflowController extends Controller
     public function getRjectedDoc(Request $request)
     {
         try {
+            $pages                  = $request->perPage ?? 10;
             $workflowId = 203;                                                                                      //static
             $email=($request->auth['email']);
-            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowId);
+            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowId)->paginate($pages);;     
             if(!$agencydetails){
                 throw new Exception('data not found ');
             }
+
             return responseMsgs(true, "Rejected Documents", $agencydetails, "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
