@@ -682,11 +682,11 @@ class AgencyWorkflowController extends Controller
             ];
             $mWfDocument->docVerifyRejectv2($wfDocId, $reqs);
             if ($req->docStatus == 'Verified')
-                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId);
+                $ifFullDocVerifiedV1 = $this->checkifFullDocVerified($applicationId);
             else
                 $ifFullDocVerifiedV1 = 0;
 
-            if ($ifFullDocVerifiedV1 == 1) {                                        // If The Document Fully Verified Update Verify Status
+            if ($ifFullDocVerifiedV1 == 1  ) {                                        // If The Document Fully Verified Update Verify Status
                 $status = true;
                 $mAgencyHoard->updateDocStatus($applicationId, $status);
             }
@@ -706,6 +706,35 @@ class AgencyWorkflowController extends Controller
         | Working 
      */
     public function ifFullDocVerified($applicationId)
+    {
+        $mAgencyHoard           = new AgencyHoarding();
+        $mWfActiveDocument      = new WfActiveDocument();
+        $refapplication = $mAgencyHoard->getApplicationId($applicationId)
+            ->firstOrFail();
+
+        $refReq = [
+            'activeId'      => $applicationId,
+            'workflowId'    => $refapplication['workflow_id'],
+            'moduleId'      =>  $this->_moduleId,
+        ];
+
+        $req = new Request($refReq);
+        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
+        $ifDocUnverified = $refDocList->contains('verify_status', 0);
+        if ($ifDocUnverified == true)
+            return 0;
+        else
+            return 1;
+    }
+    /**
+     * | Check if the Document is Fully Verified or Not (0.1) | up
+     * | @param
+     * | @var 
+     * | @return
+        | Serial No :  
+        | Working 
+     */
+    public function checkifFullDocVerified($applicationId)
     {
         $mAgencyHoard           = new AgencyHoarding();
         $mWfActiveDocument      = new WfActiveDocument();
@@ -1404,7 +1433,7 @@ class AgencyWorkflowController extends Controller
     public function getRjectedDocById(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id' => 'required|digits_between:1,9223372036854775807',
+            'docId' => 'required|digits_between:1,9223372036854775807',
 
         ]);
         if ($validator->fails()) {

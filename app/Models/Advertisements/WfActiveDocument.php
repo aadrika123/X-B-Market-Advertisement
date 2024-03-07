@@ -154,7 +154,7 @@ class WfActiveDocument extends Model
             )
             ->where('workflow_id', $req->workflowId)
             ->where('module_id', $req->moduleId)
-            ->where('verify_status', '!=', 2)
+            // ->where('verify_status', '=', 2)
             ->where('status', 1)
             ->get();
     }
