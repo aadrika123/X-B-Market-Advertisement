@@ -139,6 +139,41 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+    public function btaInbox(Request $req)
+    {
+        try {
+            $mWfWardUser = new WfWardUser();
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $pages                  = $req->perPage ?? 10;
+            $userId = authUser($req)->id;
+            $ulbId = authUser($req)->ulb_id;
+            $mDeviceId = $req->deviceId ?? "";
+
+            $workflowRoles = $this->getRoleIdByUserId($userId);
+            $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
+                return $value->wf_role_id;
+            });
+
+            $refWard = $mWfWardUser->getWardsByUserId($userId);
+            $wardId = $refWard->map(function ($value) {
+                return $value->ward_id;
+            });
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $agencyList = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+                ->where('agency_hoardings.parked', true)
+                ->orderByDesc('agency_hoardings.id')
+                ->paginate($pages);
+
+                $isDataExist = collect($agencyList)->last();
+                if (!$isDataExist || $isDataExist == 0) {
+                    throw new Exception('Data not Found!');
+                }
+            return responseMsgs(true, "BTC Inbox List", remove_null($agencyList), "", 1.0, "560ms", "POST", $mDeviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
+        }
+    }
     /**
      * | common function for workflow
      * | Get consumer active application details 
@@ -1260,38 +1295,38 @@ class AgencyWorkflowController extends Controller
         | Serial No : 
         | Use
      */
-    public function btaInbox(Request $req)
-    {
-        try {
-            $mWfWardUser = new WfWardUser();
-            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
-            $userId = authUser($req)->id;
-            $ulbId = authUser($req)->ulb_id;
-            $mDeviceId = $req->deviceId ?? "";
+    // public function btaInbox(Request $req)
+    // {
+    //     try {
+    //         $mWfWardUser = new WfWardUser();
+    //         $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+    //         $userId = authUser($req)->id;
+    //         $ulbId = authUser($req)->ulb_id;
+    //         $mDeviceId = $req->deviceId ?? "";
 
-            $workflowRoles = $this->getRoleIdByUserId($userId);
-            $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
-                return $value->wf_role_id;
-            });
+    //         $workflowRoles = $this->getRoleIdByUserId($userId);
+    //         $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
+    //             return $value->wf_role_id;
+    //         });
 
-            $refWard = $mWfWardUser->getWardsByUserId($userId);
-            $wardId = $refWard->map(function ($value) {
-                return $value->ward_id;
-            });
-            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+    //         $refWard = $mWfWardUser->getWardsByUserId($userId);
+    //         $wardId = $refWard->map(function ($value) {
+    //             return $value->ward_id;
+    //         });
+    //         $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
-            $waterList = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
-                ->where('agency_hoardings.parked', true)
-                ->orderByDesc('agency_hoardings.id')
-                ->get();
+    //         $waterList = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+    //             ->where('agency_hoardings.parked', true)
+    //             ->orderByDesc('agency_hoardings.id')
+    //             ->get();
 
-            $filterWaterList = collect($waterList)->unique('id');
-            $filterWaterList = $filterWaterList->values();
-            return responseMsgs(true, "BTC Inbox List", remove_null($filterWaterList), "", 1.0, "560ms", "POST", $mDeviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
-        }
-    }
+    //         $filterWaterList = collect($waterList)->unique('id');
+    //         $filterWaterList = $filterWaterList->values();
+    //         return responseMsgs(true, "BTC Inbox List", remove_null($filterWaterList), "", 1.0, "560ms", "POST", $mDeviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
+    //     }
+    // }
     /**
      * | Reuploaded rejected document
      * | Function - 36
@@ -1349,11 +1384,28 @@ class AgencyWorkflowController extends Controller
     public function getRjectedDoc(Request $request)
     {
         try {
-            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email']);
+            $mWfWardUser = new WfWardUser();
+            $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
+            $userId = authUser($request)->id;
+            $ulbId = authUser($request)->ulb_id;
+            $mDeviceId = $request->deviceId ?? "";
+
+            $workflowRoles = $this->getRoleIdByUserId($userId);
+            $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
+                return $value->wf_role_id;
+            });
+
+            $refWard = $mWfWardUser->getWardsByUserId($userId);
+            $wardId = $refWard->map(function ($value) {
+                return $value->ward_id;
+            });
+            $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+            $email=($request->auth['email']);
+            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowIds);
             if(!$agencydetails){
                 throw new Exception('data not found ');
             }
-            return responseMsgs(true, "Document Uploaded Successfully", "", "050133", 1.0, responseTime(), "POST", "", "");
+            return responseMsgs(true, "Rejected Documents", $agencydetails, "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
