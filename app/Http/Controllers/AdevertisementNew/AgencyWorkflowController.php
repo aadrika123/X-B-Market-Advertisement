@@ -1398,4 +1398,30 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
+    /**
+     * |get rejected doument via agency 
+     */
+    public function getRjectedDocById(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|digits_between:1,9223372036854775807',
+
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $applicationId = $request->id;
+            $workflowId = 203;                                                                                      //static
+            $email=($request->auth['email']);
+            $agencydetails = $this->_agencyObj->getRejectDocbyId($request->auth['email'],$workflowId,$applicationId);     
+            if(!$agencydetails){
+                throw new Exception('data not found ');
+            }
+            return responseMsgs(true, "Rejected Documents", $agencydetails, "050133", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
 }
