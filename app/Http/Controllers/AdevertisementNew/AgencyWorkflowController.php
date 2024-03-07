@@ -1364,7 +1364,7 @@ class AgencyWorkflowController extends Controller
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'id' => 'required|digits_between:1,9223372036854775807',
+            'docId' => 'required|digits_between:1,9223372036854775807',
             'image' => 'required|mimes:png,jpeg,pdf,jpg'
         ]);
         if ($validator->fails()) {
@@ -1433,7 +1433,7 @@ class AgencyWorkflowController extends Controller
     public function getRjectedDocById(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'docId' => 'required|digits_between:1,9223372036854775807',
+            'id' => 'required|digits_between:1,9223372036854775807',
 
         ]);
         if ($validator->fails()) {
