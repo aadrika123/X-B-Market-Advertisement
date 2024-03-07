@@ -1260,7 +1260,7 @@ class AgencyWorkflowController extends Controller
         | Serial No : 
         | Use
      */
-    public function btcInbox(Request $req)
+    public function btaInbox(Request $req)
     {
         try {
             $mWfWardUser = new WfWardUser();
