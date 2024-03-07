@@ -33,7 +33,7 @@ class WfActiveDocument extends Model
      */
     public function postDocuments($request, $auth,$req)
     {
-        $metaReqs = WfActiveDocument::where('id', $req->id)->first();
+        $metaReqs = WfActiveDocument::where('id', $req->docId)->first();
         $metaReqs->active_id            = $request->activeId;
         $metaReqs->workflow_id          = $request->workflowId;
         $metaReqs->ulb_id               = $request->ulbId;

@@ -291,7 +291,7 @@ class AgencyHoarding extends Model
     public function reuploadDocument($req)
     {
         $docUpload = new DocumentUpload;
-        $docDetails = WfActiveDocument::find($req->id);
+        $docDetails = WfActiveDocument::find($req->docId);
         $relativePath   = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
 
         $refImageName = $docDetails['doc_code'];
