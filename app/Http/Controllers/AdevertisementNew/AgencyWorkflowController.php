@@ -1414,7 +1414,8 @@ class AgencyWorkflowController extends Controller
             $applicationId = $request->id;
             $workflowId = 203;                                                                                      //static
             $email=($request->auth['email']);
-            $agencydetails = $this->_agencyObj->getRejectDocbyId($request->auth['email'],$workflowId,$applicationId);     
+            $agencydetails = $this->_agencyObj->getRejectDocbyId($request->auth['email'],$workflowId,$applicationId); 
+            $agencydetails = collect($agencydetails)->keyBy('doc_code'); 
             if(!$agencydetails){
                 throw new Exception('data not found ');
             }
