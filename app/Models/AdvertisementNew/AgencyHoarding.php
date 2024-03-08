@@ -275,13 +275,13 @@ class AgencyHoarding extends Model
     /**
      * get details by id for workflow view 
      */
-    public function checkHoarding($request)
+    public function checkHoarding($hoardId)
     {
         return self::select(
             'agency_hoardings.*',
 
         )
-            ->where('agency_hoardings.hoarding_id', $request->hoardingId)
+            ->where('agency_hoardings.hoarding_id', $hoardId)
             ->where('agency_hoardings.status', true)
             ->first();
     }

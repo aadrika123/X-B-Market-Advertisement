@@ -158,7 +158,7 @@ class WfActiveDocument extends Model
             ->where('status', 1)
             ->get();
     }
-
+    
     /**
      * | Get Total no of document for upload
      */

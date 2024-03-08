@@ -71,6 +71,10 @@ class AgencyWorkflowController extends Controller
     protected $_userType;
     protected $_docReqCatagory;
     protected $_wfroles;
+    protected $_mRefReqDocs;
+    protected $_DocList;
+    private $_refapplications;
+    private $_documentLists;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -83,6 +87,7 @@ class AgencyWorkflowController extends Controller
         $this->_advObj     = new AdvertiserMaster();
         $this->_agencyObj = new AgencyHoarding();
         $this->_activeHObj = new AdvActiveHoarding();
+        $this->_mRefReqDocs = new RefRequiredDocument();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE');
@@ -95,6 +100,7 @@ class AgencyWorkflowController extends Controller
         $this->_userType            = Config::get("workflow-constants.REF_USER_TYPE");
         $this->_docReqCatagory      = Config::get("workflow-constants.DOC_REQ_CATAGORY");
         $this->_wfroles             = Config::get('workflow-constants.ROLE_LABEL');
+        $this->_DocList = $this->_mRefReqDocs->getDocsByModuleId($this->_moduleId);
         // $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
@@ -165,10 +171,10 @@ class AgencyWorkflowController extends Controller
                 ->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
 
-                $isDataExist = collect($agencyList)->last();
-                if (!$isDataExist || $isDataExist == 0) {
-                    throw new Exception('Data not Found!');
-                }
+            $isDataExist = collect($agencyList)->last();
+            if (!$isDataExist || $isDataExist == 0) {
+                throw new Exception('Data not Found!');
+            }
             return responseMsgs(true, "BTC Inbox List", remove_null($agencyList), "", 1.0, "560ms", "POST", $mDeviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
@@ -639,6 +645,7 @@ class AgencyWorkflowController extends Controller
             $userId                     = authUser($req)->id;
             $wfLevel                    = $this->_wfroles;
 
+
             # validating application
             $applicationDtl = $mAgencyHoard->getApplicationId($applicationId)
                 ->first();
@@ -682,13 +689,14 @@ class AgencyWorkflowController extends Controller
             ];
             $mWfDocument->docVerifyRejectv2($wfDocId, $reqs);
             if ($req->docStatus == 'Verified')
-                $ifFullDocVerifiedV1 = $this->checkifFullDocVerified($applicationId);
+                $ifFullDocVerifiedV1 = $this->ifFullDocVerified($applicationId, $req->docStatus);
             else
-                $ifFullDocVerifiedV1 = 0;
+                $ifFullDocVerifiedV1 = 0;                                         // In Case of Rejection the Document Verification Status will always remain false
 
-            if ($ifFullDocVerifiedV1 == 1  ) {                                        // If The Document Fully Verified Update Verify Status
-                $status = true;
-                $mAgencyHoard->updateDocStatus($applicationId, $status);
+            // dd($ifFullDocVerifiedV1);
+            if ($ifFullDocVerifiedV1 == 1) {                                     // If The Document Fully Verified Update Verify Status
+                $applicationDtl->doc_verify_status = 1;
+                $applicationDtl->save();
             }
             DB::commit();
             return responseMsgs(true, $req->docStatus . " Successfully", "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
@@ -713,19 +721,69 @@ class AgencyWorkflowController extends Controller
             ->firstOrFail();
 
         $refReq = [
-            'activeId'      => $applicationId,
-            'workflowId'    => $refapplication['workflow_id'],
-            'moduleId'      =>  $this->_moduleId,
+            'activeId' => $applicationId,
+            'workflowId' => $refapplication->workflow_id,
+            'moduleId' => 14
         ];
-
-        $req = new Request($refReq);
-        $refDocList = $mWfActiveDocument->getDocsByActiveId($req);
-        $ifDocUnverified = $refDocList->contains('verify_status', 0);
-        if ($ifDocUnverified == true)
+        $refDocList = $mWfActiveDocument->getVerifiedDocsByActiveId($refReq);
+        return $this->isAllDocs($applicationId, $refDocList, $refapplication);
+    }
+    /**
+     * | Checks the Document Upload Or Verify Status
+     * | @param activeApplicationId
+     * | @param refDocList list of Verified and Uploaded Documents
+     * | @param refSafs saf Details
+     */
+    public function isAllDocs($applicationId, $refDocList, $refapp)
+    {
+        $docList = array();
+        $verifiedDocList = array();
+        $verifiedDocList['advDocs'] = $refDocList->where('owner_dtl_id', null)->values();
+        $collectUploadDocList = collect();
+        $advListDocs = $this->getadvTypeDocList($refapp);
+        $docList['advDocs'] = explode('#', $advListDocs);
+        collect($verifiedDocList['advDocs'])->map(function ($item) use ($collectUploadDocList) {
+            return $collectUploadDocList->push($item['doc_code']);
+        });
+        $madvDocs = collect($docList['advDocs']);
+        // List Documents
+        $flag = 1;
+        foreach ($madvDocs as $item) {
+            $explodeDocs = explode(',', $item);
+            array_shift($explodeDocs);
+            foreach ($explodeDocs as $explodeDoc) {
+                $changeStatus = 0;
+                if (in_array($explodeDoc, $collectUploadDocList->toArray())) {
+                    $changeStatus = 1;
+                    break;
+                }
+            }
+            if ($changeStatus == 0) {
+                $flag = 0;
+                break;
+            }
+        }
+        if ($flag == 0)
             return 0;
         else
             return 1;
     }
+
+    public function getadvTypeDocList($refapps)
+    {
+        $this->_refapplications = $refapps;
+        $moduleId = 14;
+
+        $mrefRequiredDoc = RefRequiredDocument::firstWhere('module_id', $moduleId);
+        if ($mrefRequiredDoc && isset($mrefRequiredDoc['requirements'])) {
+            $this->_documentLists = $mrefRequiredDoc['requirements'];
+        } else {
+            $this->_documentLists = [];
+        }
+        return $this->_documentLists;
+    }
+
+
     /**
      * | Check if the Document is Fully Verified or Not (0.1) | up
      * | @param
@@ -1324,38 +1382,7 @@ class AgencyWorkflowController extends Controller
         | Serial No : 
         | Use
      */
-    // public function btaInbox(Request $req)
-    // {
-    //     try {
-    //         $mWfWardUser = new WfWardUser();
-    //         $mWfWorkflowRoleMaps = new WfWorkflowrolemap();
-    //         $userId = authUser($req)->id;
-    //         $ulbId = authUser($req)->ulb_id;
-    //         $mDeviceId = $req->deviceId ?? "";
 
-    //         $workflowRoles = $this->getRoleIdByUserId($userId);
-    //         $roleId = $workflowRoles->map(function ($value) {                         // Get user Workflow Roles
-    //             return $value->wf_role_id;
-    //         });
-
-    //         $refWard = $mWfWardUser->getWardsByUserId($userId);
-    //         $wardId = $refWard->map(function ($value) {
-    //             return $value->ward_id;
-    //         });
-    //         $workflowIds = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
-
-    //         $waterList = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
-    //             ->where('agency_hoardings.parked', true)
-    //             ->orderByDesc('agency_hoardings.id')
-    //             ->get();
-
-    //         $filterWaterList = collect($waterList)->unique('id');
-    //         $filterWaterList = $filterWaterList->values();
-    //         return responseMsgs(true, "BTC Inbox List", remove_null($filterWaterList), "", 1.0, "560ms", "POST", $mDeviceId);
-    //     } catch (Exception $e) {
-    //         return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
-    //     }
-    // }
     /**
      * | Reuploaded rejected document
      * | Function - 36
@@ -1415,9 +1442,9 @@ class AgencyWorkflowController extends Controller
         try {
             $pages                  = $request->perPage ?? 10;
             $workflowId = 203;                                                                                      //static
-            $email=($request->auth['email']);
-            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'],$workflowId)->paginate($pages);;     
-            if(!$agencydetails){
+            $email = ($request->auth['email']);
+            $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'], $workflowId)->paginate($pages);;
+            if (!$agencydetails) {
                 throw new Exception('data not found ');
             }
 
@@ -1442,10 +1469,10 @@ class AgencyWorkflowController extends Controller
         try {
             $applicationId = $request->id;
             $workflowId = 203;                                                                                      //static
-            $email=($request->auth['email']);
-            $agencydetails = $this->_agencyObj->getRejectDocbyId($request->auth['email'],$workflowId,$applicationId); 
-            $agencydetails = collect($agencydetails)->keyBy('doc_code'); 
-            if(!$agencydetails){
+            $email = ($request->auth['email']);
+            $agencydetails = $this->_agencyObj->getRejectDocbyId($request->auth['email'], $workflowId, $applicationId);
+            $agencydetails = collect($agencydetails)->keyBy('doc_code');
+            if (!$agencydetails) {
                 throw new Exception('data not found ');
             }
             return responseMsgs(true, "Rejected Documents", $agencydetails, "050133", 1.0, responseTime(), "POST", "", "");

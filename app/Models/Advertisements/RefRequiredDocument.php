@@ -49,5 +49,14 @@ class RefRequiredDocument extends Model
         $totalNoOfDocs = explode("#", $noOfDocs);
         return count($totalNoOfDocs);
     }
+     /**
+     * | Get Documents where module Id
+     */
+    public function getDocsByModuleId($moduleId)
+    {
+        return RefRequiredDocument::select('code', 'requirements')
+            ->where('module_id', $moduleId)
+            ->get();
+    }
     
 }
