@@ -87,6 +87,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->doc_status                     = $request->doc_status ?? null;
         $mAgencyHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
         $mAgencyHoarding->advertiser                     = $request->advertiser;
+        $mAgencyHoarding->apply_date                     = $this->_applicationDate;
         $mAgencyHoarding->save();
         return $mAgencyHoarding->id;
     }
@@ -226,7 +227,9 @@ class AgencyHoarding extends Model
             'hoarding_masters.address',
             'ulb_ward_masters.ward_name',
             'm_circle.circle_name as zone_name',
-            'agency_masters.agency_name as agencyName'
+            'agency_masters.agency_name as agencyName',
+            'agency_hoardings.registration_no',
+            'agency_hoardings.allotment_date'
 
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
