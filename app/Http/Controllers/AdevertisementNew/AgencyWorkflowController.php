@@ -935,7 +935,7 @@ class AgencyWorkflowController extends Controller
         // $ownerDetail = $ownerName->implode(',');
         $collectionApplications = collect($applicationDetails)->first();
         return new Collection([
-            ['displayString' => 'Apply Date',       'key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
+            ['displayString' => 'Apply-Date',       'key' => 'ApplyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
             ['displayString' => 'Ward No.',             'key' => 'WardNo.',           'value' => $collectionApplications->ward_name],
             ['displayString' => 'zone Name.',             'key' => 'zoneName.',           'value' => $collectionApplications->zone_name],
             ['displayString' => 'Application No.',      'key' => 'ApplicationNo.',    'value' => $collectionApplications->application_no],
