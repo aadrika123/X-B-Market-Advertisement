@@ -221,11 +221,6 @@ class AgencyWorkflowController extends Controller
                 ->where('agency_hoardings.parked', false)
                 ->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
-
-            $isDataExist = collect($inboxDetails)->last();
-            if (!$isDataExist || $isDataExist == 0) {
-                throw new Exception('Data not Found!');
-            }
             return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
