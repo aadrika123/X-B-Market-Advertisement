@@ -982,8 +982,9 @@ class AgencyWorkflowController extends Controller
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
             DB::beginTransaction();
-            $this->finalApprovalRejection($req, $application);
+           $msg =  $this->finalApprovalRejection($req, $application);
             DB::commit();
+            return responseMsgs(true, '', $msg);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
@@ -1021,7 +1022,8 @@ class AgencyWorkflowController extends Controller
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');
             $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
-            return responseMsgs(true, 'register Application Approved!', $returnData);
+            return $msg  = "register Application Approved!";
+            // return responseMsgs(true, 'register Application Approved!', $returnData);
         } else {
             AgencyHoarding::where('id', $req->applicationId)
                 ->update([
@@ -1031,7 +1033,9 @@ class AgencyWorkflowController extends Controller
             $approveApplicationRep->setTable('agency_hoarding_rejected_applications');
             $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
-            return responseMsgs(true, 'register Application Rejected!', $application->application_no);
+            return $msg  = "register Application Rejected!";
+
+            // return responseMsgs(true, 'register Application Rejected!', $application->application_no);
         }
     }
     /**
