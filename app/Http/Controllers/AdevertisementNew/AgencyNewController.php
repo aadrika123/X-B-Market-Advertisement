@@ -296,8 +296,7 @@ class AgencyNewController extends Controller
         $validator = Validator::make($request->all(), [
             'hoardingType' => 'nullable|',
             'length' => 'nullable|',
-            'width' => 'nullable|',
-            'remarks' => 'nullable',
+            'width' => 'nullable|', 
             'address' => 'nullable|',
             'agencyId' => 'nullable|',
             'documents' => 'nullable',
@@ -315,12 +314,11 @@ class AgencyNewController extends Controller
             DB::beginTransaction();
             $metaRequest = [
                 'hoarding_no' => $request->hoardingNo,
-                'hoarding_type' => $request->hoardingType,
+                'hoarding_type_id' => $request->hoardingType,
                 'length' => $request->length,
                 'width' => $request->width,
                 'agency_id' => $request->agencyId,
                 'address' => $request->address,
-                'remarks' => $request->remarks,
             ]; // 'profile'                 => $request->agencyCode,
             $this->_hoarObj->updateHoarddtl($metaRequest, $hoardingId);
             DB::commit();
@@ -807,7 +805,11 @@ class AgencyNewController extends Controller
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
-
+                   
+            $hoardId = $request->hoardingId;
+            if ($hoardId) {
+                $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
+            }
 
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
@@ -860,10 +862,6 @@ class AgencyNewController extends Controller
                 "Status"    => 2,
 
             ];
-            $hoardId = $request->hoardingId;
-            // if ($hoardId) {
-            //     $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
-            // }
             $this->uploadHoardDocument($AgencyId, $mDocuments, $request->auth);
             $this->_agencyObj->updateUploadStatus($AgencyId, true);                       //update status when doc upload 
             # save for  work flow track
@@ -901,7 +899,7 @@ class AgencyNewController extends Controller
         $currentDate = Carbon::now();
         $result =  $this->_agencyObj->checkHoarding($hoardId);
 
-        if ($result->approve !== 2) {
+        if ($result !== null && $result->approve !== 2) {
             $toDate = Carbon::parse($result->to_date);
 
             if ($currentDate->lessThan($toDate)) {

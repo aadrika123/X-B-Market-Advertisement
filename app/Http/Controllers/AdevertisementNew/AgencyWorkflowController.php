@@ -1452,7 +1452,7 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(true, "Rejected Documents", $agencydetails, "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
-            return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, "Rejected Document Not Found", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
     /**
