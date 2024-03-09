@@ -184,7 +184,7 @@ class AgencyNewController extends Controller
             $metaRequest = [
                 'agency_name'             => $request->agencyName,
                 'agency_code'             => $request->agencyCode,
-                'corresponding_address'   => $request->correspondingAddress,
+                'address'                 => $request->correspondingAddress,
                 'mobile'                  => $request->mobileNo,
                 'email'                   => $request->email,
                 'contact_person'          => $request->contactPerson,
@@ -774,7 +774,6 @@ class AgencyNewController extends Controller
             [
                 'agencyId'             => 'required',
                 'hoardingId'           => 'nullable',
-                'agencyName'           => "nullable|",
                 'hoardingType'         => "nullable|",
                 'allotmentDate'        => "nullable",
                 'advertiser'           => "required",
@@ -809,7 +808,7 @@ class AgencyNewController extends Controller
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
 
-                                                
+
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
@@ -855,9 +854,6 @@ class AgencyNewController extends Controller
             $idGeneration       = new PrefixIdGenerator($this->_tempParamId, $ulbId);
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
-            // $mWfWorkflow=new WfWorkflow();
-            // $WfMasterId = ['WfMasterId' =>  $this->_wfMasterId];
-            // $request->request->add($WfMasterId);
             $AgencyId        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
             $var = [
                 'relatedId' => $AgencyId,
@@ -865,9 +861,9 @@ class AgencyNewController extends Controller
 
             ];
             $hoardId = $request->hoardingId;
-            if ($hoardId) {
-                $this->checkHoardingParams($request,$hoardId);             //check alloted date 
-            }  
+            // if ($hoardId) {
+            //     $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
+            // }
             $this->uploadHoardDocument($AgencyId, $mDocuments, $request->auth);
             $this->_agencyObj->updateUploadStatus($AgencyId, true);                       //update status when doc upload 
             # save for  work flow track
@@ -888,7 +884,6 @@ class AgencyNewController extends Controller
             $metaReqs['user_id'] = $user->id;
             $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
             $request->request->add($metaReqs);
-            // dd($metaReqs)\;
             $mWorkflowTrack->saveTrack($request);
             DB::commit();
             return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
@@ -901,11 +896,11 @@ class AgencyNewController extends Controller
      * check hoarding is already applied or not 
      * between thier respective date 
      */
-    public function checkHoardingParams($request,$hoardId)
+    public function checkHoardingParams($request, $hoardId)
     {
         $currentDate = Carbon::now();
         $result =  $this->_agencyObj->checkHoarding($hoardId);
-        
+
         if ($result->approve !== 2) {
             $toDate = Carbon::parse($result->to_date);
 
@@ -971,7 +966,7 @@ class AgencyNewController extends Controller
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
     }
     /**
-     * 
+     *| get doc list 
      */
     public function getDocList(Request $req)
     {
@@ -1124,7 +1119,8 @@ class AgencyNewController extends Controller
         }
     }
     /**
-     * |assign hoarding to agency 
+     |this function for assign hoarding to agency
+     *
      */
     public function assignAgency(Request $req)
     {
@@ -1164,16 +1160,7 @@ class AgencyNewController extends Controller
         $mRefReqDocs    = new RefRequiredDocument();
         $moduleId       = Config::get('workflow-constants.ADVERTISMENT_MODULE');
         $refUserType    = Config::get('workflow-constants.REF_USER_TYPE');
-
-
         $type = ["Hording_content"];
-
-        // // Check if user_type is not equal to 1
-        // if ($user->user_type == $refUserType['1']) {
-        //     // Modify $type array for user_type not equal to 1
-        //     $type = ["Hording_content"];
-        // }
-
         return $mRefReqDocs->getCollectiveDocByCode($moduleId, $type);
     }
 
@@ -1181,14 +1168,12 @@ class AgencyNewController extends Controller
     /**
      * |---------------------------- Filter The Document For Viewing ----------------------------|
      * | @param documentList
-     * | @param refWaterApplication
      * | @param ownerId
      * | @var mWfActiveDocument
      * | @var applicationId
      * | @var workflowId
      * | @var moduleId
      * | @var uploadedDocs
-     * | Calling Function 01.01.01/ 01.02.01
         | Serial No : 
      */
     public function filterDocument($documentList, $refWaterApplication, $ownerId = null)
