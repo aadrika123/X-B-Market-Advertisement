@@ -184,8 +184,10 @@ class AgencyHoarding extends Model
             "agency_hoardings.rate",
             "agency_hoardings.from_date",
             "agency_hoardings.to_date",
+            "agency_hoardings.current_role_id",
             "hoarding_types.type as hoarding_type",
             "hoarding_masters.address",
+            "hoarding_masters.hoarding_no",
             "agency_hoardings.approve",
             "agency_hoardings.application_no",
             "agency_hoardings.apply_date",
@@ -199,6 +201,11 @@ class AgencyHoarding extends Model
             WHEN approve = 2 THEN 'Rejected'
             ELSE 'Unknown Status'
           END AS approval_status"),
+            DB::raw("CASE 
+            WHEN agency_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+            WHEN agency_hoardings.current_role_id = 10 THEN 'AT TAX  SUPRERINTENDENT'
+            ELSE 'Unknown Role'
+        END AS application_at")
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
@@ -273,7 +280,7 @@ class AgencyHoarding extends Model
             ->where('agency_masters.email', $email)
             ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1)
-            ->orderBy('agency_hoardings.id','desc')
+            ->orderBy('agency_hoardings.id', 'desc')
             ->get();
     }
     /**
@@ -313,7 +320,7 @@ class AgencyHoarding extends Model
         $metaReqs['ownerDtlId'] = $docDetails['ownerDtlId'];
         $a = new Request($metaReqs);
         $mWfActiveDocument = new WfActiveDocument();
-        $mWfActiveDocument->postDocuments($a, $req->auth,$req);
+        $mWfActiveDocument->postDocuments($a, $req->auth, $req);
         $docDetails->current_status = '1';
         $docDetails->verify_status = '0';
         $docDetails->save();
@@ -322,7 +329,7 @@ class AgencyHoarding extends Model
     /**
      * application details of hoarding
      */
-    public function getRejectDocs($email,$workflowIds)
+    public function getRejectDocs($email, $workflowIds)
     {
         return self::select(
             'agency_hoardings.id',
@@ -339,19 +346,19 @@ class AgencyHoarding extends Model
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
-            ->join('wf_active_documents','wf_active_documents.active_id','agency_hoardings.id')
-            ->leftjoin('workflow_tracks','workflow_tracks.ref_table_id_value','agency_hoardings.id')
+            ->join('wf_active_documents', 'wf_active_documents.active_id', 'agency_hoardings.id')
+            ->leftjoin('workflow_tracks', 'workflow_tracks.ref_table_id_value', 'agency_hoardings.id')
             ->where('agency_masters.email', $email)
-            ->where('agency_masters.status',1)
-            ->where('wf_active_documents.verify_status',2)
-            ->where('wf_active_documents.workflow_id',$workflowIds)
-            ->where('workflow_tracks.status',true)
+            ->where('agency_masters.status', 1)
+            ->where('wf_active_documents.verify_status', 2)
+            ->where('wf_active_documents.workflow_id', $workflowIds)
+            ->where('workflow_tracks.status', true)
             ->distinct('agency_hoardings.id')
             // ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1);
     }
     #details by ID 
-    public function getRejectDocbyId($email,$workflowIds,$applicationId)
+    public function getRejectDocbyId($email, $workflowIds, $applicationId)
     {
         return self::select(
             'agency_hoardings.id',
@@ -363,12 +370,12 @@ class AgencyHoarding extends Model
             ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
-            ->join('wf_active_documents','wf_active_documents.active_id','agency_hoardings.id')
-            ->where('agency_hoardings.id',$applicationId)
+            ->join('wf_active_documents', 'wf_active_documents.active_id', 'agency_hoardings.id')
+            ->where('agency_hoardings.id', $applicationId)
             ->where('agency_masters.email', $email)
-            ->where('agency_masters.status',1)
-            ->where('wf_active_documents.verify_status',2)
-            ->where('wf_active_documents.workflow_id',$workflowIds)
+            ->where('agency_masters.status', 1)
+            ->where('wf_active_documents.verify_status', 2)
+            ->where('wf_active_documents.workflow_id', $workflowIds)
             // ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1)
             ->get();

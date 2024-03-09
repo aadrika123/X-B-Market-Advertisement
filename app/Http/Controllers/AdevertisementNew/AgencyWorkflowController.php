@@ -973,7 +973,7 @@ class AgencyWorkflowController extends Controller
             if ($application->doc_verify_status == false)
                 throw new Exception("Document Not Fully Verified!");
             DB::beginTransaction();
-           $msg =  $this->finalApprovalRejection($req, $application);
+            $msg =  $this->finalApprovalRejection($req, $application);
             DB::commit();
             return responseMsgs(true, '', $msg);
         } catch (Exception $e) {
@@ -1096,7 +1096,7 @@ class AgencyWorkflowController extends Controller
         if ($validated->fails())
             return validationError($validated);
         try {
-            $mWaterConsumer = new AgencyMaster();
+            $mAgencyMaster = new AgencyMaster();
             $mHoardingMaster = new HoardingMaster();
             $mAgencyHoarding = new AgencyHoarding();
             $key            = $request->filterBy;
@@ -1112,7 +1112,13 @@ class AgencyWorkflowController extends Controller
                         throw new Exception("Data according to " . $key . " not Found!");
                     break;
                 case ("mobile"):
-                    $ReturnDetails = $mWaterConsumer->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
+                    $ReturnDetails = $mAgencyMaster->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
+                    $checkVal = collect($ReturnDetails)->last();
+                    if (!$checkVal || $checkVal == 0)
+                        throw new Exception("Data according to " . $key . " not Found!");
+                    break;
+                case ("hoardingNo"):
+                    $ReturnDetails = $mAgencyMaster->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
                     $checkVal = collect($ReturnDetails)->last();
                     if (!$checkVal || $checkVal == 0)
                         throw new Exception("Data according to " . $key . " not Found!");
@@ -1330,7 +1336,7 @@ class AgencyWorkflowController extends Controller
             $redis = Redis::connection();
             $mAgencyHoarding = AgencyHoarding::find($req->applicationId);
             if ($mAgencyHoarding->doc_verify_status == 1)
-                throw new Exception("All Documents Are Approved, So Application is Not BTC !!!");
+                throw new Exception("All Documents Are varified, So Application is Not BTC !!!");
             if ($mAgencyHoarding->doc_upload_status == 1)
                 throw new Exception("No Any Document Rejected, So Application is Not BTC !!!");
             $workflowId = $mAgencyHoarding->workflow_id;

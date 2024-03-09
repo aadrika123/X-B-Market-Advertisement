@@ -96,7 +96,7 @@ class AgencyMaster extends Model
             ->join('hoarding_masters', 'hoarding_masters.agency_id', '=', 'agency_masters.id')
             ->join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
-            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
             ->where('hoarding_masters.status', 1)
@@ -144,17 +144,23 @@ class AgencyMaster extends Model
             WHEN agency_hoardings.approve = 2 THEN 'Rejected'
             ELSE 'Unknown Status'
           END AS approval_status"),
+            DB::raw("CASE 
+          WHEN agency_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+          WHEN agency_hoardings.current_role_id = 10 THEN 'AT TAX  SUPRERINTENDENT'
+          ELSE 'Unknown Role'
+          END AS application_at")
+          
         )
             ->join('agency_hoardings', 'agency_hoardings.agency_id', '=', 'agency_masters.id')
             ->join('hoarding_masters', 'hoarding_masters.id', '=', 'agency_hoardings.hoarding_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
-            ->join('hoarding_types','hoarding_types.id','hoarding_masters.hoarding_type_id')
+            ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.status', 1)
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
-            ->where('agency_masters.' . $key, 'LIKE', '%' . $refNo . '%');
+            ->where('hoarding_masters.' . $key, 'LIKE', '%' . $refNo . '%');
     }
 }
