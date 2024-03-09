@@ -131,6 +131,7 @@ class AgencyMaster extends Model
             "agency_hoardings.to_date",
             "hoarding_types.type as hoarding_type",
             "hoarding_masters.address",
+            "hoarding_masters.hoarding_no",
             "agency_hoardings.approve",
             "agency_hoardings.application_no",
             "agency_hoardings.apply_date",
