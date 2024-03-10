@@ -341,18 +341,21 @@ class AgencyHoarding extends Model
             'agency_hoardings.to_date',
             'hoarding_masters.hoarding_no',
             "hoarding_types.type as hoarding_type",
-            "workflow_tracks.message as reason"
+            "workflow_tracks.message as reason",
+            "workflow_tracks.workflow_id"
+
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->join('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->join('wf_active_documents', 'wf_active_documents.active_id', 'agency_hoardings.id')
-            ->leftjoin('workflow_tracks', 'workflow_tracks.ref_table_id_value', 'agency_hoardings.id')
+            ->join('workflow_tracks', 'workflow_tracks.ref_table_id_value', 'agency_hoardings.id')
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
             ->where('wf_active_documents.verify_status', 2)
-            ->where('wf_active_documents.workflow_id', $workflowIds)
-            ->where('workflow_tracks.status', true)
+            ->where('wf_active_documents.workflow_id',$workflowIds)
+            ->where('workflow_tracks.status',true)
+            ->where('workflow_tracks.workflow_id',$workflowIds)
             ->distinct('agency_hoardings.id')
             // ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1);
@@ -365,6 +368,7 @@ class AgencyHoarding extends Model
             'wf_active_documents.id as docId',
             'wf_active_documents.doc_code',
             'wf_active_documents.verify_status',
+            "wf_active_documents.workflow_id"
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')

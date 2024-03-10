@@ -1443,7 +1443,7 @@ class AgencyWorkflowController extends Controller
     {
         try {
             $pages                  = $request->perPage ?? 10;
-            $workflowId = 203;                                                                                      //static
+            $workflowId =203;                                                                                      //static
             $email = ($request->auth['email']);
             $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'], $workflowId)->paginate($pages);;
             if (!$agencydetails) {
