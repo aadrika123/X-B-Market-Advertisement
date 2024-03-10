@@ -546,7 +546,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
     /**
      * |controller- 13
-     * |created By - Arshad
+     * |created By - Arshad Hussain
      * |Date - 16-02-2024
      * |status - open 
      */
@@ -554,15 +554,15 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/addnew-agency', 'addNewAgency');
         Route::post('advertisement/get-all', 'getAll');
         Route::post('advertisement/update-agency-dtls', 'updateAgencydtl');
-        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');                // soft delete 
+        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');               
         Route::post('advertisement/addnew-hoarding', 'addNewHoarding');
         Route::post('advertisement/get-all-hoarding', 'getAllHoard');
         Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');
-        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                   // soft delete 
+        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                   
         Route::post('advertisement/add-new-brand', 'addBrand');                          // add brand 
         Route::post('advertisement/get-all-brand', 'getAllBrand');                      // get details of brand 
         Route::post('advertisement/update-brand', 'updateBrand');                       // update brand 
-        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                   // soft delete brand 
+        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                   
         Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');    // add advertisement type
         Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');        // get advertisement type 
         Route::post('advertisement/update-advertisements', 'updateAdvertisemnet');      // update Advertisement data
