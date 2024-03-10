@@ -376,6 +376,7 @@ class AgencyHoarding extends Model
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
             ->where('wf_active_documents.status',1)
+            ->where('wf_active_documents.verify_status', '!=', 0) 
             ->where('wf_active_documents.workflow_id', $workflowIds)
             // ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1)
