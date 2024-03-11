@@ -74,6 +74,13 @@ class AgencyMaster extends Model
             ->where('status', 1)
             ->first();
     }
+    #check if email exist 
+    public function checkEmailExist($email)
+    {
+        return self::where('email', $email)
+            ->where('status', 1)
+            ->first();
+    }
     # update status 
     public function deleteAgencyById($agencyId)
     {

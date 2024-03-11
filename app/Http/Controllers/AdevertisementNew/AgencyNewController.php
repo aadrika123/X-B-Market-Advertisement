@@ -96,7 +96,6 @@ class AgencyNewController extends Controller
     }
     /**
      * | Store  for agency 
-     * | @param StoreRequest Request
      * | Function - 01
      * | API - 01
      */
@@ -117,6 +116,14 @@ class AgencyNewController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            $user               = authUser($request);
+            $userType           = $user->user_type;
+            $userId             = $user->id;
+            $email = $request->email;
+            $checkEmail = $this->_modelObj->checkEmailExist($email);                      // check email exist or not 
+            if ($checkEmail) {
+                throw new Exception('This email Is Already Exist');
+            }
             $ulbId = $request->ulbId ?? 2;
             $idGeneration       = new PrefixIdGenerator($this->_tempId, $ulbId);
             $applicationNo      = $idGeneration->generate();
@@ -130,7 +137,9 @@ class AgencyNewController extends Controller
                 'email'                   => $request->email,
                 'contact_person'          => $request->contactPerson,
                 'gst_no'                  => $request->gstNo,
-                'pan_no'                  => $request->panNo
+                'pan_no'                  => $request->panNo,
+                'user_type'               => $userType,
+                'user_id'                 => $userId,
             ];
             $agencyId = $this->_modelObj->createData($metaRequest);
             DB::commit();
@@ -142,12 +151,13 @@ class AgencyNewController extends Controller
     }
     /**\
      * get all agency data 
+     * | Function - 02
      */
     public function getAll(Request $request)
     {
         try {
             $getAll = $this->_modelObj->getaLL();
-            if($getAll->isEmpty()){
+            if ($getAll->isEmpty()) {
                 throw new Exception('agency not found');
             }
             return responseMsgs(true, "get agency succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
@@ -156,8 +166,8 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-    /**\
-     * edit agencgy details
+    /*
+     * |edit agencgy details
      */
     public function updateAgencydtl(Request $request)
     {
@@ -205,7 +215,7 @@ class AgencyNewController extends Controller
         }
     }
     /**
-     * soft delete 
+     * |soft delete 
      */
     public function AgencyDelete(Request $req)
     {
@@ -252,20 +262,25 @@ class AgencyNewController extends Controller
             return ['status' => false, 'message' => $validator->errors()];
         }
         try {
+            $user               = authUser($req);
+            $userType           = $user->user_type;
+            $userId             = $user->id;
             $ulbId = $req->ulbId ?? 2;
             $idGeneration       = new PrefixIdGenerator($this->_paramTempId, $ulbId);
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
             DB::beginTransaction();
             $metaReqs = [
-                'hoarding_no' => $applicationNo,
-                'hoarding_type_id' => $req->hoardingType,
-                'length' => $req->length,
-                'width' => $req->width,
-                'agency_id' => $req->agencyId,
-                'address' => $req->address,
-                "zone_id" => $req->zoneId,
-                "ward_id" => $req->wardId
+                'hoarding_no'             => $applicationNo,
+                'hoarding_type_id'        => $req->hoardingType,
+                'length'                  => $req->length,
+                'width'                   => $req->width,
+                'agency_id'               => $req->agencyId,
+                'address'                 => $req->address,
+                "zone_id"                 => $req->zoneId,
+                "ward_id"                 => $req->wardId,
+                'user_type'               => $userType,
+                'user_id'                 => $userId,
             ];
             $hoarding = $this->_hoarObj->creteData($metaReqs);
             DB::commit();
@@ -283,7 +298,7 @@ class AgencyNewController extends Controller
     {
         try {
             $getAll = $this->_hoarObj->getaLLHording();
-            if($getAll->isEmpty()){
+            if ($getAll->isEmpty()) {
                 throw new Exception('hoarding not found!');
             }
             return responseMsgs(true, "get hoarding succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
@@ -300,7 +315,7 @@ class AgencyNewController extends Controller
         $validator = Validator::make($request->all(), [
             'hoardingType' => 'nullable|',
             'length' => 'nullable|',
-            'width' => 'nullable|', 
+            'width' => 'nullable|',
             'address' => 'nullable|',
             'agencyId' => 'nullable|',
             'documents' => 'nullable',
@@ -809,7 +824,7 @@ class AgencyNewController extends Controller
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
-                   
+
             $hoardId = $request->hoardingId;
             if ($hoardId) {
                 $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
