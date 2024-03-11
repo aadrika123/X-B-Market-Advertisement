@@ -779,10 +779,10 @@ class AgencyNewController extends Controller
         }
     }
     /**
-     * | apply hoarding for register advertisement
+       |apply hoarding for register advertisement by agency 
+       |to advertiser 
      * | @param request
      * | @var 
-       
      */
     public function applyHoarding(Request $request)
     {
@@ -1162,9 +1162,6 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-
-
-
     /**
      * |---------------------------- List of the doc to upload ----------------------------|
      * | Calling function
@@ -1180,8 +1177,6 @@ class AgencyNewController extends Controller
         $type = ["Hording_content"];
         return $mRefReqDocs->getCollectiveDocByCode($moduleId, $type);
     }
-
-
     /**
      * |---------------------------- Filter The Document For Viewing ----------------------------|
      * | @param documentList

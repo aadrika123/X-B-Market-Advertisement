@@ -168,7 +168,6 @@ class AgencyMaster extends Model
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.status', 1)
             ->where('agency_masters.email', $email)
-            ->where('agency_masters.status', 1)
-            ->where('hoarding_masters.' . $key, 'LIKE', '%' . $refNo . '%');
+            ->where('agency_masters.status', 1);
     }
 }
