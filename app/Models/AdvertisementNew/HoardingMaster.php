@@ -96,7 +96,7 @@ class HoardingMaster extends Model
             ->first();
     }
     # update status 
-    public function updateStatus($agencyId)
+    public function deleteHoarding($agencyId)
     {
         return self::where('id', $agencyId)
             ->update([

@@ -75,7 +75,7 @@ class AgencyMaster extends Model
             ->first();
     }
     # update status 
-    public function updateStatus($agencyId)
+    public function deleteAgencyById($agencyId)
     {
         return self::where('id', $agencyId)
             ->update([

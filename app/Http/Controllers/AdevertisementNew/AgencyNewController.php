@@ -147,6 +147,9 @@ class AgencyNewController extends Controller
     {
         try {
             $getAll = $this->_modelObj->getaLL();
+            if($getAll->isEmpty()){
+                throw new Exception('agency not found');
+            }
             return responseMsgs(true, "get agency succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -219,7 +222,7 @@ class AgencyNewController extends Controller
                 throw new Exception('agency not found !');
             }
             DB::beginTransaction();
-            $this->_modelObj->updateStatus($agencyId);
+            $this->_modelObj->deleteAgencyById($agencyId);
             DB::commit();
             return responseMsgs(true, "delete agency dtl succesfully !!",  "050501", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -265,9 +268,7 @@ class AgencyNewController extends Controller
                 "ward_id" => $req->wardId
             ];
             $hoarding = $this->_hoarObj->creteData($metaReqs);
-
             DB::commit();
-
             return responseMsgs(true, "Successfully Submitted the application !!", ['status' => true, 'ApplicationNo' => $hoarding], "050501", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -282,6 +283,9 @@ class AgencyNewController extends Controller
     {
         try {
             $getAll = $this->_hoarObj->getaLLHording();
+            if($getAll->isEmpty()){
+                throw new Exception('hoarding not found!');
+            }
             return responseMsgs(true, "get hoarding succesfully!!", ['data' => $getAll], "050501", "1.0", responseTime(), 'POST', $request->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
@@ -347,7 +351,7 @@ class AgencyNewController extends Controller
                 throw new Exception('agency not found !');
             }
             DB::beginTransaction();
-            $this->_hoarObj->updateStatus($hoardId);
+            $this->_hoarObj->deleteHoarding($hoardId);
             DB::commit();
             return responseMsgs(true, "delete agency dtl succesfully !!",  "050501", "1.0", responseTime(), 'POST', $req->deviceId ?? "");
         } catch (Exception $e) {

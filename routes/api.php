@@ -560,8 +560,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');
         Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                   
         Route::post('advertisement/add-new-brand', 'addBrand');                          // add brand 
-        Route::post('advertisement/get-all-brand', 'getAllBrand');                      // get details of brand 
-        Route::post('advertisement/update-brand', 'updateBrand');                       // update brand 
+        Route::post('advertisement/get-all-brand', 'getAllBrand');                       // get details of brand 
+        Route::post('advertisement/update-brand', 'updateBrand');                        // update brand 
         Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                   
         Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');    // add advertisement type
         Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');        // get advertisement type 

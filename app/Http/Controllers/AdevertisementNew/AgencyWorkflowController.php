@@ -1172,15 +1172,20 @@ class AgencyWorkflowController extends Controller
             $email = $request->auth['email'];
             $data = DB::selectOne("
                 SELECT
+                agency_masters.agency_name,
+                agency_masters.mobile,
                     COUNT(CASE WHEN approve = 0 THEN 1 ELSE NULL END) AS pendings,
                     COUNT(CASE WHEN approve = 1 THEN 1 ELSE NULL END) AS approved,
                     COUNT(CASE WHEN approve = 2 THEN 1 ELSE NULL END) AS rejected
                 FROM
-                    agency_hoardings
-                    JOIN agency_masters ON agency_masters.id = agency_hoardings.agency_id
+                agency_masters
+                LEFT    JOIN agency_hoardings ON agency_hoardings.agency_id = agency_masters.id
                 WHERE
                     agency_masters.email = :email
                     AND agency_masters.status = 1
+                    group by 
+                    agency_masters.agency_name,
+                    agency_masters.mobile
             ", ['email' => $email]);
             return responseMsgs(true, "Agency Details", $data, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
@@ -1443,7 +1448,7 @@ class AgencyWorkflowController extends Controller
     {
         try {
             $pages                  = $request->perPage ?? 10;
-            $workflowId =203;                                                                                      //static
+            $workflowId = 203;                                                                                      //static
             $email = ($request->auth['email']);
             $agencydetails = $this->_agencyObj->getRejectDocs($request->auth['email'], $workflowId)->paginate($pages);;
             if (!$agencydetails) {
