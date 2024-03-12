@@ -781,8 +781,8 @@ class AgencyNewController extends Controller
     /**
        |apply hoarding for register advertisement by agency 
        |to advertiser 
-     * | @param request
-     * | @var 
+     * | @param Request
+     * | 
      */
     public function applyHoarding(Request $request)
     {
@@ -824,12 +824,10 @@ class AgencyNewController extends Controller
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
-
             $hoardId = $request->hoardingId;
             if ($hoardId) {
                 $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
             }
-
             $ulbId      = $request->ulbId ?? 2;
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
@@ -911,22 +909,29 @@ class AgencyNewController extends Controller
     }
     /**
      * check hoarding is already applied or not 
-     * between thier respective date 
+     * between their respective date 
      */
     public function checkHoardingParams($request, $hoardId)
     {
         $currentDate = Carbon::now();
-        $result =  $this->_agencyObj->checkHoarding($hoardId);
+        $result = $this->_agencyObj->checkHoarding($hoardId);
 
-        if ($result !== null && $result->approve !== 2) {
-            $toDate = Carbon::parse($result->to_date);
+        if ($result !== null && $result->isNotEmpty()) {
+            $data = collect($result);
+            $lastToDate = $data->max('to_date');  // Get the maximum (latest) to_date from the collection
 
-            if ($currentDate->lessThan($toDate)) {
-                throw new \Exception("This Hoarding Is Allotted Till Date: {$toDate->format('d-m-Y')}");
+            if ($lastToDate !== null) {
+                $toDate = Carbon::parse($lastToDate);
+                if ($currentDate->lessThan($toDate)) {
+                    throw new \Exception("This Hoarding Is Allotted Till Date: {$toDate->format('d-m-Y')}");
+                }
             }
+
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }
+
+
     /*
      * upload Document By agency At the time of Registration
      * @param Request $req

@@ -294,7 +294,7 @@ class AgencyHoarding extends Model
         )
             ->where('agency_hoardings.hoarding_id', $hoardId)
             ->where('agency_hoardings.status', true)
-            ->first();
+            ->get();
     }
     /**
      * | Reupload Documents

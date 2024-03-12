@@ -1077,9 +1077,8 @@ class AgencyWorkflowController extends Controller
         }
     }
     /**
-     * |---------------------------- Search Application ----------------------------|
-     * | Search Application using provided condition For the Admin 
-        | Serial No : 
+     * |---------------------------- Search Hoarding Application ----------------------------|
+     * | Search Application using provided condition 
      */
     public function searchHoarding(Request $request)
     {
@@ -1096,47 +1095,44 @@ class AgencyWorkflowController extends Controller
         if ($validated->fails())
             return validationError($validated);
         try {
-            $mAgencyMaster = new AgencyMaster();
-            $mHoardingMaster = new HoardingMaster();
-            $mAgencyHoarding = new AgencyHoarding();
             $key            = $request->filterBy;
             $paramenter     = $request->parameter;
             $pages          = $request->perPage ? $request->perPage : 10;
             $string         = preg_replace("/([A-Z])/", "_$1", $key);
             $refstring      = strtolower($string);
-            if($key !== null){
+            if ($key !== null) {
                 switch ($key) {
                     case "applicationNo":
-                        $data = $mAgencyHoarding->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        $data = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
                         if ($paramenter !== null) {
                             $data->where('agency_hoardings.' . $refstring, 'LIKE', '%' . $paramenter . '%');
                         }
                         $ReturnDetails = $data->paginate($pages);
-                          // Check if data is not found
+                        // Check if data is not found
                         $checkVal = $ReturnDetails->count();
                         if (!$checkVal || $checkVal == 0) {
                             throw new Exception("Data according to " . $key . " not Found!");
                         }
                         break;
                     case ("mobile"):
-                        $data = $mAgencyMaster->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        $data = $this->_modelObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
                         if ($paramenter !== null) {
                             $data->where('hoarding_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
                         }
                         $ReturnDetails = $data->paginate($pages);
-                          // Check if data is not found
+                        // Check if data is not found
                         $checkVal = $ReturnDetails->count();
                         if (!$checkVal || $checkVal == 0) {
                             throw new Exception("Data according to " . $key . " not Found!");
                         }
                         break;
                     case ("hoardingNo"):
-                        $data = $mAgencyMaster->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        $data = $this->_modelObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
                         if ($paramenter !== null) {
                             $data->where('hoarding_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
                         }
                         $ReturnDetails = $data->paginate($pages);
-                          // Check if data is not found
+                        // Check if data is not found
                         $checkVal = $ReturnDetails->count();
                         if (!$checkVal || $checkVal == 0) {
                             throw new Exception("Data according to " . $key . " not Found!");
@@ -1146,16 +1142,18 @@ class AgencyWorkflowController extends Controller
                         throw new Exception("Data provided in filterBy is not valid!");
                 }
             } else {
-                $ReturnDetails = $mAgencyHoarding->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
+                $ReturnDetails = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
+                if (!$ReturnDetails) {
+                    throw new Exception('data not found');
+                }
             }
-    
             $list = [
                 "current_page" => $ReturnDetails->currentPage(),
                 "last_page" => $ReturnDetails->lastPage(),
                 "data" => $ReturnDetails->items(),
                 "total" => $ReturnDetails->total(),
             ];
-    
+
             return responseMsgs(true, " Data According To Parameter!", remove_null($list), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
