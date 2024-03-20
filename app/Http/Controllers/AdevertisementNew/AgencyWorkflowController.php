@@ -1117,7 +1117,7 @@ class AgencyWorkflowController extends Controller
                     case ("mobile"):
                         $data = $this->_modelObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
                         if ($paramenter !== null) {
-                            $data->where('hoarding_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
+                            $data->where('agency_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
                         }
                         $ReturnDetails = $data->paginate($pages);
                         // Check if data is not found

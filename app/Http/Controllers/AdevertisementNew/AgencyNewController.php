@@ -791,25 +791,26 @@ class AgencyNewController extends Controller
             [
                 'agencyId'             => 'required',
                 'hoardingId'           => 'nullable',
-                'hoardingType'         => "nullable|",
-                'allotmentDate'        => "nullable",
-                'advertiser'           => "required",
-                'from'                 => "nullable",
-                'to'                   => "nullable",
-                "rate"                 => "nullable",
-                'fatherName'           => "nullable",
-                "email"                => 'nullable',
+                'hoardingType'         => 'nullable',
+                'allotmentDate'        => 'nullable',
+                'advertiser'           => 'required',
+                'from'                 => 'nullable',
+                'to'                   => 'nullable',
+                'rate'                 => 'nullable',
+                'fatherName'           => 'nullable',
+                'email'                => 'nullable',
                 'residenceAddress'     => 'nullable',
                 'workflowId'           => 'nullable',
-                'documents' => 'required|array',
-                'documents.*.image' => 'required|mimes:png,jpeg,pdf,jpg',
-                'documents.*.docCode' => 'required|string',
+                'documents'            => 'required|array',
+                'documents.*.image'    => 'required|mimes:png,jpeg,pdf,jpg',
+                'documents.*.docCode'  => 'required|string',
                 'documents.*.ownerDtlId' => 'nullable|integer'
-
             ]
         );
-        if ($validated->fails())
-            return validationError($validated);
+
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }
         // return $request->all();
 
         try {
@@ -914,15 +915,19 @@ class AgencyNewController extends Controller
     public function checkHoardingParams($request, $hoardId)
     {
         $currentDate = Carbon::now();
+        $fromDate = Carbon::parse($request->from);
         $result = $this->_agencyObj->checkHoarding($hoardId);
-
+        $data['data'] = $result;
         if ($result !== null && $result->isNotEmpty()) {
-            $data = collect($result);
-            $lastToDate = $data->max('to_date');  // Get the maximum (latest) to_date from the collection
+            // $data = collect($result);
+            // $lastToDate = $data->max('to_date');  // Get the maximum (latest) to_date from the collection
+            $maxToDate = collect($result)->map(function ($item) {
+                return Carbon::parse($item->to_date);
+            })->max();
 
-            if ($lastToDate !== null) {
-                $toDate = Carbon::parse($lastToDate);
-                if ($currentDate->lessThan($toDate)) {
+            if ($maxToDate !== null) {
+                $toDate = Carbon::parse($maxToDate);
+                if ($fromDate->lessThan($toDate)) {
                     throw new \Exception("This Hoarding Is Allotted Till Date: {$toDate->format('d-m-Y')}");
                 }
             }
@@ -1115,8 +1120,9 @@ class AgencyNewController extends Controller
                 'applicationId' => 'required|numeric'
             ]
         );
-        if ($validated->fails())
-            return validationError($validated);
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }
 
         try {
             $mWfActiveDocument = new WfActiveDocument();
@@ -1153,8 +1159,9 @@ class AgencyNewController extends Controller
                 'userId' => 'required|numeric'
             ]
         );
-        if ($validated->fails())
-            return validationError($validated);
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }
         try {
             $roleId         = $req->roleId;
             $userId         = $req->userId;
