@@ -606,7 +606,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/bta-inbox', 'btaInbox');                                                          // back to citizen 
         Route::post('advertisement/reupload-document', 'reuploadDocument');   
         Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                                          //via agency 
-        Route::post('advertisement/rejected-document', 'getRjectedDocById');                                          //via applications agency 
+        Route::post('advertisement/rejected-document', 'getRjectedDocById');  
+        Route::post('advertisement/get-hoard-type', 'hoardType');                                                 //via applications agency 
     });
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {

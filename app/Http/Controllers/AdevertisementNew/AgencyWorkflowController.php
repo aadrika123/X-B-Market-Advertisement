@@ -43,6 +43,8 @@ use App\Models\Workflows\UlbWardMaster;
 use App\Models\Workflows\WfRole;
 use App\Models\Workflows\WorkflowMap;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
+use App\Models\AdvertisementNew\HoardType;
+use App\Models\AdvertisementNew\TemporaryHoardingType;
 
 class AgencyWorkflowController extends Controller
 
@@ -1508,6 +1510,27 @@ class AgencyWorkflowController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    /**
+     * |hoarding type like 
+     * temporary or permanant
+     * 
+     */
+    /**
+     * get hoarding type master
+     */
+    public function hoardType(Request $request)
+    {
+        try {
+            $mHoardType = new TemporaryHoardingType();
+            $details = $mHoardType->gethoardType();
+            if (!$details) {
+                throw new Exception('agency details not found!');
+            }
+            return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
 }

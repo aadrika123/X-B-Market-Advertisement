@@ -1008,13 +1008,10 @@ class AgencyNewController extends Controller
 
         try {
             $mgemncyHoardApplication  = new AgencyHoarding();
-
-
             $refhoardApplication = $mgemncyHoardApplication->checkdtlsById($req->applicationId);
             if (!$refhoardApplication) {
                 throw new Exception("Application Not Found for this id");
             }
-
             $documentList = $this->getAgencyDocLists($refhoardApplication, $req);
             $hoardTypeDocs['listDocs'] = collect($documentList)->map(function ($value, $key) use ($refhoardApplication) {
                 return $this->filterDocument($value, $refhoardApplication)->first();
@@ -1123,7 +1120,6 @@ class AgencyNewController extends Controller
         if ($validated->fails()) {
             return response()->json(['errors' => $validated->errors()], 422);
         }
-
         try {
             $mWfActiveDocument = new WfActiveDocument();
             $mHoardApplication = new AgencyHoarding();
