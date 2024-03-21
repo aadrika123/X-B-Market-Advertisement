@@ -43,6 +43,7 @@ use App\Models\Workflows\UlbWardMaster;
 use App\Models\Workflows\WfRole;
 use App\Models\Workflows\WorkflowMap;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
+use App\Models\AdvertisementNew\HoardingRate;
 use App\Models\AdvertisementNew\HoardType;
 use App\Models\AdvertisementNew\TemporaryHoardingType;
 
@@ -1527,6 +1528,51 @@ class AgencyWorkflowController extends Controller
             $details = $mHoardType->gethoardType();
             if (!$details) {
                 throw new Exception('agency details not found!');
+            }
+            return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+    #get rate by dates 
+    public function getRateByDate(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'id'   => 'required',
+            'from' => 'required',
+            "to"  =>  'required'
+
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mHoardRate = new HoardingRate();
+            $fromDate = Carbon::parse($req->from);
+            $toDate = Carbon::parse($req->to);
+            $applicationId = $req->id;
+            $numberOfDays = $toDate->diffInDays($fromDate);
+
+            $getRate    = $mHoardRate->getHoardSizerate($applicationId);
+            if (!$getRate) {
+                throw new exception('size not found!');
+            }
+            $rate       = $getRate->per_day_rate;
+            $totalamount = $rate * $numberOfDays;
+            return  responseMsgs(true, "Rate", $totalamount, "050133", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, "", "", "050133", 1.0, "271ms", "POST", "", "");
+        }
+    }
+    #get size of temporary advertisment
+    public function getSizeAdvertisement(Request $request)
+    {
+        try {
+            $mHoardSize = new HoardingRate();
+            $details = $mHoardSize->getHoardingSize();
+            if (!$details) {
+                throw new Exception('data not found');
             }
             return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {

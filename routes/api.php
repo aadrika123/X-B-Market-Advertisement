@@ -608,6 +608,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                                          //via agency 
         Route::post('advertisement/rejected-document', 'getRjectedDocById');  
         Route::post('advertisement/get-hoard-type', 'hoardType');                                                 //via applications agency 
+        Route::post('advertisement/get-rate-by-date','getRateByDate');
+        Route::post('advertisement/get-size-hoardings','getSizeAdvertisement');
     });
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
