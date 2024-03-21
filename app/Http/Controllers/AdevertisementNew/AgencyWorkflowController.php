@@ -1514,8 +1514,8 @@ class AgencyWorkflowController extends Controller
         }
     }
     /**
-     * |hoarding type like 
-     * temporary or permanant
+     * |hoarding type,
+     *  |temporary or permanant
      * 
      */
     /**
@@ -1559,7 +1559,8 @@ class AgencyWorkflowController extends Controller
             }
             $rate       = $getRate->per_day_rate;
             $totalamount = $rate * $numberOfDays;
-            return  responseMsgs(true, "Rate", $totalamount, "050133", 1.0, responseTime(), "POST", "", "");
+            $data['rate'] = $totalamount;
+            return  responseMsgs(true, "Rate", $data, "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, "", "", "050133", 1.0, "271ms", "POST", "", "");

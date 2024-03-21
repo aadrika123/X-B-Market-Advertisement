@@ -17,7 +17,7 @@ class HoardingRate extends Model
     }
     #get size of temporary advertisement
     public function getHoardingSize(){
-        return self::select('id as sizeId','size')
+        return self::select('*')
         ->where('status',1)
         ->orderby('id','desc')
         ->get();
