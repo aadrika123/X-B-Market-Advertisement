@@ -1223,15 +1223,21 @@ class AgencyWorkflowController extends Controller
     public function getAgencyAplicationdtl(Request $request)
     {
         try {
-            $agencydetails = $this->_agencyObj->getApplicationDtl($request->auth['email']);
-            if (!$agencydetails) {
-                throw new Exception('agency details not found!');
+            $hoardingType = $request->hoardingType;
+            if (!is_null($hoardingType)) {
+                $agencydetails = $this->_agencyObj->getApplicationDetails($request->auth['email']);
+            } else {
+                $agencydetails = $this->_agencyObj->getApplicationDtl($request->auth['email']);
             }
-            return responseMsgs(true, "Agency Details", $agencydetails, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+            if (!$agencydetails) {
+                throw new Exception('Agency details not found!');
+            }
+            return responseMsgs(true, "Agency Application Details", $agencydetails, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+    
     /**
      * get hoarding type master
      */

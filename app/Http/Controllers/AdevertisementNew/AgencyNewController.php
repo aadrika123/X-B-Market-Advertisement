@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdevertisementNew;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AgencyNew\AddHoardingRequest;
 use Illuminate\Http\Request;
 use App\Traits\AdvDetailsTraits;
 use App\Models\Workflows\WfWardUser;
@@ -32,6 +33,8 @@ use App\Models\AdvertisementNew\HoardingMaster;
 use App\Models\AdvertisementNew\Location;
 use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\RefRequiredDocument;
+use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
+
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -784,35 +787,8 @@ class AgencyNewController extends Controller
      * | @param Request
      * | 
      */
-    public function applyHoarding(Request $request)
+    public function applyHoarding(AddHoardingRequest $request)
     {
-        $validated = Validator::make(
-            $request->all(),
-            [
-                'agencyId'             => 'required',
-                'hoardingId'           => 'nullable',
-                'hoardingType'         => 'nullable',
-                'allotmentDate'        => 'nullable',
-                'advertiser'           => 'required',
-                'from'                 => 'nullable',
-                'to'                   => 'nullable',
-                'rate'                 => 'nullable',
-                'fatherName'           => 'nullable',
-                'email'                => 'nullable',
-                'residenceAddress'     => 'nullable',
-                'workflowId'           => 'nullable',
-                'documents'            => 'required|array',
-                'documents.*.image'    => 'required|mimes:png,jpeg,pdf,jpg',
-                'documents.*.docCode'  => 'required|string',
-                'documents.*.ownerDtlId' => 'nullable|integer'
-            ]
-        );
-
-        if ($validated->fails()) {
-            return response()->json(['errors' => $validated->errors()], 422);
-        }
-        // return $request->all();
-
         try {
             $user                           = authUser($request);
             $refRequest                     = array();
@@ -825,8 +801,9 @@ class AgencyNewController extends Controller
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
-            $hoardId = $request->hoardingId;
-            if ($hoardId) {
+            $hoardId                        = $request->hoardingId;
+            $hoardingType                    = $request->hoardingType;
+            if ($hoardId &&  $hoardingType == 1) {
                 $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
             }
             $ulbId      = $request->ulbId ?? 2;
@@ -861,7 +838,6 @@ class AgencyNewController extends Controller
                     "citizenId" => $user->id
                 ];
             }
-
             # Get chrages for deactivation
 
             $refRequest["initiatorRoleId"]   = collect($initiatorRoleId)->first()->role_id;
@@ -902,7 +878,7 @@ class AgencyNewController extends Controller
             $request->request->add($metaReqs);
             $mWorkflowTrack->saveTrack($request);
             DB::commit();
-            return responseMsgs(true, "applications apply sucesfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
+            return responseMsgs(true, "Applications Apply SucesSfully !", $applicationNo, "", "02", ".ms", "POST", $request->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
@@ -918,12 +894,13 @@ class AgencyNewController extends Controller
         $fromDate = Carbon::parse($request->from);
         $result = $this->_agencyObj->checkHoarding($hoardId);
         $data['data'] = $result;
+
         if ($result !== null && $result->isNotEmpty()) {
-            // $data = collect($result);
-            // $lastToDate = $data->max('to_date');  // Get the maximum (latest) to_date from the collection
-            $maxToDate = collect($result)->map(function ($item) {
-                return Carbon::parse($item->to_date);
-            })->max();
+            $maxToDate = collect($result)->pipe(function ($collection) {
+                return $collection->map(function ($item) {
+                    return Carbon::parse($item->to_date);
+                })->max();
+            });
 
             if ($maxToDate !== null) {
                 $toDate = Carbon::parse($maxToDate);
@@ -935,6 +912,7 @@ class AgencyNewController extends Controller
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }
+
 
 
     /*
