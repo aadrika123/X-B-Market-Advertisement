@@ -1578,10 +1578,10 @@ class AgencyWorkflowController extends Controller
     public function getSizeAdvertisement(Request $request)
     {
         try {
-            $advertisementTypeId = $request->advertisementType;
+            $advertisementType = $request->advertisementType;
             $mHoardSize = new HoardingRate();
             if ($request->applicationType == 'TEMPORARY') {
-                $details = $mHoardSize->getHoardingSize($advertisementTypeId);
+                $details = $mHoardSize->getHoardingSize($advertisementType);
             }
             if (!$details) {
                 throw new Exception('Size Of Hoardings not found');
