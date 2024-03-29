@@ -69,7 +69,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->agency_id                      = $request->agencyId;
         $mAgencyHoarding->hoarding_id                    = $request->hoardingId;
         $mAgencyHoarding->agency_name                    = $request->agencyName;
-        $mAgencyHoarding->hoarding_type                  = $request->hoardingType;
+        // $mAgencyHoarding->hoarding_type                  = $request->hoardingType;
         $mAgencyHoarding->allotment_date                 = $request->allotmentDate ?? null;
         $mAgencyHoarding->rate                           = $request->rate;
         $mAgencyHoarding->from_date                      = $request->from;
@@ -88,8 +88,9 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
         $mAgencyHoarding->advertiser                     = $request->advertiser;
         $mAgencyHoarding->apply_date                     = $this->_applicationDate;
-        $mAgencyHoarding->adv_type_id                    = $request->temporaryHoardingType;
-        $mAgencyHoarding->hoard_size_id                  = $request->hoardingSize;
+        $mAgencyHoarding->adv_type                       = $request->hoardingType;
+        $mAgencyHoarding->hoard_size_id                  = $request->squareFeetId;
+        $mAgencyHoarding->application_type               = $request->applicationType;
         $mAgencyHoarding->save();
         return $mAgencyHoarding->id;
     }
