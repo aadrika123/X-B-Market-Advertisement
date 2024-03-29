@@ -1571,18 +1571,20 @@ class AgencyWorkflowController extends Controller
             $data['rate'] = $totalamount;
             return  responseMsgs(true, "Rate", $data, "050133", 1.0, responseTime(), "POST", "", "");
         } catch (Exception $e) {
-            DB::rollBack();
-            return responseMsgs(false, "", "", "050133", 1.0, "271ms", "POST", "", "");
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
     #get size of temporary advertisment
     public function getSizeAdvertisement(Request $request)
     {
         try {
+            $advertisementTypeId = $request->id;
             $mHoardSize = new HoardingRate();
-            $details = $mHoardSize->getHoardingSize();
+            if ($request->applicationType == 'TEMPORARY') {
+                $details = $mHoardSize->getHoardingSize($advertisementTypeId);
+            }
             if (!$details) {
-                throw new Exception('data not found');
+                throw new Exception('Size Of Hoardings not found');
             }
             return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
@@ -1613,6 +1615,7 @@ class AgencyWorkflowController extends Controller
     public function calculateRate(Request $req)
     {
         $validator = Validator::make($req->all(), [
+
             'propertyId'        => 'nullable',
             'from'          => 'nullable',
             'to'            => 'nullable',
@@ -1631,4 +1634,18 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+    // public function sumUpTo($n) {
+    //     // Base case: if $n is 0, return 0
+    //     if ($n == 0) {
+    //         return 0;
+    //     } else {
+    //         // Recursive case: sum up to $n is $n + sum of numbers up to $n-1
+    //         return $n + <summary></summary>($n - 1);
+    //     }
+    // }
+
+    // // Example usage
+    // $number = 5;
+    // $result = sumUpTo($number);
+    // echo "The sum of numbers from 1 to $number is: $result";
 }

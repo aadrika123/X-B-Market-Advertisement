@@ -197,6 +197,9 @@ class CalculateRate
                         throw new Exception(' not found');
                     }
                     $this->_perDayrate = $this->_getData->per_day_rate;
+                    if ($numberOfDays > 3 ){
+                        throw new Exception('Days should be less then 3 days ');
+                    }
                     $this->_rate = $numberOfDays * $this->_perDayrate;
                     break;
                 case 'LAMP_POST':

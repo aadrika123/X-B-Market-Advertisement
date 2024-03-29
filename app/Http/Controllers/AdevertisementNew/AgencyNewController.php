@@ -874,7 +874,7 @@ class AgencyNewController extends Controller
             $metaReqs['senderRoleId'] = $senderRoleId ?? null;
             $metaReqs['receiverRoleId'] = $receiverRoleId ?? null;
             $metaReqs['user_id'] = $user->id;
-            $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
+            $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s'); 
             $request->request->add($metaReqs);
             $mWorkflowTrack->saveTrack($request);
             DB::commit();
@@ -912,9 +912,6 @@ class AgencyNewController extends Controller
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }
-
-
-
     /*
      * upload Document By agency At the time of Registration
      * @param Request $req
