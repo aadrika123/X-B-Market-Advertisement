@@ -46,6 +46,9 @@ use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 use App\Models\AdvertisementNew\HoardingRate;
 use App\Models\AdvertisementNew\HoardType;
 use App\Models\AdvertisementNew\TemporaryHoardingType;
+use App\BLL\Advert;
+use App\BLL\Advert\CalculateRate;
+use App\Models\AdvertisementNew\MeasurementSize;
 
 class AgencyWorkflowController extends Controller
 
@@ -1237,7 +1240,7 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
-    
+
     /**
      * get hoarding type master
      */
@@ -1584,6 +1587,48 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(true, "Hoarding Type", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+    /**
+     * |get All measurement for Permanant advertiement 
+     */
+    public function getAllFixedMeasurementPermanantAdv(Request $request)
+    {
+        try {
+            $mPemanantAdvSize = new MeasurementSize();
+            $details = $mPemanantAdvSize->getAllMeasurement();
+            if (!$details) {
+                throw new Exception('data not found');
+            }
+            return responseMsgs(true, "Hoarding Size", $details, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
+        }
+    }
+    /**
+     * |calculate rate of hoarding advertisemnet
+     * | As per square feet or Days/Month
+     * 
+     */
+    public function calculateRate(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'propertyId'        => 'nullable',
+            'fromDate'          => 'nullable',
+            'toDate'            => 'nullable',
+            'applicationType'   => 'nullable',
+            'advertisementType' => 'nullable',
+            'squareFeetId'      => 'nullable'
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $mAdvCalculateRate = new CalculateRate();
+            $rate = $mAdvCalculateRate->calculateRateDtls($req);
+            return responseMsgs(true, "DATA", $rate, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }

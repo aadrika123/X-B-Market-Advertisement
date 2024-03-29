@@ -2,7 +2,12 @@
 
 namespace App\BLL\Advert;
 
+use App\Models\AdvertisementNew\HoardingRate;
+use App\Models\AdvertisementNew\MeasurementSize;
+use App\Models\AdvertisementNew\PermanantAdvSize;
+use App\Models\AdvertisementNew\TemporaryHoardingType;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -17,10 +22,36 @@ use Illuminate\Support\Facades\Http;
 
 class CalculateRate
 {
+    private $_squareFeet;
+    private $_measurementId;
+    private $_measurement;
+    private $_sq_ft;
+    private $_rate;
+    private $_getPerSquareft;
+    private $_getPermantSizeDtl;
+    private $_perDayrate;
+    private $_perMonth;
+    private $_area;
+    private $_getPerSquarerate;
+    private  $_totalBallons;
+    private $_numberOfVehicle;
+
     protected $_baseUrl;
+    protected $_measurementSize;
+    protected $_permanantAdvSize;
+    protected $_hoardingRate;
+    protected $_getData;
+    protected $_onMovingVehicle;
+
+
+
     public function __construct()
     {
         $this->_baseUrl = Config::get('constants.BASE_URL');
+        $this->_measurementSize = new MeasurementSize();
+        $this->_permanantAdvSize = new PermanantAdvSize();
+        $this->_hoardingRate     = new HoardingRate();
+        $this->_onMovingVehicle  = new TemporaryHoardingType();
     }
 
     public function generateId($token, $paramId, $ulbId)
@@ -36,14 +67,14 @@ class CalculateRate
         return $idGenerateData->data;
     }
 
-    public function getAdvertisementPayment($displayArea,$ulbId)
+    public function getAdvertisementPayment($displayArea, $ulbId)
     {
-        
+
         $rate = DB::table('adv_selfadvertisement_price_lists')
             ->select('rate')
             ->where('ulb_id', $ulbId)
             ->first()->rate;
-        return $displayArea * $rate;   
+        return $displayArea * $rate;
     }
 
     public function getMovableVehiclePayment($typology, $zone, $license_from, $license_to)
@@ -96,29 +127,145 @@ class CalculateRate
             ->first()->rate;
     }
 
-    public function calculateAmount($amount,$perAmt){
-        return ($amount*$perAmt)/100;
+    public function calculateAmount($amount, $perAmt)
+    {
+        return ($amount * $perAmt) / 100;
     }
 
     /**
      * | Get All Types of Advertisement payment Amount
      */
-    public function getPrice($area,$ulbId,$category,$licenseFrom,$licenseTO){
-      $typology=DB::table('adv_typology_mstrs')
-        ->select('per_day','is_sq_ft')
-        ->where('id', $category)
-        ->where('ulb_id', $ulbId)
-        ->first();
+    public function getPrice($area, $ulbId, $category, $licenseFrom, $licenseTO)
+    {
+        $typology = DB::table('adv_typology_mstrs')
+            ->select('per_day', 'is_sq_ft')
+            ->where('id', $category)
+            ->where('ulb_id', $ulbId)
+            ->first();
 
         $toDate = Carbon::parse($licenseFrom);
         $fromDate = Carbon::parse($licenseTO);
         $noOfDays = $toDate->diffInDays($fromDate);                // Get Difference b/w no of Days or No. of Days for License
 
-        $amount=$typology->per_day*$noOfDays;                       // Get Amount Without Square feet 
-        if($typology->is_sq_ft == '1'){
-            $amount=$amount*$area;                                 // Get Amount With Square feet
+        $amount = $typology->per_day * $noOfDays;                       // Get Amount Without Square feet 
+        if ($typology->is_sq_ft == '1') {
+            $amount = $amount * $area;                                 // Get Amount With Square feet
         }
         return $amount;
     }
+    /**
+     * | Calculate rate of hoarding advertisement based on request parameter
+     *
+     */
+    public function calculateRateDtls($req)
+    {
+        $propertyId = $req->propertyId;
+        $applicationType = $req->applicationType;
+        $squareFeetId = $req->squareFeetId;
+        $advertisementType = $req->advertisementType;
 
+        $fromDate = Carbon::parse($req->fromDate);
+        $toDate = Carbon::parse($req->toDate);
+
+        $monthsDifference = $fromDate->diffInMonths($toDate);
+        $numberOfDays = $toDate->diffInDays($fromDate);
+
+        // Check if the end date is on or after the start of the next month
+        $nextMonthStartDate = $fromDate->copy()->addMonths($monthsDifference);
+        if ($toDate->day >= $nextMonthStartDate->day) {
+            $monthsDifference++;
+        }
+        if ($applicationType == 'PERMANANT') {
+            $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);
+            if (!$this->_squareFeet) {
+                throw new Exception('Square Feet not found');
+            }
+            // $this->_measurementId = $this->_squareFeet->id;
+            // $this->_measurement =  $this->_squareFeet->measurement;
+            $this->_sq_ft =  $this->_squareFeet->sq_ft;
+            $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
+            if (!$this->_getPermantSizeDtl) {
+                throw new Exception('Size  not found');
+            }
+            $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
+            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;
+        } else {
+            switch ($advertisementType) {
+                case 'TEMPORARY_ADVERTISEMENT':
+                    $this->_getData = $this->_hoardingRate->getHoardSizerate($squareFeetId);
+                    if (!$this->_getData) {
+                        throw new Exception(' not found');
+                    }
+                    $this->_perDayrate = $this->_getData->per_day_rate;
+                    $this->_rate = $numberOfDays * $this->_perDayrate;
+                    break;
+                case 'LAMP_POST':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_perMonth =  $this->_getData->per_month;
+                    $this->_rate = $monthsDifference * $this->_perMonth;
+                    break;
+                case 'ABOVE_KIOX_ADVERTISEMENT':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_perMonth =  $this->_getData->per_month;
+                    $this->_rate = $monthsDifference * $this->_perMonth;
+                    break;
+                case 'COMPASS_CANTILEVER':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    $this->_area  = $req->length * $req->width;
+                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
+                    break;
+                case 'AD_POL':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_area  = 4 * 6;
+                    $this->_rate = $monthsDifference * $this->_area * 250;                                                        // STATIC FOR ONE YEAR BECAUSE OF UNIQUE SIZE AREA
+                    break;
+                case 'GLOSSINE_BOARD':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    $this->_area  = $req->length * $req->width;
+                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
+                    break;
+                case 'ROAD_SHOW_ADVERTISING':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_perDayrate =  $this->_getData->per_day_rate;
+                    $this->_rate = $numberOfDays *  $this->_perDayrate;
+                    break;
+                case 'ADVERTISEMENT_ON_THE_WALL':
+                    $this->_area  = $req->length * $req->width;
+                    $this->_rate = $monthsDifference * $this->_area * 2.50;
+                    break;
+                case 'CITY_BUS_STOP':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    $this->_area  = $req->length * $req->width;
+                    $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
+                    break;
+                case 'ADVERTISEMENT_ON_THE_CITY_BUS':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    $this->_area  = $req->length * $req->width;
+                    $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
+                    break;
+                case 'ADVERTISEMENT_ON_BALLONS':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_perDayrate =  $this->_getData->per_day_rate;
+                    $this->_totalBallons = $req->total_ballon;
+                    $this->_rate = $numberOfDays *  $this->_totalBallons *  $this->_perDayrate;
+                    break;
+                case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
+                    $this->_getData =    $this->_onMovingVehicle->gethoardTypeById($req->vehicleId);
+                    $this->_perDayrate = $this->_getData->per_day_rate;
+                    $this->_numberOfVehicle = $req->numberOfVehicle;
+                    $this->_rate = $this->_numberOfVehicle * $numberOfDays *  $this->_perDayrate;
+                    break;
+                default:
+                    throw new Exception('Invalid advertisement type');
+                    break;
+            }
+        }
+        return   [
+            'rate' =>  $this->_rate
+        ];
+    }
 }

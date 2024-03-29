@@ -20,7 +20,15 @@ class HoardingRate extends Model
     {
         return self::select('id as sizeId', 'size')
             ->where('status', 1)
+            ->where('size','<>',null)
             ->orderby('id', 'desc')
             ->get();
+    }
+    public function getSizeByAdvertismentType($advertisementType)
+    {
+        return self::select('id as temId', 'per_day_rate','per_month','per_sq_rate')
+            ->where('adv_type', $advertisementType)
+            ->where('status', 1)
+            ->first();
     }
 }

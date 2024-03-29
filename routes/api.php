@@ -610,6 +610,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-hoard-type', 'hoardType');                                                 //via applications agency 
         Route::post('advertisement/get-rate-by-date','getRateByDate');
         Route::post('advertisement/get-size-hoardings','getSizeAdvertisement');
+        Route::post('advertisement/get-rate','calculateRate');
+        Route::post('advertisement/get-permanant-size','getAllFixedMeasurementPermanantAdv');
+        
     });
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {

@@ -15,4 +15,12 @@ class TemporaryHoardingType extends Model
             ->where('status', 1)
             ->get();
     }
+
+    public function gethoardTypeById($advId)
+    {
+        return self::select('id as temId', 'type', 'per_day_rate')
+            ->where('id', $advId)
+            ->where('status', 1)
+            ->first();
+    }
 }
