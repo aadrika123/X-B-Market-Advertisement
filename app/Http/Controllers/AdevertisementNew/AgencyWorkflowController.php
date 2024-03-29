@@ -1614,8 +1614,8 @@ class AgencyWorkflowController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'propertyId'        => 'nullable',
-            'fromDate'          => 'nullable',
-            'toDate'            => 'nullable',
+            'from'          => 'nullable',
+            'to'            => 'nullable',
             'applicationType'   => 'nullable',
             'advertisementType' => 'nullable',
             'squareFeetId'      => 'nullable'

@@ -164,8 +164,8 @@ class CalculateRate
         $squareFeetId = $req->squareFeetId;
         $advertisementType = $req->advertisementType;
 
-        $fromDate = Carbon::parse($req->fromDate);
-        $toDate = Carbon::parse($req->toDate);
+        $fromDate = Carbon::parse($req->from);
+        $toDate = Carbon::parse($req->to);
 
         $monthsDifference = $fromDate->diffInMonths($toDate);
         $numberOfDays = $toDate->diffInDays($fromDate);
