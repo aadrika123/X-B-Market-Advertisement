@@ -39,7 +39,7 @@ class AddHoardingRequest extends FormRequest
             'email'                => 'nullable|email',
             'residenceAddress'     => 'nullable|string',
             'workflowId'           => 'nullable|integer|min:1',
-            'applicationType'      => 'required|string|in:PERMANENT,TEMPORARY', // Assuming these are the valid application types
+            'applicationType'      => 'required|string|in:PERMANANT,TEMPORARY', 
             'squareFeetId'         => 'nullable|integer|min:1',
             'hoardingType'          => 'nullable|string',
             'documents'            => 'required|array',
