@@ -171,8 +171,14 @@ class CalculateRate
         $numberOfDays = $toDate->diffInDays($fromDate);
 
         // Check if the end date is on or after the start of the next month
-        $nextMonthStartDate = $fromDate->copy()->addMonths($monthsDifference);
-        if ($toDate->day >= $nextMonthStartDate->day) {
+        // $nextMonthStartDate = $fromDate->copy()->addMonths($monthsDifference);
+        // if ($toDate->day >= $nextMonthStartDate->day) {
+        //     $monthsDifference++;
+        // }
+        $monthsDifference = $toDate->diffInMonths($fromDate);
+
+        // Ensure the minimum months difference is 1 if there is at least one day in the duration
+        if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
             $monthsDifference++;
         }
         if ($applicationType == 'PERMANANT') {
@@ -197,7 +203,7 @@ class CalculateRate
                         throw new Exception(' not found');
                     }
                     $this->_perDayrate = $this->_getData->per_day_rate;
-                    if ($numberOfDays > 3 ){
+                    if ($numberOfDays > 3) {
                         throw new Exception('Days should be less then 3 days ');
                     }
                     $this->_rate = $numberOfDays * $this->_perDayrate;
@@ -215,7 +221,7 @@ class CalculateRate
                 case 'COMPASS_CANTILEVER':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
-                    $this->_area  = $req->length * $req->width;
+                    $this->_area  = $req->squarefeet;
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
                     break;
                 case 'AD_POL':
@@ -226,7 +232,7 @@ class CalculateRate
                 case 'GLOSSINE_BOARD':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
-                    $this->_area  = $req->length * $req->width;
+                    $this->_area  = $req->squarefeet;
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
                     break;
                 case 'ROAD_SHOW_ADVERTISING':
@@ -235,19 +241,19 @@ class CalculateRate
                     $this->_rate = $numberOfDays *  $this->_perDayrate;
                     break;
                 case 'ADVERTISEMENT_ON_THE_WALL':
-                    $this->_area  = $req->length * $req->width;
+                    $this->_area  = $req->squarefeet;
                     $this->_rate = $monthsDifference * $this->_area * 2.50;
                     break;
                 case 'CITY_BUS_STOP':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
-                    $this->_area  = $req->length * $req->width;
+                    $this->_area  = $req->squarefeet;
                     $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
                     break;
                 case 'ADVERTISEMENT_ON_THE_CITY_BUS':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
-                    $this->_area  = $req->length * $req->width;
+                    $this->_area  = $req->squarefeet;
                     $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
                     break;
                 case 'ADVERTISEMENT_ON_BALLONS':
@@ -270,5 +276,69 @@ class CalculateRate
         return   [
             'rate' =>  $this->_rate
         ];
+    }
+    public function calculateRateDtl($req)
+    {
+        // Extract request parameters
+        $propertyId = $req->propertyId;
+        $applicationType = $req->applicationType;
+        $squareFeetId = $req->squareFeetId;
+        $advertisementType = $req->advertisementType;
+        $fromDate = Carbon::parse($req->from);
+        $toDate = Carbon::parse($req->to);
+
+        // Calculate months difference and number of days
+        $monthsDifference = $toDate->diffInMonths($fromDate);
+        $numberOfDays = $toDate->diffInDays($fromDate);
+
+        // Adjust months difference if needed
+        if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
+            $monthsDifference++;
+        }
+
+        // Calculate rate based on application type and advertisement type
+        if ($applicationType == 'PERMANENT') {
+            $this->calculatePermanentRate($propertyId, $squareFeetId, $advertisementType, $monthsDifference);
+        } else {
+            $this->calculateTemporaryRate($advertisementType, $monthsDifference, $numberOfDays, $req);
+        }
+
+        return ['rate' => $this->_rate];
+    }
+
+    private function calculatePermanentRate($propertyId, $squareFeetId, $advertisementType, $monthsDifference)
+    {
+        // Fetch required data
+        $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);
+        if (!$this->_squareFeet) {
+            throw new Exception('Square Feet not found');
+        }
+
+        // Calculate rate for permanent advertisement
+        $this->_sq_ft = $this->_squareFeet->sq_ft;
+        $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
+        if (!$this->_getPermantSizeDtl) {
+            throw new Exception('Size not found');
+        }
+        $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
+        $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;
+    }
+
+    private function calculateTemporaryRate($advertisementType, $monthsDifference, $numberOfDays, $req)
+    {
+        // Calculate rate for temporary advertisement based on advertisement type
+        switch ($advertisementType) {
+            case 'TEMPORARY_ADVERTISEMENT':
+                $this->_getData = $this->_hoardingRate->getHoardSizerate($req->squareFeetId);
+                // Remaining code for temporary advertisement types...
+                break;
+            case 'LAMP_POST':
+            case 'ABOVE_KIOX_ADVERTISEMENT':
+                // Code for other temporary advertisement types...
+                break;
+            default:
+                throw new Exception('Invalid advertisement type');
+                break;
+        }
     }
 }

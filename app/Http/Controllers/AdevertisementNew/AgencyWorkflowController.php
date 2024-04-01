@@ -49,6 +49,7 @@ use App\Models\AdvertisementNew\TemporaryHoardingType;
 use App\BLL\Advert;
 use App\BLL\Advert\CalculateRate;
 use App\Models\AdvertisementNew\MeasurementSize;
+use App\Models\IdGenerationParam;
 
 class AgencyWorkflowController extends Controller
 
@@ -1616,12 +1617,14 @@ class AgencyWorkflowController extends Controller
     {
         $validator = Validator::make($req->all(), [
 
-            'propertyId'        => 'nullable',
-            'from'          => 'nullable',
-            'to'            => 'nullable',
-            'applicationType'   => 'nullable',
-            'advertisementType' => 'nullable',
-            'squareFeetId'      => 'nullable'
+            'propertyId'        => 'nullable|integer|min:1',
+            'from'              => 'nullable|date',
+            'to'                => 'nullable|date',
+            'applicationType'   => 'nullable|string|in:PERMANENT,TEMPORARY', 
+            'advertisementType' => 'nullable|string',
+            'squareFeetId'      => 'nullable|integer|min:1',
+            'squarefeet'        => 'nullable|numeric|min:0',
+
         ]);
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
@@ -1634,18 +1637,4 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-    // public function sumUpTo($n) {
-    //     // Base case: if $n is 0, return 0
-    //     if ($n == 0) {
-    //         return 0;
-    //     } else {
-    //         // Recursive case: sum up to $n is $n + sum of numbers up to $n-1
-    //         return $n + <summary></summary>($n - 1);
-    //     }
-    // }
-
-    // // Example usage
-    // $number = 5;
-    // $result = sumUpTo($number);
-    // echo "The sum of numbers from 1 to $number is: $result";
 }
