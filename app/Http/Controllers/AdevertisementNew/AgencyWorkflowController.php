@@ -1620,7 +1620,7 @@ class AgencyWorkflowController extends Controller
             'propertyId'        => 'nullable|integer|min:1',
             'from'              => 'nullable|date',
             'to'                => 'nullable|date',
-            'applicationType'   => 'nullable|string|in:PERMANENT,TEMPORARY', 
+            'applicationType'   => 'nullable|string|in:PERMANANT,TEMPORARY', 
             'advertisementType' => 'nullable|string',
             'squareFeetId'      => 'nullable|integer|min:1',
             'squarefeet'        => 'nullable|numeric|min:0',
