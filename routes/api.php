@@ -554,15 +554,15 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/addnew-agency', 'addNewAgency');
         Route::post('advertisement/get-all', 'getAll');
         Route::post('advertisement/update-agency-dtls', 'updateAgencydtl');
-        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');               
+        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');
         Route::post('advertisement/addnew-hoarding', 'addNewHoarding');
         Route::post('advertisement/get-all-hoarding', 'getAllHoard');
         Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');
-        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                   
+        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');
         Route::post('advertisement/add-new-brand', 'addBrand');                          // add brand 
         Route::post('advertisement/get-all-brand', 'getAllBrand');                       // get details of brand 
         Route::post('advertisement/update-brand', 'updateBrand');                        // update brand 
-        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                   
+        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');
         Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');    // add advertisement type
         Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');        // get advertisement type 
         Route::post('advertisement/update-advertisements', 'updateAdvertisemnet');      // update Advertisement data
@@ -575,7 +575,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
         Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
         Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding', 'applyHoarding');                   /**==apply hoarding== */
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');
+        /**==apply hoarding== */
         Route::post('advertisement/get-doc-list', 'getDocList');
         Route::post('advertisement/upload-document', 'uploadDocument');
         Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
@@ -604,15 +605,16 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-Hordingdtl-by-id', 'getHoardingDtlsById');                                      //validate details by hoarding By ID 
         Route::post('advertisement/back-to-citizen', 'backToCitizen');                                                // back to citizen 
         Route::post('advertisement/bta-inbox', 'btaInbox');                                                          // back to citizen 
-        Route::post('advertisement/reupload-document', 'reuploadDocument');   
+        Route::post('advertisement/reupload-document', 'reuploadDocument');
         Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                                          //via agency 
-        Route::post('advertisement/rejected-document', 'getRjectedDocById');  
+        Route::post('advertisement/rejected-document', 'getRjectedDocById');
         Route::post('advertisement/get-hoard-type', 'hoardType');                                                 //via applications agency 
-        Route::post('advertisement/get-rate-by-date','getRateByDate');
-        Route::post('advertisement/get-size-hoardings','getSizeAdvertisement');
-        Route::post('advertisement/get-rate','calculateRate');
-        Route::post('advertisement/get-permanant-size','getAllFixedMeasurementPermanantAdv');
-        
+        Route::post('advertisement/get-rate-by-date', 'getRateByDate');
+        Route::post('advertisement/get-size-hoardings', 'getSizeAdvertisement');
+        Route::post('advertisement/get-rate', 'calculateRate');
+        Route::post('advertisement/get-permanant-size', 'getAllFixedMeasurementPermanantAdv');
+        Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');
+        Route::post('advertisement/get-vehicle', 'getVehicle');
     });
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {

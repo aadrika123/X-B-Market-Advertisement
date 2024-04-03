@@ -50,6 +50,10 @@ use App\BLL\Advert;
 use App\BLL\Advert\CalculateRate;
 use App\Models\AdvertisementNew\MeasurementSize;
 use App\Models\IdGenerationParam;
+use App\Pipelines\Advertisement\SearchByApplicationNo;
+use App\Pipelines\Advertisement\SearchByHoardingNo;
+use App\Pipelines\Advertisement\SearchByMobileNo;
+use Illuminate\Pipeline\Pipeline;
 
 class AgencyWorkflowController extends Controller
 
@@ -86,24 +90,24 @@ class AgencyWorkflowController extends Controller
 
     public function __construct()
     {
-        $this->_modelObj = new AgencyMaster();
-        $this->_hoarObj  = new HoardingMaster();
-        $this->_brandObj = new BrandMaster();
-        $this->_advertObj = new AdvertisementType();
-        $this->_locatObj  = new Location();
-        $this->_advObj     = new AdvertiserMaster();
-        $this->_agencyObj = new AgencyHoarding();
-        $this->_activeHObj = new AdvActiveHoarding();
-        $this->_mRefReqDocs = new RefRequiredDocument();
+        $this->_modelObj        = new AgencyMaster();
+        $this->_hoarObj         = new HoardingMaster();
+        $this->_brandObj        = new BrandMaster();
+        $this->_advertObj       = new AdvertisementType();
+        $this->_locatObj        = new Location();
+        $this->_advObj          = new AdvertiserMaster();
+        $this->_agencyObj       = new AgencyHoarding();
+        $this->_activeHObj      = new AdvActiveHoarding();
+        $this->_mRefReqDocs     = new RefRequiredDocument();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
-        $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE');
-        $this->_docCode = Config::get('workflow-constants.HOARDING_DOC_CODE');
-        $this->_tempParamId = Config::get('workflow-constants.TEMP_AG_ID');
-        $this->_paramId = Config::get('workflow-constants.AGY_ID');
-        $this->_baseUrl = Config::get('constants.BASE_URL');
-        $this->_docUrl = Config::get('workflow-constants.DOC_URL');
-        $this->_fileUrl = Config::get('workflow-constants.FILE_URL');
+        $this->_moduleId        = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+        $this->_docCode         = Config::get('workflow-constants.HOARDING_DOC_CODE');
+        $this->_tempParamId     = Config::get('workflow-constants.TEMP_AG_ID');
+        $this->_paramId         = Config::get('workflow-constants.AGY_ID');
+        $this->_baseUrl         = Config::get('constants.BASE_URL');
+        $this->_docUrl          = Config::get('workflow-constants.DOC_URL');
+        $this->_fileUrl             = Config::get('workflow-constants.FILE_URL');
         $this->_userType            = Config::get("workflow-constants.REF_USER_TYPE");
         $this->_docReqCatagory      = Config::get("workflow-constants.DOC_REQ_CATAGORY");
         $this->_wfroles             = Config::get('workflow-constants.ROLE_LABEL');
@@ -1620,7 +1624,7 @@ class AgencyWorkflowController extends Controller
             'propertyId'        => 'nullable|integer|min:1',
             'from'              => 'nullable|date',
             'to'                => 'nullable|date',
-            'applicationType'   => 'nullable|string|in:PERMANANT,TEMPORARY', 
+            'applicationType'   => 'nullable|string|in:PERMANANT,TEMPORARY',
             'advertisementType' => 'nullable|string',
             'squareFeetId'      => 'nullable|integer|min:1',
             'squarefeet'        => 'nullable|numeric|min:0',
@@ -1635,6 +1639,60 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(true, "DATA", $rate, "050502", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
+        }
+    }
+
+    public function searchHoardingPipeline(Request $request)
+    {
+        // Define validation rules
+        $validated = Validator::make($request->all(), [
+            'applicationNo'  => 'nullable',
+            'hoardingNo'     => 'nullable',
+            'pages'     => 'nullable',
+            'wardId'    => 'nullable',
+            'zoneId'    => 'nullable'
+        ]);
+
+        // Handle validation errors
+        if ($validated->fails()) {
+            return $this->validationError($validated);
+        }
+        try {
+            $refNo = 0;
+            $key = $request->applicationNo;
+            // Create a pipeline to process the search
+            $result = $this->_agencyObj->getByItsDetailsV2($request, $key, $refNo, $request->auth['email']);
+            // $result = HoardingMaster::where('status',1);
+            // $mobile =  $this->_modelObj->getByItsDetailsV2($request, $key, $refNo, $request->auth['email']);
+            $result = app(Pipeline::class)
+                ->send($result)
+                ->through([
+                    SearchByApplicationNo::class,
+                    SearchByMobileNo::class,
+                    SearchByHoardingNo::class
+                ])
+                ->thenReturn()
+                ->get();
+            return responseMsgs(true, "Data According To Parameter!", remove_null($result), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    // Handle validation errors method
+    private function validationError($validated)
+    {
+        return responseMsgs(false, $validated->errors()->first(), "", "01", "1.0", "", "POST", "");
+    }
+    #get Temporary vehcle list
+    public function getVehicle(Request $request)
+    {
+        try {
+            $mTemporaryHoardingType = new TemporaryHoardingType();
+            $getVehicle = $mTemporaryHoardingType->gethoardType();
+            return responseMsgs(true, "Data According To Parameter!", remove_null($getVehicle), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
         }
     }
 }

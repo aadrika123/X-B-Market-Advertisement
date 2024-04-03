@@ -38,6 +38,7 @@ class AddHoardingRequest extends FormRequest
             'rate'                 => 'nullable|numeric',
             'email'                => 'nullable|email',
             'residenceAddress'     => 'nullable|string',
+            'purpose'              => 'nullable|string',
             'workflowId'           => 'nullable|integer|min:1',
             'applicationType'      => 'required|string|in:PERMANANT,TEMPORARY', 
             'squareFeetId'         => 'nullable|integer|min:1',
