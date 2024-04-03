@@ -259,13 +259,13 @@ class CalculateRate
                 case 'ADVERTISEMENT_ON_BALLONS':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_perDayrate =  $this->_getData->per_day_rate;
-                    $this->_totalBallons = $req->total_ballon;
+                    $this->_totalBallons = $req->Noofballons;
                     $this->_rate = $numberOfDays *  $this->_totalBallons *  $this->_perDayrate;
                     break;
                 case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
-                    $this->_getData =    $this->_onMovingVehicle->gethoardTypeById($req->vehicleId);
-                    $this->_perDayrate = $this->_getData->per_day_rate;
-                    $this->_numberOfVehicle = $req->numberOfVehicle;
+                    $this->_getData =    $this->_onMovingVehicle->gethoardTypeById($req->vehicleType);
+                    $this->_perDayrate = $this->_getData->per_day_rate; 
+                    $this->_numberOfVehicle = $req->Noofvehicle;
                     $this->_rate = $this->_numberOfVehicle * $numberOfDays *  $this->_perDayrate;
                     break;
                 default:
