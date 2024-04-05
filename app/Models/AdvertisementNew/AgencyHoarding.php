@@ -93,7 +93,12 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->application_type               = $request->applicationType;
         $mAgencyHoarding->size_square_feet               = $request->squarefeet;
         $mAgencyHoarding->total_ballon                   = $request->Noofballons;
-        $mAgencyHoarding->total_vehicle                  = $request->Noofvehicle;    
+        $mAgencyHoarding->total_vehicle                  = $request->Noofvehicle;
+        $mAgencyHoarding->vehicle_type_id                = $request->vehicleType;
+        $mAgencyHoarding->purpose                        = $request->purpose;
+        if ($request->applicationType == 'PERMANANT') {
+            $mAgencyHoarding->property_Type_Id                  = $request->propertyId;
+        }
         $mAgencyHoarding->save();
         return $mAgencyHoarding->id;
     }
