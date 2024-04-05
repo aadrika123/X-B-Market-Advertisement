@@ -81,7 +81,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->workflow_id                    = $refRequest['ulbWorkflowId'];
         $mAgencyHoarding->ulb_id                         = $ulbId;
         $mAgencyHoarding->finisher                       = $refRequest['finisherRoleId'];
-        $mAgencyHoarding->current_role_id                   = $refRequest['initiatorRoleId'];
+        $mAgencyHoarding->current_role_id                = $refRequest['initiatorRoleId'];
         $mAgencyHoarding->application_no                 = $applicationNo;
         $mAgencyHoarding->address                        = $request->residenceAddress;
         $mAgencyHoarding->doc_status                     = $request->doc_status ?? null;
@@ -91,6 +91,9 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->adv_type                       = $request->hoardingType;
         $mAgencyHoarding->hoard_size_id                  = $request->squareFeetId;
         $mAgencyHoarding->application_type               = $request->applicationType;
+        $mAgencyHoarding->size_square_feet               = $request->squarefeet;
+        $mAgencyHoarding->total_ballon                   = $request->Noofballons;
+        $mAgencyHoarding->total_vehicle                  = $request->Noofvehicle;    
         $mAgencyHoarding->save();
         return $mAgencyHoarding->id;
     }

@@ -169,25 +169,17 @@ class CalculateRate
 
         $monthsDifference = $fromDate->diffInMonths($toDate);
         $numberOfDays = $toDate->diffInDays($fromDate);
-
-        // Check if the end date is on or after the start of the next month
-        // $nextMonthStartDate = $fromDate->copy()->addMonths($monthsDifference);
-        // if ($toDate->day >= $nextMonthStartDate->day) {
-        //     $monthsDifference++;
-        // }
         $monthsDifference = $toDate->diffInMonths($fromDate);
 
         // Ensure the minimum months difference is 1 if there is at least one day in the duration
-        if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
-            $monthsDifference++;
-        }
+        // if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
+        //     $monthsDifference++;
+        // }
         if ($applicationType == 'PERMANANT') {
             $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);
             if (!$this->_squareFeet) {
                 throw new Exception('Square Feet not found');
             }
-            // $this->_measurementId = $this->_squareFeet->id;
-            // $this->_measurement =  $this->_squareFeet->measurement;
             $this->_sq_ft =  $this->_squareFeet->sq_ft;
             $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
             if (!$this->_getPermantSizeDtl) {
@@ -204,7 +196,7 @@ class CalculateRate
                     }
                     $this->_perDayrate = $this->_getData->per_day_rate;
                     if ($numberOfDays > 3) {
-                        throw new Exception('Days should be less then 3 days ');
+                        throw new Exception('Days should be less then or equal to 3 days ');
                     }
                     $this->_rate = $numberOfDays * $this->_perDayrate;
                     break;
@@ -227,12 +219,19 @@ class CalculateRate
                 case 'AD_POL':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_area  = 4 * 6;
-                    $this->_rate = $monthsDifference * $this->_area * 250;                                                        // STATIC FOR ONE YEAR BECAUSE OF UNIQUE SIZE AREA
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    if ($monthsDifference != 12) {
+                        throw new Exception('Its Apply for One Year Only');
+                    }
+                    $this->_rate =  $this->_area * $this->_getPerSquarerate;                                                        // STATIC FOR ONE YEAR BECAUSE OF UNIQUE SIZE AREA
                     break;
                 case 'GLOSSINE_BOARD':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
+                    if ($monthsDifference == 0) {
+                        throw new Exception('Its Apply for month  Only not days');
+                    }
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
                     break;
                 case 'ROAD_SHOW_ADVERTISING':
@@ -241,20 +240,31 @@ class CalculateRate
                     $this->_rate = $numberOfDays *  $this->_perDayrate;
                     break;
                 case 'ADVERTISEMENT_ON_THE_WALL':
+                    $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
-                    $this->_rate = $monthsDifference * $this->_area * 2.50;
+                    if ($monthsDifference == 0) {
+                        throw new Exception('Its Apply for month  Only not days');
+                    }
+                    $this->_rate = $monthsDifference * $this->_area *  $this->_getPerSquarerate;
                     break;
                 case 'CITY_BUS_STOP':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
-                    $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
+                    if ($monthsDifference != 12) {
+                        throw new Exception('Its Apply for One Year Only');
+                    }
+                    $this->_rate =  $this->_area * $this->_getPerSquarerate;
                     break;
                 case 'ADVERTISEMENT_ON_THE_CITY_BUS':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    if ($monthsDifference != 12) {
+                        throw new Exception('Its Apply for One Year Only');
+                    }
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
-                    $this->_rate = $monthsDifference * $this->_area * $this->_getPerSquarerate;
+                    $this->_rate =  $this->_area * $this->_getPerSquarerate;
                     break;
                 case 'ADVERTISEMENT_ON_BALLONS':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -264,7 +274,7 @@ class CalculateRate
                     break;
                 case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
                     $this->_getData =    $this->_onMovingVehicle->gethoardTypeById($req->vehicleType);
-                    $this->_perDayrate = $this->_getData->per_day_rate; 
+                    $this->_perDayrate = $this->_getData->per_day_rate;
                     $this->_numberOfVehicle = $req->Noofvehicle;
                     $this->_rate = $this->_numberOfVehicle * $numberOfDays *  $this->_perDayrate;
                     break;
