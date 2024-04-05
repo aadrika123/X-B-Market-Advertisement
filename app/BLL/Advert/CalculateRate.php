@@ -203,16 +203,25 @@ class CalculateRate
                 case 'LAMP_POST':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_perMonth =  $this->_getData->per_month;
+                    if ($monthsDifference == 0) {
+                        throw new Exception('Its Apply for month  Only not days');
+                    }
                     $this->_rate = $monthsDifference * $this->_perMonth;
                     break;
                 case 'ABOVE_KIOX_ADVERTISEMENT':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
+                    if ($monthsDifference == 0) {
+                        throw new Exception('Its Apply for month  Only not days');
+                    }
                     $this->_perMonth =  $this->_getData->per_month;
                     $this->_rate = $monthsDifference * $this->_perMonth;
                     break;
                 case 'COMPASS_CANTILEVER':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
+                    if ($monthsDifference == 0) {
+                        throw new Exception('Its Apply for month  Only not days');
+                    }
                     $this->_area  = $req->squarefeet;
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
                     break;
