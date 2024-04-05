@@ -43,9 +43,9 @@ class AddHoardingRequest extends FormRequest
             'applicationType'      => 'required|string|in:PERMANANT,TEMPORARY', 
             'squareFeetId'         => 'nullable|integer|min:1',
             'hoardingType'          => 'nullable|string',
-            'documents'            => 'required|array',
-            'documents.*.image'    => 'required|mimes:png,jpeg,pdf,jpg',
-            'documents.*.docCode'  => 'required|string',
+            'documents'            => 'nullable|array',
+            'documents.*.image'    => 'nullable|mimes:png,jpeg,pdf,jpg',
+            'documents.*.docCode'  => 'nullable|string',
             'documents.*.ownerDtlId' => 'nullable|integer'
         ];
     }
