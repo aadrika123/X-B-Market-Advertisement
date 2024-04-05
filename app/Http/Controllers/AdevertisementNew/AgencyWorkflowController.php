@@ -670,8 +670,8 @@ class AgencyWorkflowController extends Controller
 
             # validating if full documet is uploaded
             $ifFullDocVerified = $this->ifFullDocVerified($applicationId);          // (Current Object Derivative Function 0.1)
-            if ($ifFullDocVerified == 1)
-                throw new Exception("Document Fully Verified");
+            // if ($ifFullDocVerified == 1)
+            //     throw new Exception("Document Fully Verified");
 
             DB::beginTransaction();
             if ($req->docStatus == "Verified") {
@@ -751,7 +751,11 @@ class AgencyWorkflowController extends Controller
         // List Documents
         $flag = 1;
         foreach ($madvDocs as $item) {
+            if(!$item){
+                continue;
+            }
             $explodeDocs = explode(',', $item);
+            $type =$explodeDocs[0] ?? "O";
             array_shift($explodeDocs);
             foreach ($explodeDocs as $explodeDoc) {
                 $changeStatus = 0;
@@ -760,7 +764,7 @@ class AgencyWorkflowController extends Controller
                     break;
                 }
             }
-            if ($changeStatus == 0) {
+            if ($changeStatus == 0 && $type == "R") {
                 $flag = 0;
                 break;
             }
@@ -923,7 +927,7 @@ class AgencyWorkflowController extends Controller
             ['displayString' => 'From Date',           'key' => 'fromDate',           'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
             ['displayString' => 'To Date',             'key' => 'toDate',             'value' => Carbon::parse($collectionApplications->to_date)->format('d/m/Y')],
             ['displayString' => 'Advertiser',          'key' => 'advertiser',         'value' => $collectionApplications->advertiser],
-            ['displayString' => 'Hoarding Type',       'key' => 'hoardingType',       'value' => $collectionApplications->hoarding_type],
+            // ['displayString' => 'Hoarding Type',       'key' => 'hoardingType',       'value' => $collectionApplications->hoarding_type],
             ['displayString' => 'Advertisement Type',  'key' => 'advertisementType',  'value' => $collectionApplications->adv_type],
             ['displayString' => 'Application Type ',   'key' => 'applcationType',     'value' => $collectionApplications->application_type],
         ]);
