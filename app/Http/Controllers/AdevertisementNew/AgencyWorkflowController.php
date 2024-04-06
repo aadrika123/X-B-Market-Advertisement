@@ -915,6 +915,7 @@ class AgencyWorkflowController extends Controller
         $returnValues = array_merge($aplictionList, $fullDetailsData, $levelComment, $timelineData, $roleDetails,);
         return responseMsgs(true, "listed Data!", remove_null($returnValues), "", "02", ".ms", "POST", "");
     }
+
     /**
      * function for return data of basic details
      */
@@ -932,6 +933,8 @@ class AgencyWorkflowController extends Controller
             ['displayString' => 'Application Type ',   'key' => 'applcationType',     'value' => $collectionApplications->application_type],
         ]);
     }
+
+
     /**
      * return data fro card details 
      */
@@ -1178,51 +1181,156 @@ class AgencyWorkflowController extends Controller
     }
 
     /**
-     this function for to get approve applications 
-
+     * |this function for to get approve application 
+     * |on different application type = 'PERMANANT' OR 'TEMPORARY'
      */
+    // public function getApproveApplications(Request $request)
+    // {
+    //     $validated = Validator::make(
+    //         $request->all(),
+    //         ["applicationId" => "required"]
+    //     );
+
+    //     if ($validated->fails()) {
+    //         return validationError($validated);
+    //     }
+
+    //     try {
+    //         $data = $this->_agencyObj->checkdtlsById($request->applicationId);
+    //         if (!$data) {
+    //             throw new Exception("Application Not Found!");
+    //         }
+
+    //         $query = $this->_agencyObj->getApproveDetails($request);
+
+    //         if ($data->application_type == 'PERMANANT') {
+    //             $query->selectRaw('measurement_sizes.measurement as sizes')
+    //                 ->leftJoin('measurement_sizes', 'measurement_sizes.id', 'agency_hoardings.hoard_size_id');
+    //         } elseif (
+    //             in_array($data->adv_type, [                                              # from here we check for application type = TEMPORARY  with different Advertisement TYPE
+    //                 'TEMPORARY_ADVERTISEMENT',
+    //                 'LAMP_POST',
+    //                 'ABOVE_KIOX_ADVERTISEMENT',
+    //                 'AD_POL'
+    //             ])
+    //         ) {
+    //             $query->selectRaw('hoarding_rates.size as sizes')
+    //                 ->leftJoin('hoarding_rates', 'hoarding_rates.id', 'agency_hoardings.hoard_size_id');
+    //         } elseif (
+    //             in_array($data->adv_type, [                                            # from here we check for application type = TEMPORARY  with different Advertisement TYPE BUT 
+    //                 'ADVERTISEMENT_ON_BALLONS',
+    //                 'ADVERTISEMENT_ON_THE_CITY_BUS',
+    //                 'CITY_BUS_STOP',
+    //                 'ADVERTISEMENT_ON_THE_WALL',
+    //                 'ROAD_SHOW_ADVERTISING',
+    //                 'ADVERTISEMENT_ON_MOVING_VEHICLE'
+    //             ])
+    //         ) {
+    //             $query->selectRaw(
+    //                 'agency_hoardings.size_square_feet as sizes, agency_hoardings.total_ballon, 
+    //             agency_hoardings.total_vehicle,temporary_hoarding_types.type'
+    //             )
+    //                 ->Join('temporary_hoarding_types', 'temporary_hoarding_types.id', 'agency_hoardings.vehicle_type_id');
+    //         }
+
+    //         $data = $query->first();
+    //         // $basicDetails = $this->getDetails($data);
+    //         // $basicDetailsObject = (object)$basicDetails;
+    //         return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
+    //     } catch (Exception $e) {
+    //         return responseMsg(false, $e->getMessage(), "");
+    //     }
+    // }
+
     public function getApproveApplications(Request $request)
     {
         $validated = Validator::make(
             $request->all(),
-            [
-                "applicationId" => "required"
-            ]
+            ["applicationId" => "required"]
         );
+
         if ($validated->fails()) {
             return validationError($validated);
         }
 
         try {
             $data = $this->_agencyObj->checkdtlsById($request->applicationId);
-
-            if ($data->application_type == 'PERMANANT') {
-                $data = $this->_agencyObj->getApproveDetails($request)
-                    ->selectRaw('measurement_sizes.measurement as sizes')
-                    ->leftJoin('measurement_sizes', 'measurement_sizes.id', 'agency_hoardings.hoard_size_id')
-                    ->first();
-            } elseif (
-                $data->adv_type == 'TEMPORARY_ADVERTISEMENT' ||
-                $data->adv_type == 'LAMP_POST' ||
-                $data->adv_type == 'ABOVE_KIOX_ADVERTISEMENT' ||
-                $data->adv_type == 'AD_POL'
-            ) {
-                $data = $this->_agencyObj->getApproveDetails($request)
-                    ->selectRaw('hoarding_rates.size as sizes')
-                    ->leftJoin('hoarding_rates', 'hoarding_rates.id', 'agency_hoardings.hoard_size_id')
-                    ->first();
-                
-            }elseif(
-                $data->adv_type == 'ADVERTISEMENT_ON_BALLONS' ||
-                $data->adv_type == 'ADVERTISEMENT_ON_THE_CITY_BUS' ||
-                $data->adv_type == 'CITY_BUS_STOP' ||
-                $data->adv_type == 'ADVERTISEMENT_ON_THE_WALL' ||
-                $data->adv_type == 'ROAD_SHOW_ADVERTISING' 
-            ){
-            }
-
             if (!$data) {
                 throw new Exception("Application Not Found!");
+            }
+            $advertisementType = $data->adv_type;
+
+            $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+
+            if ($data->application_type == 'PERMANANT') {
+                $query = $this->_agencyObj->getApproveDetails($request);
+                $query->value = $query['measurement'];
+                $query->key = 'SIZES';
+            } else {
+                switch ($advertisementType) {
+                    case 'TEMPORARY_ADVERTISEMENT':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'LAMP_POST':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ABOVE_KIOX_ADVERTISEMENT':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'AD_POL':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'COMPASS_CANTILEVER':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'GLOSSINE_BOARD':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ADVERTISEMENT_ON_BALLONS':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['total_ballon'];
+                        $query->key = 'Total Ballon';
+                        break;
+                    case 'ADVERTISEMENT_ON_THE_CITY_BUS':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+
+                        break;
+                    case 'CITY_BUS_STOP':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ADVERTISEMENT_ON_THE_WALL':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+
+                        break;
+                    case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['total_vehicle'];
+                        $query->key = 'Total Vehicle';
+                        break;
+                    default:
+                        throw new Exception("Invalid Advertisement Type!");
+                }
+
+
+                $data = $query;
             }
 
             return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
@@ -1231,6 +1339,30 @@ class AgencyWorkflowController extends Controller
         }
     }
 
+
+    /**
+     * |this function for approve applications 
+     */
+    public function getDetails($data)
+    {
+        $collectionApplications = collect($data)->first();
+        $details = [
+            ['displayString' => 'Agency Name',         'key' => 'agencyName',         'value' => $collectionApplications->agencyName],
+            ['displayString' => 'Apply Date',          'key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
+            ['displayString' => 'From Date',           'key' => 'fromDate',           'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
+            ['displayString' => 'To Date',             'key' => 'toDate',             'value' => Carbon::parse($collectionApplications->to_date)->format('d/m/Y')],
+            ['displayString' => 'Advertiser',          'key' => 'advertiser',         'value' => $collectionApplications->advertiser],
+            ['displayString' => 'Advertisement Type',  'key' => 'advertisementType',  'value' => $collectionApplications->adv_type],
+            ['displayString' => 'Application Type ',   'key' => 'applcationType',     'value' => $collectionApplications->application_type],
+            ['displayString' => 'Address',             'key'  => 'address',           'value' => $collectionApplications->address],
+            ['displayString' => 'Measurement Size ',   'key' => 'size',               'value' => $collectionApplications->sizes],
+            ['displayString' => 'Total Ballon ',       'key' => 'totaBallon',         'value' => $collectionApplications->total_ballon],
+            ['displayString' => 'Total vehicle',       'key' => 'totalVehicle',       'value' => $collectionApplications->total_vehicle],
+            ['displayString' => 'Registration Number', 'key' => 'registrationNo',     'value' => $collectionApplications->registration_no],
+            ['displayString' => 'Purpose',             'key' => 'purpose',             'value' => $collectionApplications->purpose],
+        ];
+        return (object)$details;;
+    }
 
     /**
         get dashboard data of agency 
