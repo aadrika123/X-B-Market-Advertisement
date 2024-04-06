@@ -97,7 +97,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->vehicle_type_id                = $request->vehicleType;
         $mAgencyHoarding->purpose                        = $request->purpose;
         if ($request->applicationType == 'PERMANANT') {
-            $mAgencyHoarding->property_Type_Id                  = $request->propertyId;
+            $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
         $mAgencyHoarding->save();
         return $mAgencyHoarding->id;
@@ -249,19 +249,21 @@ class AgencyHoarding extends Model
             'agency_hoardings.allotment_date',
             'agency_hoardings.purpose',
             'agency_hoardings.adv_type',
-            'agency_hoardings.application_type'
-
+            'agency_hoardings.application_type',
+          
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
-            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
-            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+           
+            ->Join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->Join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.id', $request->applicationId)
             ->where('agency_hoardings.status', true)
             ->where('agency_hoardings.approve', 1);
     }
+
     /**
      * application details of hoarding
      */

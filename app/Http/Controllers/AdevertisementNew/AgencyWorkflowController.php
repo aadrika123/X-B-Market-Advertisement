@@ -751,11 +751,11 @@ class AgencyWorkflowController extends Controller
         // List Documents
         $flag = 1;
         foreach ($madvDocs as $item) {
-            if(!$item){
+            if (!$item) {
                 continue;
             }
             $explodeDocs = explode(',', $item);
-            $type =$explodeDocs[0] ?? "O";
+            $type = $explodeDocs[0] ?? "O";
             array_shift($explodeDocs);
             foreach ($explodeDocs as $explodeDoc) {
                 $changeStatus = 0;
@@ -1176,6 +1176,7 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
+
     /**
      this function for to get approve applications 
 
@@ -1188,18 +1189,49 @@ class AgencyWorkflowController extends Controller
                 "applicationId" => "required"
             ]
         );
-        if ($validated->fails())
+        if ($validated->fails()) {
             return validationError($validated);
+        }
+
         try {
-            $data =  $this->_agencyObj->getApproveDetails($request)->first();
+            $data = $this->_agencyObj->checkdtlsById($request->applicationId);
+
+            if ($data->application_type == 'PERMANANT') {
+                $data = $this->_agencyObj->getApproveDetails($request)
+                    ->selectRaw('measurement_sizes.measurement as sizes')
+                    ->leftJoin('measurement_sizes', 'measurement_sizes.id', 'agency_hoardings.hoard_size_id')
+                    ->first();
+            } elseif (
+                $data->adv_type == 'TEMPORARY_ADVERTISEMENT' ||
+                $data->adv_type == 'LAMP_POST' ||
+                $data->adv_type == 'ABOVE_KIOX_ADVERTISEMENT' ||
+                $data->adv_type == 'AD_POL'
+            ) {
+                $data = $this->_agencyObj->getApproveDetails($request)
+                    ->selectRaw('hoarding_rates.size as sizes')
+                    ->leftJoin('hoarding_rates', 'hoarding_rates.id', 'agency_hoardings.hoard_size_id')
+                    ->first();
+                
+            }elseif(
+                $data->adv_type == 'ADVERTISEMENT_ON_BALLONS' ||
+                $data->adv_type == 'ADVERTISEMENT_ON_THE_CITY_BUS' ||
+                $data->adv_type == 'CITY_BUS_STOP' ||
+                $data->adv_type == 'ADVERTISEMENT_ON_THE_WALL' ||
+                $data->adv_type == 'ROAD_SHOW_ADVERTISING' 
+            ){
+            }
+
             if (!$data) {
                 throw new Exception("Application Not Found!");
             }
-            return responseMsgs(true, " Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
+
+            return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
     }
+
+
     /**
         get dashboard data of agency 
         raw query 
