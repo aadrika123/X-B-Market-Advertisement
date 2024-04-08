@@ -254,7 +254,8 @@ class AgencyHoarding extends Model
             'measurement_sizes.measurement',
             'agency_hoardings.total_ballon',
             'hoarding_rates.size',
-            'agency_hoardings.size_square_feet'
+            'agency_hoardings.size_square_feet',
+            'agency_hoardings.application_no'
 
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')

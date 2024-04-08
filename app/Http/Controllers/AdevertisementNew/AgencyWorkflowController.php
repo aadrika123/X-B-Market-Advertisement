@@ -1327,11 +1327,9 @@ class AgencyWorkflowController extends Controller
                         break;
                     default:
                         throw new Exception("Invalid Advertisement Type!");
-                }
-
-
-                $data = $query;
+                } 
             }
+            $data = $query;
 
             return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
