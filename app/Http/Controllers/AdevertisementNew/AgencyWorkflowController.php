@@ -152,6 +152,8 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+
+    # bta inbox
     public function btaInbox(Request $req)
     {
         try {
@@ -187,12 +189,14 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", 010123, 1.0, "271ms", "POST", $mDeviceId);
         }
     }
+
     /**
      * | common function for workflow
      * | Get consumer active application details 
         | Serial No : 04
         | Working
      */
+
     public function getConsumerWfBaseQuerry($workflowIds, $ulbId)
     {
         return AgencyHoarding::select(
@@ -205,6 +209,7 @@ class AgencyWorkflowController extends Controller
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
     }
 
+    #==== out box=====
     public function listOutbox(Request $req)
     {
         $validated = Validator::make(
@@ -237,6 +242,7 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+
     /**
      * |---------------------------- Filter The Document For Viewing ----------------------------|
      * | @param documentList
@@ -248,6 +254,7 @@ class AgencyWorkflowController extends Controller
      * | Calling Function 01.01.01/ 01.02.01
         | Serial No : 
      */
+
     public function filterDocument($documentList, $refWaterApplication, $ownerId = null)
     {
         $mWfActiveDocument  = new WfActiveDocument();
@@ -310,9 +317,11 @@ class AgencyWorkflowController extends Controller
         });
         return $filteredDocs;
     }
+
     /**
-     * 
+     * |get doc to upload 
      */
+
     public function getDocList(Request $req)
     {
         $validated = Validator::make(
@@ -346,12 +355,14 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
+
     /**
      * |---------------------------- List of the doc to upload ----------------------------|
      * | Calling function
      * | 01.01
         | Serial No :  
      */
+
     public function getAgencyDocLists($application, $req)
     {
         // $user           = authUser($req);
@@ -373,6 +384,7 @@ class AgencyWorkflowController extends Controller
     /**
      * | document upload for hoarding register by agency 
      */
+
     public function uploadDocument(Request $req)
     {
         $validated = Validator::make(
@@ -455,6 +467,7 @@ class AgencyWorkflowController extends Controller
         | Serial No : 
         | Working
      */
+
     public function getUploadDocuments(Request $req)
     {
         $validated = Validator::make(
@@ -488,9 +501,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      * |assign hoarding to agency 
      */
+
     public function assignAgency(Request $req)
     {
         $validated = Validator::make(
@@ -521,6 +536,7 @@ class AgencyWorkflowController extends Controller
         | Serial No :
         | Check for forward date and backward date
      */
+
     public function postNextLevel(Request $req)
     {
         $wfLevels =  $this->_wfroles;
@@ -599,11 +615,13 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
+
     /**
      * | Check the condition before forward
         | Serial No :
         | Under Construction
      */
+
     public function checkPostCondition($senderRoleId, $wfLevels, $application)
     {
         switch ($senderRoleId) {
@@ -624,6 +642,7 @@ class AgencyWorkflowController extends Controller
     /**
      * | Verify, Reject document 
      */
+
     public function docVerifyRejects(Request $req)
     {
         $validated = Validator::make(
@@ -707,6 +726,7 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      * | Check if the Document is Fully Verified or Not (0.1) | up
      * | @param
@@ -715,6 +735,7 @@ class AgencyWorkflowController extends Controller
         | Serial No :  
         | Working 
      */
+
     public function ifFullDocVerified($applicationId)
     {
         $mAgencyHoard           = new AgencyHoarding();
@@ -775,6 +796,8 @@ class AgencyWorkflowController extends Controller
             return 1;
     }
 
+    #get doc which is required 
+
     public function getadvTypeDocList($refapps)
     {
         $this->_refapplications = $refapps;
@@ -798,6 +821,7 @@ class AgencyWorkflowController extends Controller
         | Serial No :  
         | Working 
      */
+
     public function checkifFullDocVerified($applicationId)
     {
         $mAgencyHoard           = new AgencyHoarding();
@@ -819,10 +843,12 @@ class AgencyWorkflowController extends Controller
         else
             return 1;
     }
+
     /**
-     * get all  applications details by id from workflow
-        |working 
+     *get all  applications details by id from workflow
+     *working 
      */
+
     public function getWorkflow(Request $request)
     {
 
@@ -837,6 +863,16 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
+
+    /**
+     * |------------------------------ Get Application details --------------------------------|
+     * | @param request
+     * | @var applicationDetails
+     * | @var returnDetails
+     * | @return returnDetails : list of individual applications
+        | Workinig 
+     */
+
     public function getApplicationsDetails($request)
     {
 
@@ -955,10 +991,12 @@ class AgencyWorkflowController extends Controller
 
         ]);
     }
+
     /**
      * | default final approval 
         | remove
      */
+
     public function finalVerificationRejection(Request $req)
     {
         $validated = Validator::make(
@@ -1001,9 +1039,12 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010204", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     # function for approve or reject 
+
     public function finalApprovalRejection($req, $application)
     {
+
         $currentDateTime        = Carbon::now();
         $mAgencyApproval        = new AgencyHoardingApproveApplication();
         # check 
@@ -1015,11 +1056,11 @@ class AgencyWorkflowController extends Controller
         if ($checkExist) {
             throw new Exception("Access Denied ! Consumer Already Exist!");
         }
+
         # handle status to approve or reject 
         if ($req->status == 1) {
             $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
-            // $regNo = $this->generateRegistrationNumber();;
-            AgencyHoarding::where('id', $req->applicationId)
+            $approveApplicationRep = $approveApplications
                 ->update([
                     "approve" => 1,                                                                                    // approve                    
                     "registration_no" => $regNo,
@@ -1049,9 +1090,11 @@ class AgencyWorkflowController extends Controller
             // return responseMsgs(true, 'register Application Rejected!', $application->application_no);
         }
     }
+
     /**
      * Generate and return a registration number
      */
+
     private function generateRegistrationNumber()
     {
         $randomPart = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
@@ -1059,9 +1102,11 @@ class AgencyWorkflowController extends Controller
 
         return $registrationNumber;
     }
+
     /*
      * |get agency details via email
      */
+
     public function getAgencyDetails(Request $request)
     {
         try {
@@ -1078,9 +1123,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
-       get all hoarding address related ton agency
+       |get all hoarding address related ton agency
      */
+
     public function agencyhoardingAddress(Request $request)
     {
         try {
@@ -1096,10 +1143,12 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * |---------------------------- Search Hoarding Application ----------------------------|
      * | Search Application using provided condition 
      */
+
     public function searchHoarding(Request $request)
     {
         $validated = Validator::make(
@@ -1180,67 +1229,12 @@ class AgencyWorkflowController extends Controller
         }
     }
 
+
     /**
-     * |this function for to get approve application 
-     * |on different application type = 'PERMANANT' OR 'TEMPORARY'
+     * | Get Apploication  which is approve by the
+     * | @param request
+     * | @var data
      */
-    // public function getApproveApplications(Request $request)
-    // {
-    //     $validated = Validator::make(
-    //         $request->all(),
-    //         ["applicationId" => "required"]
-    //     );
-
-    //     if ($validated->fails()) {
-    //         return validationError($validated);
-    //     }
-
-    //     try {
-    //         $data = $this->_agencyObj->checkdtlsById($request->applicationId);
-    //         if (!$data) {
-    //             throw new Exception("Application Not Found!");
-    //         }
-
-    //         $query = $this->_agencyObj->getApproveDetails($request);
-
-    //         if ($data->application_type == 'PERMANANT') {
-    //             $query->selectRaw('measurement_sizes.measurement as sizes')
-    //                 ->leftJoin('measurement_sizes', 'measurement_sizes.id', 'agency_hoardings.hoard_size_id');
-    //         } elseif (
-    //             in_array($data->adv_type, [                                              # from here we check for application type = TEMPORARY  with different Advertisement TYPE
-    //                 'TEMPORARY_ADVERTISEMENT',
-    //                 'LAMP_POST',
-    //                 'ABOVE_KIOX_ADVERTISEMENT',
-    //                 'AD_POL'
-    //             ])
-    //         ) {
-    //             $query->selectRaw('hoarding_rates.size as sizes')
-    //                 ->leftJoin('hoarding_rates', 'hoarding_rates.id', 'agency_hoardings.hoard_size_id');
-    //         } elseif (
-    //             in_array($data->adv_type, [                                            # from here we check for application type = TEMPORARY  with different Advertisement TYPE BUT 
-    //                 'ADVERTISEMENT_ON_BALLONS',
-    //                 'ADVERTISEMENT_ON_THE_CITY_BUS',
-    //                 'CITY_BUS_STOP',
-    //                 'ADVERTISEMENT_ON_THE_WALL',
-    //                 'ROAD_SHOW_ADVERTISING',
-    //                 'ADVERTISEMENT_ON_MOVING_VEHICLE'
-    //             ])
-    //         ) {
-    //             $query->selectRaw(
-    //                 'agency_hoardings.size_square_feet as sizes, agency_hoardings.total_ballon, 
-    //             agency_hoardings.total_vehicle,temporary_hoarding_types.type'
-    //             )
-    //                 ->Join('temporary_hoarding_types', 'temporary_hoarding_types.id', 'agency_hoardings.vehicle_type_id');
-    //         }
-
-    //         $data = $query->first();
-    //         // $basicDetails = $this->getDetails($data);
-    //         // $basicDetailsObject = (object)$basicDetails;
-    //         return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
-    //     } catch (Exception $e) {
-    //         return responseMsg(false, $e->getMessage(), "");
-    //     }
-    // }
 
     public function getApproveApplications(Request $request)
     {
@@ -1258,9 +1252,17 @@ class AgencyWorkflowController extends Controller
             if (!$data) {
                 throw new Exception("Application Not Found!");
             }
+            $fromDate = Carbon::parse($data->from_date);
+            $toDate = Carbon::parse($data->to_date);
+
+            #count number of days 
+            $numberOfDays = $toDate->diffInDays($fromDate);
+
+            #different advertisement type 
             $advertisementType = $data->adv_type;
 
             $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+
 
             if ($data->application_type == 'PERMANANT') {
                 $query = $this->_agencyObj->getApproveDetails($request);
@@ -1325,13 +1327,16 @@ class AgencyWorkflowController extends Controller
                         $query->value = $query['total_vehicle'];
                         $query->key = 'Total Vehicle';
                         break;
+                    case 'ROAD_SHOW_ADVERTISING':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $numberOfDays;
+                        $query->key = 'Total DAYS';
+                        break;
                     default:
                         throw new Exception("Invalid Advertisement Type!");
-                } 
+                }
             }
-            $data = $query;
-
-            return responseMsgs(true, "Data According To Parameter!", remove_null($data), "", "01", "652 ms", "POST", "");
+            return responseMsgs(true, "Data According To Parameter!", remove_null($query), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
@@ -1341,6 +1346,7 @@ class AgencyWorkflowController extends Controller
     /**
      * |this function for approve applications 
      */
+
     public function getDetails($data)
     {
         $collectionApplications = collect($data)->first();
@@ -1363,10 +1369,11 @@ class AgencyWorkflowController extends Controller
     }
 
     /**
-        get dashboard data of agency 
-        raw query 
-        sr no .=1
+       | get dashboard data of agency 
+       | raw query 
+       | sr no .=1
      */
+
     public function dashboardAgency(Request $request)
     {
         try {
@@ -1393,9 +1400,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * details of agency aplications by email 
      */
+
     public function getAgencyAplicationdtl(Request $request)
     {
         try {
@@ -1417,6 +1426,7 @@ class AgencyWorkflowController extends Controller
     /**
      * get hoarding type master
      */
+
     public function hoardingType(Request $request)
     {
         try {
@@ -1430,9 +1440,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * ulb dashboard
      */
+
     public function ulbDashboard(Request $request)
     {
         $todate = Carbon::now();
@@ -1506,9 +1518,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * VALIDATE HOARDING  DETAILS BY ID 
      */
+
     public function getHoardingDtlsById(Request $req)
     {
         $validated = Validator::make(
@@ -1528,10 +1542,12 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      * | send back to citizen
      * |
      */
+
     public function backToCitizen(Request $req)
     {
 
@@ -1581,27 +1597,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050131", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-    /**
-     * | Back to agency Inbox
-     * | Workflow
-     * | @param req
-     * | @var mWfWardUser
-     * | @var userId
-     * | @var ulbId
-     * | @var mDeviceId
-     * | @var workflowRoles
-     * | @var roleId
-     * | @var refWard
-     * | @var wardId
-        | Serial No : 
-        | Use
-     */
 
     /**
      * | Reuploaded rejected document
-     * | Function - 36
-     * | API - 33
      */
+
     public function reuploadDocument(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1624,10 +1624,12 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
+
     /**
      * | Cheque full upload document or not
      * |  Function - 35
      */
+
     public function checkFullUpload($applicationId)
     {
         $docCode = $this->_docCode;
@@ -1648,9 +1650,11 @@ class AgencyWorkflowController extends Controller
             $appDetails->save();
         }
     }
+
     /**
      * |get rejected doument via agency 
      */
+
     public function getRjectedDoc(Request $request)
     {
         try {
@@ -1668,9 +1672,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, "Rejected Document Not Found", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
+
     /**
      * |get rejected doument via agency 
      */
+
     public function getRjectedDocById(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -1695,14 +1701,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, "Document Not Uploaded", "", "050133", 1.0, "271ms", "POST", "", "");
         }
     }
-    /**
-     * |hoarding type,
-     *  |temporary or permanant
-     * 
-     */
+
     /**
      * get hoarding type master
      */
+
     public function hoardType(Request $request)
     {
         try {
@@ -1716,7 +1719,9 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     #get rate by dates 
+
     public function getRateByDate(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -1747,7 +1752,9 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     #get size of temporary advertisment
+
     public function getSizeAdvertisement(Request $request)
     {
         try {
@@ -1764,9 +1771,11 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * |get All measurement for Permanant advertiement 
      */
+
     public function getAllFixedMeasurementPermanantAdv(Request $request)
     {
         try {
@@ -1780,22 +1789,23 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * |calculate rate of hoarding advertisemnet
      * | As per square feet or Days/Month
-     * 
      */
+
     public function calculateRate(Request $req)
     {
         $validator = Validator::make($req->all(), [
 
-            'propertyId'        => 'nullable|integer|min:1',
+            'propertyId'        => 'nullable',
             'from'              => 'nullable|date',
             'to'                => 'nullable|date',
             'applicationType'   => 'nullable|string|in:PERMANANT,TEMPORARY',
             'advertisementType' => 'nullable|string',
-            'squareFeetId'      => 'nullable|integer|min:1',
-            'squarefeet'        => 'nullable|numeric|min:0',
+            'squareFeetId'      => 'nullable',
+            'squarefeet'        => 'nullable',
 
         ]);
         if ($validator->fails()) {

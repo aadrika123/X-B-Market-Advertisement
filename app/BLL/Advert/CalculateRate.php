@@ -153,8 +153,11 @@ class CalculateRate
         }
         return $amount;
     }
+
+    #===================================== CALCULATE RATE FOR NEW ADVERTISEMENT ========================# 
     /**
      * | Calculate rate of hoarding advertisement based on request parameter
+     *  request
      *
      */
     public function calculateRateDtls($req)
@@ -167,38 +170,70 @@ class CalculateRate
         $fromDate = Carbon::parse($req->from);
         $toDate = Carbon::parse($req->to);
 
-        $monthsDifference = $fromDate->diffInMonths($toDate);
-        $numberOfDays = $toDate->diffInDays($fromDate);
-        $monthsDifference = $toDate->diffInMonths($fromDate);
+        $monthsDifference = $fromDate->diffInMonths($toDate);                                                 //month diference
+        $numberOfDays = $toDate->diffInDays($fromDate);                                                       // days difference    
 
-        // Ensure the minimum months difference is 1 if there is at least one day in the duration
-        // if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
-        //     $monthsDifference++;
-        // }
-        if ($applicationType == 'PERMANANT') {
-            $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);
+        #Application Type Permnanant
+        if ($applicationType == 'PERMANANT' &&  $advertisementType == 'ABOVE_GROUND') {                                        // application type = PERMANANT
+            $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);                    // GET SQUARE FEET SIZE 
             if (!$this->_squareFeet) {
                 throw new Exception('Square Feet not found');
             }
-            $this->_sq_ft =  $this->_squareFeet->sq_ft;
+            $this->_sq_ft =  $this->_squareFeet->sq_ft ?? $req->squarefeet;
             $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
             if (!$this->_getPermantSizeDtl) {
                 throw new Exception('Size  not found');
             }
             $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
-            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;
-        } else {
-            switch ($advertisementType) {
-                case 'TEMPORARY_ADVERTISEMENT':
+            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;                           // RATE OF PERMANANT APPLICATION TYPE 
+        } elseif ($applicationType == 'PERMANANT' && $advertisementType == 'ON_THE_BUILDING') {
+            $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);                        // GET SQUARE FEET SIZE 
+            if (!$this->_squareFeet) {
+                throw new Exception('Square Feet not found');
+            }
+            $this->_sq_ft =  $this->_squareFeet->sq_ft ?? $req->squarefeet;
+            $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
+            if (!$this->_getPermantSizeDtl) {
+                throw new Exception('Size  not found');
+            }
+            $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
+            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;                                  // RATE OF PERMANANT APPLICATION TYPE 
+        } elseif ($applicationType == 'PERMANANT' && $advertisementType == 'LED_SCREEN_ON_MOVING_VEHICLE') {
+            $this->_sq_ft = $req->squarefeet;
+            $this->_getPermantSizeDtl = $this->_permanantAdvSize->getSquareFeet($advertisementType);
+            if (!$this->_getPermantSizeDtl) {
+                throw new Exception('Size  not found');
+            }
+            if ($monthsDifference == 0) {
+                throw new Exception('Its Apply for month  Only not days');
+            }
+            $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
+            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;                                  // RATE OF PERMANANT APPLICATION TYPE 
+        } elseif ($applicationType == 'PERMANANT' && $advertisementType == 'LED_SCREEN') {
+            $this->_sq_ft = $req->squarefeet;
+
+            if ($monthsDifference == 0) {
+                throw new Exception('Its Apply for month  Only not days');
+            }
+            $this->_getPermantSizeDtl = $this->_permanantAdvSize->getSquareFeet($advertisementType);
+            if (!$this->_getPermantSizeDtl) {
+                throw new Exception('Size  not found');
+            }
+            $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
+            $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;                                  // RATE OF PERMANANT APPLICATION TYPE 
+
+        } elseif ($applicationType == 'TEMPORARY') {
+            switch ($advertisementType) {                                                                        //  HERE START TO CALCULATING RATE FOR TEMPORARAY APPLICATION TYPE                                                                 
+                case 'TEMPORARY_ADVERTISEMENT':                                                                  // DIFFERENT ADVERTISEMENT TYPE APPLY BY THE AGENCY 
                     $this->_getData = $this->_hoardingRate->getHoardSizerate($squareFeetId);
                     if (!$this->_getData) {
-                        throw new Exception(' not found');
+                        throw new Exception(' Data not found');
                     }
                     $this->_perDayrate = $this->_getData->per_day_rate;
                     if ($numberOfDays > 3) {
                         throw new Exception('Days should be less then or equal to 3 days ');
                     }
-                    $this->_rate = $numberOfDays * $this->_perDayrate;
+                    $this->_rate = $numberOfDays * $this->_perDayrate;                                            // THIS RATE TEMPORARY ADVERTISEMENT TYPE 
                     break;
                 case 'LAMP_POST':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -206,7 +241,7 @@ class CalculateRate
                     if ($monthsDifference == 0) {
                         throw new Exception('Its Apply for month  Only not days');
                     }
-                    $this->_rate = $monthsDifference * $this->_perMonth;
+                    $this->_rate = $monthsDifference * $this->_perMonth;                                          // THIS RATE FOR ADVERTISEMENT ON LAMP POST
                     break;
                 case 'ABOVE_KIOX_ADVERTISEMENT':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -214,7 +249,7 @@ class CalculateRate
                         throw new Exception('Its Apply for month  Only not days');
                     }
                     $this->_perMonth =  $this->_getData->per_month;
-                    $this->_rate = $monthsDifference * $this->_perMonth;
+                    $this->_rate = $monthsDifference * $this->_perMonth;                                          // THIIS RATE FOR ADVERTISEMENT ON KIOX
                     break;
                 case 'COMPASS_CANTILEVER':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -223,16 +258,16 @@ class CalculateRate
                         throw new Exception('Its Apply for month  Only not days');
                     }
                     $this->_area  = $req->squarefeet;
-                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
+                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;                   // THIS RATE FOR ADVERTISEMENT ON COMPASS CANTIELEVER
                     break;
                 case 'AD_POL':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
-                    $this->_area  = 4 * 6;
+                    $this->_area  = 4 * 6;                                                                          // FIXED SIE FOR ADVERTISEMENT ON AD POL
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     if ($monthsDifference != 12) {
                         throw new Exception('Its Apply for One Year Only');
                     }
-                    $this->_rate =  $this->_area * $this->_getPerSquarerate;                                                        // STATIC FOR ONE YEAR BECAUSE OF UNIQUE SIZE AREA
+                    $this->_rate =  $this->_area * $this->_getPerSquarerate;                                      // THIS IS RATE FOR ADVERTISEMENT ON POL                                       
                     break;
                 case 'GLOSSINE_BOARD':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -241,7 +276,7 @@ class CalculateRate
                     if ($monthsDifference == 0) {
                         throw new Exception('Its Apply for month  Only not days');
                     }
-                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;
+                    $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference;                  // THIS RATE FOR ADVERTSIMENT ON GLOSSINE BOARD OF COMPANY
                     break;
                 case 'ROAD_SHOW_ADVERTISING':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
@@ -253,7 +288,7 @@ class CalculateRate
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not days');
+                        throw new Exception('Its Apply for month  Only not for days');
                     }
                     $this->_rate = $monthsDifference * $this->_area *  $this->_getPerSquarerate;
                     break;
@@ -295,69 +330,5 @@ class CalculateRate
         return   [
             'rate' =>  $this->_rate
         ];
-    }
-    public function calculateRateDtl($req)
-    {
-        // Extract request parameters
-        $propertyId = $req->propertyId;
-        $applicationType = $req->applicationType;
-        $squareFeetId = $req->squareFeetId;
-        $advertisementType = $req->advertisementType;
-        $fromDate = Carbon::parse($req->from);
-        $toDate = Carbon::parse($req->to);
-
-        // Calculate months difference and number of days
-        $monthsDifference = $toDate->diffInMonths($fromDate);
-        $numberOfDays = $toDate->diffInDays($fromDate);
-
-        // Adjust months difference if needed
-        if ($monthsDifference <= 0 && $toDate->gt($fromDate)) {
-            $monthsDifference++;
-        }
-
-        // Calculate rate based on application type and advertisement type
-        if ($applicationType == 'PERMANENT') {
-            $this->calculatePermanentRate($propertyId, $squareFeetId, $advertisementType, $monthsDifference);
-        } else {
-            $this->calculateTemporaryRate($advertisementType, $monthsDifference, $numberOfDays, $req);
-        }
-
-        return ['rate' => $this->_rate];
-    }
-
-    private function calculatePermanentRate($propertyId, $squareFeetId, $advertisementType, $monthsDifference)
-    {
-        // Fetch required data
-        $this->_squareFeet = $this->_measurementSize->getMeasureSQfT($squareFeetId);
-        if (!$this->_squareFeet) {
-            throw new Exception('Square Feet not found');
-        }
-
-        // Calculate rate for permanent advertisement
-        $this->_sq_ft = $this->_squareFeet->sq_ft;
-        $this->_getPermantSizeDtl = $this->_permanantAdvSize->getPerSqftById($propertyId, $squareFeetId, $advertisementType);
-        if (!$this->_getPermantSizeDtl) {
-            throw new Exception('Size not found');
-        }
-        $this->_getPerSquareft = $this->_getPermantSizeDtl->per_square_ft;
-        $this->_rate = $monthsDifference * $this->_sq_ft * $this->_getPerSquareft;
-    }
-
-    private function calculateTemporaryRate($advertisementType, $monthsDifference, $numberOfDays, $req)
-    {
-        // Calculate rate for temporary advertisement based on advertisement type
-        switch ($advertisementType) {
-            case 'TEMPORARY_ADVERTISEMENT':
-                $this->_getData = $this->_hoardingRate->getHoardSizerate($req->squareFeetId);
-                // Remaining code for temporary advertisement types...
-                break;
-            case 'LAMP_POST':
-            case 'ABOVE_KIOX_ADVERTISEMENT':
-                // Code for other temporary advertisement types...
-                break;
-            default:
-                throw new Exception('Invalid advertisement type');
-                break;
-        }
     }
 }

@@ -97,6 +97,8 @@ class AgencyNewController extends Controller
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
     }
+
+
     /**
      * | Store  for agency 
      * | Function - 01
@@ -152,10 +154,12 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**\
      * get all agency data 
      * | Function - 02
      */
+
     public function getAll(Request $request)
     {
         try {
@@ -169,9 +173,11 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /*
      * |edit agencgy details
      */
+
     public function updateAgencydtl(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -217,9 +223,11 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * |soft delete 
      */
+
     public function AgencyDelete(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -246,6 +254,7 @@ class AgencyNewController extends Controller
 
     /****=========================================**/
     #  here  for hoarding  
+
     public function addNewHoarding(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -293,6 +302,7 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      * function for get hoarding details 
      */
@@ -310,9 +320,11 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**\
      * edit hoarding details
      */
+
     public function updatehoardingdtl(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -351,9 +363,11 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $request->deviceId ?? "");
         }
     }
+
     /**
      * soft delete 
      */
+
     public function HoardDelete(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -377,10 +391,12 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**=================================================================== */
     /**
      * here for brand master
      */
+
     public function addBrand(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -406,7 +422,9 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     # get all brand 
+
     public function getAllBrand(Request $request)
     {
         try {
@@ -781,12 +799,14 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+#===============================Apply Hoardings================#
     /**
-       |apply hoarding for register advertisement by agency 
+       |apply for hoarding for register advertisement by agency 
        |to advertiser 
      * | @param Request
      * | 
      */
+
     public function applyHoarding(AddHoardingRequest $request)
     {
         try {
@@ -884,10 +904,13 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), $e->getFile(), "", "01", ".ms", "POST", "");
         }
     }
+
+
     /**
      * check hoarding is already applied or not 
      * between their respective date 
      */
+
     public function checkHoardingParams($request, $hoardId)
     {
         $currentDate = Carbon::now();
@@ -912,11 +935,13 @@ class AgencyNewController extends Controller
             return responseMsgs(true, "Agency Details", $result, "050502", "1.0", responseTime(), "POST", $request->deviceId ?? "");
         }
     }
+
     /*
      * upload Document By agency At the time of Registration
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
      */
+
     public function uploadHoardDocument($AgencyId, $documents, $auth)
     {
         $docUpload = new DocumentUpload;
@@ -956,6 +981,7 @@ class AgencyNewController extends Controller
         | Serial No : 04
         | Working
      */
+
     public function getConsumerWfBaseQuerry($workflowIds, $ulbId)
     {
         return AgencyHoarding::select(
@@ -967,9 +993,11 @@ class AgencyNewController extends Controller
             ->where('agency_hoardings.ulb_id', $ulbId)
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
     }
+
     /**
      *| get doc list 
      */
+
     public function getDocList(Request $req)
     {
         $validated = Validator::make(
@@ -1000,9 +1028,12 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
+
+
     /**
      * | document upload for hoarding register by agency 
      */
+
     public function uploadDocument(Request $req)
     {
         $validated = Validator::make(
@@ -1079,11 +1110,14 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
+
     /**
      * |Get the upoaded docunment
         | Serial No : 
         | Working
      */
+
     public function getUploadDocuments(Request $req)
     {
         $validated = Validator::make(
@@ -1117,10 +1151,12 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      |this function for assign hoarding to agency
      *
      */
+
     public function assignAgency(Request $req)
     {
         $validated = Validator::make(
@@ -1145,12 +1181,13 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010202", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
+
     /**
      * |---------------------------- List of the doc to upload ----------------------------|
      * | Calling function
-     * | 01.01
         | Serial No :  
      */
+
     public function getAgencyDocLists($application, $req)
     {
         // $user           = authUser($req);
@@ -1233,10 +1270,14 @@ class AgencyNewController extends Controller
         });
         return $filteredDocs;
     }
+
+
     /**
      * |----------------------------- Read the server url ------------------------------|
         | Serial No : 
      */
+
+     
     public function readDocumentPath($path)
     {
         $path = (config('app.url') . "/" . $path);

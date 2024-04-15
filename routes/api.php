@@ -551,69 +551,68 @@ Route::group(['middleware' => ['checkToken']], function () {
      * |status - open 
      */
     Route::controller(AgencyNewController::class)->group(function () {
-        Route::post('advertisement/addnew-agency', 'addNewAgency');
-        Route::post('advertisement/get-all', 'getAll');
-        Route::post('advertisement/update-agency-dtls', 'updateAgencydtl');
-        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');
-        Route::post('advertisement/addnew-hoarding', 'addNewHoarding');
-        Route::post('advertisement/get-all-hoarding', 'getAllHoard');
-        Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');
-        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');
-        Route::post('advertisement/add-new-brand', 'addBrand');                          // add brand 
-        Route::post('advertisement/get-all-brand', 'getAllBrand');                       // get details of brand 
-        Route::post('advertisement/update-brand', 'updateBrand');                        // update brand 
-        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');
-        Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');    // add advertisement type
-        Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');        // get advertisement type 
-        Route::post('advertisement/update-advertisements', 'updateAdvertisemnet');      // update Advertisement data
-        Route::post('advertisement/deactive-advertisement', 'deactiveAdvertisement');   // deactive advertisement  
-        Route::post('advertisement/add-new-location', 'addNewLocations');               // add new locations
-        Route::post('advertisement/get-all-location', 'getAllDtls');                    // get all locations
-        Route::post('advertisement/update-location', 'updatedtl');                      // update advertisement 
-        Route::post('advertisement/deactive-locations', 'deactiveLocation');            // deactive location
-        Route::post('advertisement/add-new-advertiser', 'addNewAdvertiser');            // add new advertiser
-        Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');            // get all advertiser 
-        Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');             // update  dtls  advertiser 
-        Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');          // deactive advertiser 
-        Route::post('advertisement/apply-hoarding', 'applyHoarding');
-        /**==apply hoarding== */
-        Route::post('advertisement/get-doc-list', 'getDocList');
-        Route::post('advertisement/upload-document', 'uploadDocument');
-        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');
-        Route::post('advertisement/assign-agency', 'assignAgency');
+        Route::post('advertisement/addnew-agency', 'addNewAgency');                                       # 01  (ADD AGENCY) 
+        Route::post('advertisement/get-all', 'getAll');                                                   # 02  (GET ALL AGENCY  LIST)  
+        Route::post('advertisement/update-agency-dtls', 'updateAgencydtl');                               # 03  (UPDATE AGENCY BY ID)
+        Route::post('advertisement/delete-agency-dtls', 'AgencyDelete');                                  # 04  (DELETE AGENCY )
+        Route::post('advertisement/addnew-hoarding', 'addNewHoarding');                                   # 05   (ADD HOARDINGS)
+        Route::post('advertisement/get-all-hoarding', 'getAllHoard');                                     # 06   (GET ALL HOARDINGS)
+        Route::post('advertisement/update-hoard-dtl', 'updatehoardingdtl');                               # 07   (UPDATE HOARDINGS)
+        Route::post('advertisement/delete-hoard-dtl', 'HoardDelete');                                     # 08   (DELETE HOARDINGS)
+        Route::post('advertisement/add-new-brand', 'addBrand');                                           # 09   ( ADD  BRAND) 
+        Route::post('advertisement/get-all-brand', 'getAllBrand');                                        # 10   (GET DETAILS OF  BRAND )
+        Route::post('advertisement/update-brand', 'updateBrand');                                         # 11   (UPDATE BRAND) 
+        Route::post('advertisement/delete-brand-dtl', 'DeleteBrand');                                     # 12   (DELETE BRAND)
+        Route::post('advertisement/add-advertisement-type', 'addAdvertisementType');                      # 13     (ADD ADVERTISEMENT TYPE)
+        Route::post('advertisement/getall-adevert-type', 'getAllAdvertisement');                          # 14    (GET  ADVERTISMEMENT  TYPE) 
+        Route::post('advertisement/update-advertisements', 'updateAdvertisemnet');                        # 15   (UPDATE ADVERTISEMENT DATA)
+        Route::post('advertisement/deactive-advertisement', 'deactiveAdvertisement');                     # 16     (DEACTIVE ADVERTISEMENT)  
+        Route::post('advertisement/add-new-location', 'addNewLocations');                                 # 17   (ADD NEW LOCATIONS)
+        Route::post('advertisement/get-all-location', 'getAllDtls');                                      # 18    (GET ALL LOCATIONS)
+        Route::post('advertisement/update-location', 'updatedtl');                                        # 19    (UPDATE ADVERTISMENT) 
+        Route::post('advertisement/deactive-locations', 'deactiveLocation');                              # 20    (DEACTIVE LOCATIONS)
+        Route::post('advertisement/add-new-advertiser', 'addNewAdvertiser');                              # 21    (ADD NEW ADVERTISER)
+        Route::post('advertisement/get-all-advertiser', 'getALLAdvertiser');                              # 22    (GET ALL ADVERTISER) 
+        Route::post('advertisement/update-advertiser', 'updateAdvertiserdtl');                            # 23    (update  dtls  advertiser) 
+        Route::post('advertisement/deactive-advertiser', 'deactiveAdvertiser');                           # 24   (DEACTIVE ADVERTISER) 
+        Route::post('advertisement/apply-hoarding', 'applyHoarding');                                     ### 25   (APPLY REGISTER FOR HOARDINGS)
+        Route::post('advertisement/get-doc-list', 'getDocList');                                          # 26   (GET DOC LIST)
+        Route::post('advertisement/upload-document', 'uploadDocument');                                   # 25   (UPLOAD DOCUMENT)
+        Route::post('advertisement/get-upload-documents', 'getUploadDocuments');                          # 26   (GET UPLOAD DOCUMENTS)
+        Route::post('advertisement/assign-agency', 'assignAgency');                                       # 27   (ASSIGH HOARDINGS TO AGENCY)
     });
     /**
      * created by = Arshad Hussain 
-     * workflow controller for new advertisement module
+     * workflow controller for (AKOLA ADVERTSIMENT MODULE)
      */
     Route::controller(AgencyWorkflowController::class)->group(function () {
-        Route::post('advertisement/list-outbox', 'listOutbox');
-        Route::post('advertisement/list-inbox1', 'listInbox');
-        Route::post('advertisement/post-next-level', 'postNextLevel');
-        Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');
-        Route::post('advertisement/get-details-by-id', 'getWorkflow');
-        Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');
-        Route::post('advertisement/get-agency-details', 'getAgencyDetails');
-        Route::post('advertisement/get-all-agency', 'getAllAgency');
-        Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');
-        Route::post('advertisement/search-hoarding', 'searchHoarding');
-        Route::post('advertisement/get-approve-applications', 'getApproveApplications');
-        Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                              //get dashboard data of agency
-        Route::post('advertisement/get-agency-application-dtls', 'getAgencyAplicationdtl');                           //get dashboard data of agency
-        Route::post('advertisement/get-hoarding-type', 'hoardingType');                                                // get hoarding type master
-        Route::post('advertisement/get-ulb-dashboard', 'ulbDashboard');                                                // get hoarding type master
-        Route::post('advertisement/get-Hordingdtl-by-id', 'getHoardingDtlsById');                                      //validate details by hoarding By ID 
-        Route::post('advertisement/back-to-citizen', 'backToCitizen');                                                // back to citizen 
-        Route::post('advertisement/bta-inbox', 'btaInbox');                                                          // back to citizen 
-        Route::post('advertisement/reupload-document', 'reuploadDocument');
-        Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                                          //via agency 
-        Route::post('advertisement/rejected-document', 'getRjectedDocById');
-        Route::post('advertisement/get-hoard-type', 'hoardType');                                                 //via applications agency 
-        Route::post('advertisement/get-rate-by-date', 'getRateByDate');
-        Route::post('advertisement/get-size-hoardings', 'getSizeAdvertisement');
-        Route::post('advertisement/get-rate', 'calculateRate');
-        Route::post('advertisement/get-permanant-size', 'getAllFixedMeasurementPermanantAdv');
-        Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');
+        Route::post('advertisement/list-inbox1', 'listInbox');                                             # 01     (INBOX LIST)   
+        Route::post('advertisement/list-outbox', 'listOutbox');                                            # 02     (OUTBOX LIST)
+        Route::post('advertisement/post-next-level', 'postNextLevel');                                     # 03     (FORWARD OR BACKWARD)
+        Route::post('advertisement/doc-verify-reject', 'docVerifyRejects');                                # 04     (DOCUMENT VERIFY OR REJECT)
+        Route::post('advertisement/get-details-by-id', 'getWorkflow');                                     # 05     (GET WORKFOW DATA )
+        Route::post('advertisement/fnal-approval-rejection', 'finalVerificationRejection');                # 06     (FINAL APPROVAL OR REJECTIONS)
+        Route::post('advertisement/get-agency-details', 'getAgencyDetails');                               # 07     (GET AGENCY DETAILS DATA)
+        Route::post('advertisement/get-all-agency', 'getAllAgency');                                       # 08     (GET ALL AGENCY DETAILS)
+        Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');                     # 09     (GET AGENCY HOARIDNGS ADDRESS)
+        Route::post('advertisement/search-hoarding', 'searchHoarding');                                    # 10     (SEARCH HOARDINGS APPLICATIONS)
+        Route::post('advertisement/get-approve-applications', 'getApproveApplications');                   # 11     (GET APPROVE APPLICATIONS)
+        Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                  # 12     (GET DASHBOARD DATA OF AGENCY)
+        Route::post('advertisement/get-agency-application-dtls', 'getAgencyAplicationdtl');                # 13       GET DASHBOARD DATA OF AGENCY)
+        Route::post('advertisement/get-hoarding-type', 'hoardingType');                                    # 14       (GET HOARDINGS TYPE MASTER)
+        Route::post('advertisement/get-ulb-dashboard', 'ulbDashboard');                                    # 15       (GET HOARDING TYPE MASTER DATA)
+        Route::post('advertisement/get-Hordingdtl-by-id', 'getHoardingDtlsById');                          # 16       (VALIDATE DETAILS BY HOARDINGS BY ID) 
+        Route::post('advertisement/back-to-citizen', 'backToCitizen');                                     # 17       (BACK TO CITIZEN) 
+        Route::post('advertisement/bta-inbox', 'btaInbox');                                                # 18      ( BACK TO CITIZEN) 
+        Route::post('advertisement/reupload-document', 'reuploadDocument');                                # 19      (REUPLOAD DOCUMENT)
+        Route::post('advertisement/get-rejected-document', 'getRjectedDoc');                               # 20        (GET REJECTED DOC ) 
+        Route::post('advertisement/rejected-document', 'getRjectedDocById');                               # 21        (GET REJECTED DOC BY ID)
+        Route::post('advertisement/get-hoard-type', 'hoardType');                                          # 22    (via applications agency) 
+        Route::post('advertisement/get-rate-by-date', 'getRateByDate');                                    # 23     (GET RATE BY DATE) =>REMOVE
+        Route::post('advertisement/get-size-hoardings', 'getSizeAdvertisement');                           # 24    ( GET SIZE OF ADVERTISMEMENT HOARDINGS)
+        Route::post('advertisement/get-rate', 'calculateRate');                                            # 25         //(RATE OF DIFFERENT TYPE OF ADVERTISEMENT)
+        Route::post('advertisement/get-permanant-size', 'getAllFixedMeasurementPermanantAdv');             # 26   (GET MASTER DATA OF SIZES)
+        Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');                            # 27      
         Route::post('advertisement/get-vehicle', 'getVehicle');
     });
 });

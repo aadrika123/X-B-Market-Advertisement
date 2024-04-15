@@ -228,7 +228,7 @@ class AgencyHoarding extends Model
             ->where('agency_hoardings.status', 1)
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
-            ->orderBy('agency_hoardings.id','desc');
+            ->orderBy('agency_hoardings.id', 'desc');
     }
     /**
      * get details of approve applications 
@@ -256,7 +256,9 @@ class AgencyHoarding extends Model
             'agency_hoardings.total_ballon',
             'hoarding_rates.size',
             'agency_hoardings.size_square_feet',
-            'agency_hoardings.application_no'
+            'agency_hoardings.application_no',
+            
+
 
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
@@ -270,6 +272,7 @@ class AgencyHoarding extends Model
                 $join->on('hoarding_rates.id', '=', 'agency_hoardings.hoard_size_id')
                     ->where('hoarding_rates.status', 1);
             })
+
 
             ->Join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
             ->Join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
