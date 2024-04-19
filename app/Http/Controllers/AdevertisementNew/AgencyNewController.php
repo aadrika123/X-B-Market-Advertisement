@@ -799,7 +799,7 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $e->getMessage(), "", "050501", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
-#===============================Apply Hoardings================#
+    #===============================Apply Hoardings================#
     /**
        |apply for hoarding for register advertisement by agency 
        |to advertiser 
@@ -894,7 +894,7 @@ class AgencyNewController extends Controller
             $metaReqs['senderRoleId'] = $senderRoleId ?? null;
             $metaReqs['receiverRoleId'] = $receiverRoleId ?? null;
             $metaReqs['user_id'] = $user->id;
-            $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s'); 
+            $metaReqs['trackDate'] = Carbon::now()->format('Y-m-d H:i:s');
             $request->request->add($metaReqs);
             $mWorkflowTrack->saveTrack($request);
             DB::commit();
@@ -1277,7 +1277,7 @@ class AgencyNewController extends Controller
         | Serial No : 
      */
 
-     
+
     public function readDocumentPath($path)
     {
         $path = (config('app.url') . "/" . $path);

@@ -95,7 +95,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('crud/toll/insert', 'store');                                                               // 02 ( Add Toll )
         Route::post('crud/toll/list-toll', 'listToll');                                                         // 03 ( Get List Toll )
         Route::post('crud/toll/edit', 'edit');                                                                  // 04 ( Edit Toll ) 
-        Route::post('crud/toll/show-by-id', 'show');                                                            // 05 ( Get Toll Deails By Id )
+        Route::post('crud/toll/show-by-id', 'show');                                                              // 05 ( Get Toll Deails By Id )
         Route::post('crud/toll/retrieve-all', 'retrieve');                                                      // 06 ( Get All Toll active and Deactive )
         Route::post('crud/toll/retrieve-all-active', 'retrieveActive');                                         // 07 ( Get All Active Toll )
         Route::post('crud/toll/delete', 'delete');                                                              // 08 ( Toll Active or Deactive )    

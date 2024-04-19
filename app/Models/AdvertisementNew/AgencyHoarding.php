@@ -96,6 +96,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->total_vehicle                  = $request->Noofvehicle;
         $mAgencyHoarding->vehicle_type_id                = $request->vehicleType;
         $mAgencyHoarding->purpose                        = $request->purpose;
+        $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
@@ -257,7 +258,7 @@ class AgencyHoarding extends Model
             'hoarding_rates.size',
             'agency_hoardings.size_square_feet',
             'agency_hoardings.application_no',
-            
+
 
 
         )

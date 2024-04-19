@@ -1806,6 +1806,7 @@ class AgencyWorkflowController extends Controller
             'advertisementType' => 'nullable|string',
             'squareFeetId'      => 'nullable',
             'squarefeet'        => 'nullable',
+            'Noofhoardings'     => 'nullable'
 
         ]);
         if ($validator->fails()) {
