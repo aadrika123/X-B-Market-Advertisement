@@ -258,21 +258,21 @@ class AgencyNewController extends Controller
     public function addNewHoarding(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'hoardingType' => 'required|',
-            'latitude' => 'nullable|',
-            'longitude' => 'nullable|',
-            'length' => 'required|',
+            'hoardingType' => 'required',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
+            'length' => 'required',
             'width' => 'nullable|numeric',
             'remarks' => 'nullable',
-            'address' => 'nullable|',
-            'agencyId' => 'nullable|',
+            'address' => 'nullable',
+            'agencyId' => 'nullable',
             'documents' => 'nullable',
             "zoneId" => 'required',
             "wardId" => 'required'
         ]);
-        if ($validator->fails()) {
-            return ['status' => false, 'message' => $validator->errors()];
-        }
+        if ($validator->fails()) 
+            return validationError($validator);
+        
         try {
             $user               = authUser($req);
             $userType           = $user->user_type;
@@ -830,7 +830,7 @@ class AgencyNewController extends Controller
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
             if (!$ulbWorkflowId) {
-                throw new Exception("Respective Ulb is not maped to Water Workflow!");
+                throw new Exception("Respective Ulb is not maped to Advertisement Workflow!");
             }
             $refInitiatorRoleId = $this->getInitiatorId($ulbWorkflowId->id);
             $refFinisherRoleId  = $this->getFinisherId($ulbWorkflowId->id);
