@@ -402,7 +402,7 @@ class AgencyHoarding extends Model
             'hoarding_masters.hoarding_no',
             "hoarding_types.type as hoarding_type",
             "workflow_tracks.message as reason",
-            // "workflow_tracks.workflow_id"
+            "workflow_tracks.workflow_id"
 
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
@@ -417,8 +417,8 @@ class AgencyHoarding extends Model
             ->where('wf_active_documents.workflow_id', $workflowIds)
             ->where('workflow_tracks.status', true)
             ->where('workflow_tracks.message', '<>', null)
-            // ->where('workflow_tracks.workflow_id', $workflowIds)
-            // ->distinct('agency_hoardings.id')
+            ->where('workflow_tracks.workflow_id', $workflowIds)
+            ->distinct('agency_hoardings.id')
             ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1);
     }
