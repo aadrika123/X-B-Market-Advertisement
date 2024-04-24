@@ -402,7 +402,7 @@ class AgencyHoarding extends Model
             'hoarding_masters.hoarding_no',
             "hoarding_types.type as hoarding_type",
             "workflow_tracks.message as reason",
-            "workflow_tracks.workflow_id"
+            "wf_active_documents.workflow_id"
 
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
