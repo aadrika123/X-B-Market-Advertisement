@@ -416,7 +416,7 @@ class AgencyHoarding extends Model
             ->where('wf_active_documents.status', '!=', 0)
             ->where('wf_active_documents.workflow_id', $workflowIds)
             ->leftJoin('workflow_tracks', function ($join) use ($workflowIds) {
-                $join->on('workflow_tracks.ref_table_id_value', '=', 'agency_hoardings.id')
+                $join->on('workflow_tracks.ref_table_id_value','agency_hoardings.id')
                     ->where('workflow_tracks.status', true)
                     ->where('workflow_tracks.message', '<>', null)
                     ->where('workflow_tracks.workflow_id', $workflowIds);
