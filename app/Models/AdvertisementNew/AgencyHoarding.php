@@ -258,6 +258,7 @@ class AgencyHoarding extends Model
             'hoarding_rates.size',
             'agency_hoardings.size_square_feet',
             'agency_hoardings.application_no',
+            'agency_hoardings.no_of_hoarding'
 
 
 
