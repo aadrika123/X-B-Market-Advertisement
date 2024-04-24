@@ -411,7 +411,7 @@ class AgencyHoarding extends Model
             ->join('wf_active_documents', 'wf_active_documents.active_id', 'agency_hoardings.id')
             ->leftjoin('workflow_tracks', 'workflow_tracks.ref_table_id_value', 'agency_hoardings.id')
             ->where('agency_masters.email', $email)
-            // ->where('agency_masters.status', 1)
+            ->where('agency_masters.status', 1)
             // ->where('wf_active_documents.verify_status', 2)
             // ->where('wf_active_documents.status', '!=', 0)
             // ->where('wf_active_documents.workflow_id', $workflowIds)
