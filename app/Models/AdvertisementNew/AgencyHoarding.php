@@ -418,8 +418,8 @@ class AgencyHoarding extends Model
             // ->where('workflow_tracks.status', true)
             // ->where('workflow_tracks.message', '<>', null)
             // ->where('workflow_tracks.workflow_id', $workflowIds)
-            // ->distinct('agency_hoardings.id')
-            // ->where('agency_hoardings.status', true)
+            ->distinct('agency_hoardings.id')
+            ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1);
     }
     #details by ID 
