@@ -423,7 +423,8 @@ class AgencyHoarding extends Model
             })
             ->distinct('agency_hoardings.id')
             ->where('agency_hoardings.status', true)
-            ->where('agency_masters.status', 1);
+            ->where('agency_masters.status', 1)
+            ->orderBy('agency_hoardings.id', 'desc');
     }
     #details by ID 
     public function getRejectDocbyId($email, $workflowIds, $applicationId)
