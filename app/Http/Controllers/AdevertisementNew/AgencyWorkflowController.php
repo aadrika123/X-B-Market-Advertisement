@@ -789,6 +789,8 @@ class AgencyWorkflowController extends Controller
                 $flag = 0;
                 break;
             }
+            if ($changeStatus == 0)
+                break;
         }
         if ($flag == 0)
             return 0;
