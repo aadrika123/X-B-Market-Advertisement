@@ -785,14 +785,10 @@ class AgencyWorkflowController extends Controller
                     break;
                 }
             }
-            if ($type == "O" && $changeStatus == 0) { // If a type "O" document is rejected
-                $flag = 0;
-                break;
-            }
-            if ($type == "R" && $changeStatus == 0) { // If a type "R" document is rejected
-                $flag = 0;
-                break;
-            }
+            // if ($changeStatus == 0 && $type == "R") {
+            //     $flag = 0;
+            //     break;
+            // }
             if ($changeStatus == 0)
                 break;
         }
