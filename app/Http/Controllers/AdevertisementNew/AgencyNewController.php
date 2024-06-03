@@ -1425,7 +1425,7 @@ class AgencyNewController extends Controller
             // $this->checkParamForUser($user, $roleDetails);
 
             try {
-                $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails()
+                $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails($request->auth['email'])
                     ->select(
                         DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
                         DB::raw("TO_CHAR(agency_hoarding_approve_applications.apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
