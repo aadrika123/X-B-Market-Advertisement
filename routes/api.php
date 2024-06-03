@@ -580,7 +580,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/upload-document', 'uploadDocument');                                   # 25   (UPLOAD DOCUMENT)
         Route::post('advertisement/get-upload-documents', 'getUploadDocuments');                          # 26   (GET UPLOAD DOCUMENTS)
         Route::post('advertisement/assign-agency', 'assignAgency');                                       # 27   (ASSIGH HOARDINGS TO AGENCY)
-        Route::post('advertisement/list-approval-applications', 'listfinisherApproveApplications');                    # 28   (List Approval Application)
+        Route::post('advertisement/list-approval-applications', 'listfinisherApproveApplications');       # 28   (List Approval Application)
+        Route::post('advertisement/get-details-from-id', 'getApprovedApplicationDetails');                 # 28   (List Approval Application)
+        
     });
     /**
      * created by = Arshad Hussain 

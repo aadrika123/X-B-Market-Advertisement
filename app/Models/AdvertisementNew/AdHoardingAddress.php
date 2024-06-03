@@ -21,4 +21,14 @@ class AdHoardingAddress extends Model
             ]);
         }
     }
+
+    # get Address 
+    public function getAddress($applicationId)
+    {
+        return self::select(
+            'ad_hoarding_addresses.address'
+        )
+            ->where('ad_hoarding_addresses.hoarding_id', $applicationId)
+            ->where('ad_hoarding_addresses.status',1);
+    }
 }

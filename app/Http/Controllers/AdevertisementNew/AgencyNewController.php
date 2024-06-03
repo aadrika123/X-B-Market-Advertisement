@@ -35,6 +35,7 @@ use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
 use App\Models\AdvertisementNew\AdHoardingAddress;
+use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -1444,6 +1445,7 @@ class AgencyNewController extends Controller
                         // "agency_hoarding_approve_applications.approve_end_date",
                         "agency_hoarding_approve_applications.doc_verify_status",
                         "agency_hoardings.user_type",
+                        "agency_hoardings.mobile_no",
                         "wf_roles.role_name",
                         "agency_hoarding_approve_applications.status as registrationSatus",
                         DB::raw("CASE 
@@ -1511,6 +1513,62 @@ class AgencyNewController extends Controller
             return responseMsgs(true, $msg, remove_null($list), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+    /**
+     * | Get Approved application details by application id
+     * | collective data with registration charges
+        | Serial No :
+        | Working
+     */
+    public function getApprovedApplicationDetails(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                       = null;
+            $canTakePayment             = false;
+            if ($req->authRequired == true && $req->token != null) {
+                $user = authUser($req);
+                // Check if user is JSK type for payment
+                if (!is_null($user) && $user->user_type == 'JSK') {
+                    $canTakePayment = true;
+                }
+            }
+            $viewRenewButton            = false;
+            $applicationId              = $req->applicationId;
+            // $mRigApprovedRegistration   = new RigApprovedRegistration();
+            $mAgencApproveHording       = new AgencyHoardingApproveApplication();
+            $mHoardingAddress           = new AdHoardingAddress();
+            // $mRigRegistrationCharge     = new RigRegistrationCharge();6
+            // $mPetTran                   = new RigTran();
+            // $mUlbMater                  = new UlbMaster();
+
+            
+            $ApplicationDetails = $mAgencApproveHording->getRigApprovedApplicationById($applicationId)
+                ->where('agency_hoardings.status', '<>', 0)                                                       // Static
+                ->first();
+            if (is_null($ApplicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            # get Address
+            $getAddress= $mHoardingAddress->getAddress($applicationId)->get();
+            
+            # return Details 
+            $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
+            $approveApplicationDetails['address']                  = $getAddress;
+            
+
+            return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
 }
