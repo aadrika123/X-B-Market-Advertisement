@@ -220,6 +220,28 @@ if (!function_exists('authUser')) {
             return json_decode($req->auth);
     }
 }
+if (!function_exists('getFY')) {
+    function getFY($date = null)
+    {
+        if (is_null($date)) {
+            $carbonDate = Carbon::now(); //createFromFormat("Y-m-d", $date);
+            $MM = (int) $carbonDate->format("m");
+            $YY = (int) $carbonDate->format("Y");
+            // $MM = date("m");
+            // $YY = date("Y");
+
+        } else {
+
+            $MM = date("m", strtotime($date));
+            $YY = date("Y", strtotime($date));
+        }
+        if ($MM > 3) {
+            return ($YY) . "-" . ($YY + 1);
+        } else {
+            return ($YY - 1) . "-" . ($YY);
+        }
+    }
+}
 
 /**
  * | To throw Validation Error

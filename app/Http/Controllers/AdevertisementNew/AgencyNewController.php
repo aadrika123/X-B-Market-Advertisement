@@ -34,13 +34,14 @@ use App\Models\AdvertisementNew\Location;
 use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
-
+use App\Models\AdvertisementNew\AdHoardingAddress;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
 use App\Models\User;
 use App\Models\Workflows\WfRole;
+use Illuminate\Database\QueryException;
 
 class AgencyNewController extends Controller
 {
@@ -69,6 +70,7 @@ class AgencyNewController extends Controller
     protected $_docReqCatagory;
     protected $_tempId;
     protected $_paramTempId;
+    protected $_hoardingAddress;
 
     public function __construct()
     {
@@ -80,6 +82,7 @@ class AgencyNewController extends Controller
         $this->_advObj     = new AdvertiserMaster();
         $this->_agencyObj = new AgencyHoarding();
         $this->_activeHObj = new AdvActiveHoarding();
+        $this->_hoardingAddress = new AdHoardingAddress();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -270,9 +273,9 @@ class AgencyNewController extends Controller
             "zoneId" => 'required',
             "wardId" => 'required'
         ]);
-        if ($validator->fails()) 
+        if ($validator->fails())
             return validationError($validator);
-        
+
         try {
             $user               = authUser($req);
             $userType           = $user->user_type;
@@ -870,7 +873,11 @@ class AgencyNewController extends Controller
             $idGeneration       = new PrefixIdGenerator($this->_tempParamId, $ulbId);
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
-            $AgencyId        =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
+            $AgencyId           =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
+            // Save multiple addresses
+            foreach ($request->addressField as $address) {
+                $this->_hoardingAddress->saveMltplAddress($AgencyId, $address);
+            }
             $var = [
                 'relatedId' => $AgencyId,
                 "Status"    => 2,
@@ -1379,5 +1386,131 @@ class AgencyNewController extends Controller
             return true;
         });
         return $checkDocument;
+    }
+
+
+    /**
+     * | Get approved and rejected application list by the finisher
+        | Serial No :
+        | Working
+     */
+    public function listfinisherApproveApplications(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable|in:mobileNo,applicantName,applicationNo,holdingNo,safNo',              // Static
+                'parameter' => 'nullable',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $canTakePayment             = false;
+            $user                       = authUser($request);
+            $userId                     = $user->id;
+            // $confWorkflowMasterId       = $this->_workflowMasterId;
+            $key                        = $request->filterBy;
+            $paramenter                 = $request->parameter;
+            // $pages                      = $request->perPage ?? 10;
+            $pages = $request->perPage ? $request->perPage : 10;
+
+            $refstring                  = Str::snake($key);
+            $msg                        = "Approve application list!";
+            $mAgencyHoarding            = new AgencyHoarding();
+
+            # Check params for role user 
+            // $roleDetails = $this->getUserRollV2($userId, $user->ulb_id, $confWorkflowMasterId);
+            // $this->checkParamForUser($user, $roleDetails);
+
+            try {
+                $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails()
+                    ->select(
+                        DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
+                        DB::raw("TO_CHAR(agency_hoarding_approve_applications.apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                        "agency_hoardings.id",
+                        "agency_hoarding_approve_applications.application_no",
+                        "agency_hoarding_approve_applications.apply_date",
+                        "agency_hoarding_approve_applications.address",
+                        "agency_hoarding_approve_applications.application_type",
+                        // "agency_hoardings.payment_status",
+                        "agency_hoarding_approve_applications.status",
+                        "agency_hoarding_approve_applications.id",
+                        "agency_hoarding_approve_applications.parked",
+                        "agency_hoarding_approve_applications.doc_upload_status",
+                        "agency_hoarding_approve_applications.doc_verify_status",
+                        // "agency_hoarding_approve_applications.approve_date",
+                        // "agency_hoarding_approve_applications.approve_end_date",
+                        "agency_hoarding_approve_applications.doc_verify_status",
+                        "agency_hoardings.user_type",
+                        "wf_roles.role_name",
+                        "agency_hoarding_approve_applications.status as registrationSatus",
+                        DB::raw("CASE 
+                        WHEN agency_hoardings.approve = 1 THEN 'Approved'
+                        WHEN agency_hoardings.approve = 2 THEN 'Rejected'
+                        WHEN agency_hoardings.approve = 0 THEN 'Pending'
+                        END as current_status"),
+                        // DB::raw("CASE 
+                        // WHEN agency_hoardings.payment_status = 1 THEN 'Paid'
+                        // WHEN agency_hoardings.payment_status = 0 THEN 'Unpaid'
+                        // END as paymentStatus")
+                    )
+                    ->where('agency_hoarding_approve_applications.status', '<>', 0)
+                    // ->where('agency_hoarding_approve_applications.approve_user_id', $userId)
+                    // ->where('agency_hoarding_approve_applications.finisher_role_id', $roleDetails->role_id)
+                    // ->where('agency_hoarding_approve_applications.current_role_id', $roleDetails->role_id)
+                    ->orderByDesc('agency_hoarding_approve_applications.id');
+
+                # Collect querry Exceptions 
+            } catch (QueryException $qurry) {
+                return responseMsgs(false, "An error occurred during the query!", $qurry->getMessage(), "", "01", ".ms", "POST", $request->deviceId);
+            }
+
+            if ($request->filterBy && $request->parameter) {
+                $msg = "Hording approved appliction details according to $key!";
+                # Distrubtion of search category  ❗❗ Static
+                switch ($key) {
+                        // case ("mobileNo"):
+                        //     $activeApplication = $baseQuerry->where('rig_approve_applicants.' . $refstring, 'LIKE', '%' . $paramenter . '%')
+                        //         ->paginate($pages);
+                        //     break;
+                    case ("applicationNo"):
+                        $activeApplication = $baseQuerry->where('agency_hoarding_approve_applications.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                            ->paginate($pages);
+                        break;
+                        // case ("applicantName"):
+                        //     $activeApplication = $baseQuerry->where('rig_approve_applicants.' . $refstring, 'ILIKE', '%' . $paramenter . '%')
+                        //         ->paginate($pages);
+                        //     break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+                # Check if data not exist
+                $checkVal = collect($activeApplication)->last();
+                if (!$checkVal || $checkVal == 0) {
+                    $msg = "Data Not found!";
+                }
+
+                return responseMsgs(true, $msg, remove_null($activeApplication), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+            }
+            # Check for jsk for renewal button
+            if ($user->user_type == 'JSK') {                                                                                // Static
+                $canTakePayment = true;
+            }
+            $paginator = $baseQuerry->paginate($pages);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                "canTakePayment" => $canTakePayment
+            ];
+            # Get the latest data for Finisher
+            // $returnData = $baseQuerry->orderBy('agency_hoarding_approve_applications.approve_date')->paginate($pages);
+            return responseMsgs(true, $msg, remove_null($list), "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
     }
 }

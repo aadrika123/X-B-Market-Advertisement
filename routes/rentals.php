@@ -25,8 +25,6 @@ Route::controller(ShopController::class)->group(function () {
     Route::post('rental/get-search-shop-by-mobile-no-name-shop', 'getsearchShopByMobileNoNameShopNo');          // 54 Search Shop By Mobile No, Name, or Shop No Without Login
     Route::post('rental/update-from-pinelab-data', 'updateFromPinelabData');                                    // 55 Search Shop By Mobile No, Name, or Shop No Without Login
     Route::post('rental/sendSms', 'sendSms');
-
-
 });
 
 // Route::controller(TollsController::class)->group(function () {
@@ -84,7 +82,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/search-demand-for-update', 'searchDemandForUpdate');                                // 51  Search Demand For Update
         Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                           // 52  Update Shop Demand
         Route::post('rental/balance-sheet-financial-year-wise', 'dcbFinancialYearWise');                        // 53  DCB Financial Year Wise
-        Route::post('rental/list-collections','listShopCollectionv2');                                     // 54 list shop collection !pagination
+        Route::post('rental/list-collections', 'listShopCollectionv2');                                     // 54 list shop collection !pagination
+        Route::post('rental/shop-demand-generate', 'generateShopDemandYearly');
     });
 
     /**

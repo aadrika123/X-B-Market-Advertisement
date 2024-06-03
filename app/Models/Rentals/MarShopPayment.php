@@ -185,7 +185,8 @@ class MarShopPayment extends Model
             'mst.shop_type',
             'mkt.market_name',
             'mc.circle_name',
-            'mar_shop_payments.pmt_mode as paymentMode'
+            'mar_shop_payments.pmt_mode as paymentMode',
+            'mar_shop_payments.shop_category_id'
 
          )
          ->leftjoin('mar_shops as t2', 't2.id', '=', 'mar_shop_payments.shop_id')

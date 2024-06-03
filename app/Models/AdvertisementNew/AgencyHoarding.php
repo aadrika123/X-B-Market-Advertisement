@@ -97,6 +97,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->vehicle_type_id                = $request->vehicleType;
         $mAgencyHoarding->purpose                        = $request->purpose;
         $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
+        $mAgencyHoarding->mobile_no                      = $request->mobileNo;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
@@ -451,5 +452,20 @@ class AgencyHoarding extends Model
             // ->where('agency_hoardings.status', true)
             ->where('agency_masters.status', 1)
             ->get();
+    }
+
+     /**
+     * | Get all details according to key 
+     */
+    public function getAllApprovdApplicationDetails()
+    {
+        return DB::table('agency_hoarding_approve_applications')
+            ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
+            ->join('agency_hoardings','agency_hoardings.id','agency_hoarding_approve_applications.id')
+            // ->leftJoin('rig_trans', function ($join) {
+            //     $join->on('rig_trans.related_id', '=', 'rig_active_registrations.id')
+            //         ->where('rig_trans.status', 1);
+            // });
+            ;
     }
 }

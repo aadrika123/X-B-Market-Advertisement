@@ -66,4 +66,12 @@ class MarShopDemand extends Model
     public function payBeforeAllDemand($shopId) {
         return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('payment_status','0')->orderBy('financial_year','ASC')->get();
     }
+
+     # get consumer demand details 
+     public function CheckConsumerDemand($req)
+     {
+         return self::where('shop_id', $req->shopId)
+             ->where('status', true)
+             ->orderByDesc('id');
+     }
 }
