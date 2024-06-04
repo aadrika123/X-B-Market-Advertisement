@@ -291,6 +291,7 @@ class AgencyHoarding extends Model
     public function getAppicationDetails($applicationId)
     {
         return self::select(
+            'agency_hoardings.id',
             'agency_hoardings.from_date',
             'agency_hoardings.to_date',
             'agency_hoardings.advertiser',
@@ -312,10 +313,8 @@ class AgencyHoarding extends Model
             'hoarding_rates.size',
             'agency_hoardings.size_square_feet',
             'agency_hoardings.application_no',
-            'agency_hoardings.no_of_hoarding'
-
-
-
+            'agency_hoardings.no_of_hoarding',
+            'agency_hoardings.ulb_id'
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
@@ -334,9 +333,8 @@ class AgencyHoarding extends Model
             ->Join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.id', $applicationId)
-            ->where('agency_hoardings.status', true)
+            ->where('agency_hoardings.status', true);
             // ->where('agency_hoardings.approve', 1)
-            ->first();
     }
 
     /**

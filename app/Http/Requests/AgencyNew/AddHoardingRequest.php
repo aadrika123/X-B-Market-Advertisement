@@ -44,7 +44,7 @@ class AddHoardingRequest extends FormRequest
             'squareFeetId'         => 'nullable|integer|min:1',
             'hoardingType'          => 'nullable|string',
             'Noofhoardings'        =>  'nullable',
-            'mobileNo'              => 'required|string|regex:/^[0-9]{10}$/',
+            'mobileNo'              => 'nullable|string|regex:/^[0-9]{10}$/',
             'documents'            => 'nullable|array',
             'documents.*.image'    => 'nullable|mimes:png,jpeg,pdf,jpg',
             'documents.*.docCode'  => 'nullable|string',

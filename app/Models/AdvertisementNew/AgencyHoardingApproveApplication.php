@@ -61,7 +61,11 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoardings.no_of_hoarding as totalHoarding',
             'agency_hoardings.purpose',
             'agency_hoardings.advertiser',
-            'agency_hoardings.mobile_no as mobileNo'
+            'agency_hoardings.mobile_no as mobileNo',
+            DB::raw("CASE 
+            WHEN agency_hoardings.payment_status = '1' THEN 'Paid'
+            WHEN agency_hoardings.payment_status = '0' THEN 'Unpaid'
+            END AS paymentStatus"),
         )
             ->join('ulb_masters', 'ulb_masters.id', 'agency_hoarding_approve_applications.ulb_id')
             // ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'agency_hoarding_approve_applications.ward_id')

@@ -18,7 +18,7 @@ class AdTranDetail extends Model
         $mPetTranDetail->tran_id        = $tranId;
         $mPetTranDetail->application_id = $refReq['id'];
         $mPetTranDetail->charge_id      = $refReq['refChargeId'];
-        $mPetTranDetail->total_demand   = $refReq['roundAmount'];
+        // $mPetTranDetail->total_demand   = $refReq['roundAmount'];
         $mPetTranDetail->payment_for    = $refReq['tranTypeId'];
         $mPetTranDetail->save();
     }

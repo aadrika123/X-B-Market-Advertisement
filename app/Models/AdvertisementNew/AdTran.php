@@ -16,7 +16,7 @@ class AdTran extends Model
      */
     public function saveTranDetails($req)
     {
-        $paymentMode = Config::get("rig.PAYMENT_MODE");
+        $paymentMode = Config::get("advert.PAYMENT_MODE");
 
         $mPetTran = new AdTran();
         $mPetTran->related_id   = $req['id'];

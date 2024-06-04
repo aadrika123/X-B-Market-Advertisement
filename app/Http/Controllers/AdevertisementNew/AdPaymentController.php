@@ -147,7 +147,7 @@ class AdPaymentController extends Controller
                 ]);
                 $this->postOtherPaymentModes($req);
             }
-            $this->saveadvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+            $this->saveAdvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             $payRelatedDetails['applicationDetails']->payment_status = 1;
             $payRelatedDetails['applicationDetails']->save();
             DB::commit();
@@ -166,12 +166,12 @@ class AdPaymentController extends Controller
         | Serial No :
         | Working
      */
-    public function saveRigRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
+    public function saveAdvertRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
     {
         $mAdTranDetail          = new AdTranDetail();
-        $mAgencyHoarding       = new AgencyHoarding();
-        $mAdTran               = new AdTran();
-        $applicationId          = $activeConRequest->ref_application_id;
+        $mAgencyHoarding        = new AgencyHoarding();
+        $mAdTran                = new AdTran();
+        $applicationId          = $activeConRequest->id;
 
         if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
             $charges->paid_status = 2;                                                      // Static
@@ -210,6 +210,75 @@ class AdPaymentController extends Controller
         | Serial No: 
         | Under Construction
      */
+    // public function checkParamForPayment($req, $paymentMode)
+    // {
+    //     $applicationId          = $req->id;
+    //     $confPaymentMode        = $this->_paymentMode;
+    //     $confApplicationType    = $this->_applicationType;
+    //     $mAgencyHoarding        = new AgencyHoarding();
+    //     $mAdApplicationAmount   = new AdApplicationAmount();
+    //     $mAdTran               = new AdTran();
+    //     $chargeCategory        = 3;
+
+    //     # Application details and Validation
+    //     $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
+    //         // ->where('advert_vehicle_active_details.status', "<>", 0)
+    //         // ->where('advert_active_applicants.status', "<>", 0)
+    //         ->first();
+    //     if (is_null($applicationDetail)) {
+    //         throw new Exception("Application details not found for ID:$applicationId!");
+    //     }
+    //     if ($applicationDetail->payment_status != 0) {
+    //         throw new Exception("payment is updated for application");
+    //     }
+    //     if ($applicationDetail->citizen_id && $applicationDetail->doc_upload_status == false) {
+    //         throw new Exception("All application related document not uploaded!");
+    //     }
+
+    //     # Application type hence the charge type
+    //     switch ($applicationDetail->application_type) {
+    //         case (0):
+    //             $chargeCategory = $confApplicationType['PERMANANT'];
+    //             break;
+    //         case (1):
+    //             $chargeCategory = $confApplicationType['TEMPORARY'];
+    //             break;
+    //     }
+
+    //     # Charges for the application
+    //     $regisCharges = $mAdApplicationAmount->getChargesbyId($applicationId)
+    //         ->where('charge_category', $chargeCategory)
+    //         ->where('paid_status', 0)
+    //         ->first();
+
+    //     if (is_null($regisCharges)) {
+    //         throw new Exception("Charges not found!");
+    //     }
+    //     if (in_array($regisCharges->paid_status, [1, 2])) {
+    //         throw new Exception("Payment has been done!");
+    //     }
+    //     if ($paymentMode == $confPaymentMode['1']) {
+    //         if ($applicationDetail->citizen_id != authUser($req)->id) {
+    //             throw new Exception("You are not he Autherized User!");
+    //         }
+    //     }
+
+    //     # Transaction details
+    //     $transDetails = $mAdTran->getTranDetails($applicationId, $chargeCategory)->first();
+    //     if ($transDetails) {
+    //         throw new Exception("Transaction has been Done!");
+    //     }
+
+    //     return [
+    //         "applicationDetails"    => $applicationDetail,
+    //         "advertCharges"            => $regisCharges,
+    //         "chargeCategory"        => $chargeCategory,
+    //         "chargeId"              => $regisCharges->id,
+    //         "regAmount"             => $regisCharges->amount,
+    //         "refRoundAmount"        => round($regisCharges->amount)
+    //     ];
+    // }
+
     public function checkParamForPayment($req, $paymentMode)
     {
         $applicationId          = $req->id;
@@ -218,11 +287,10 @@ class AdPaymentController extends Controller
         $mAgencyHoarding        = new AgencyHoarding();
         $mAdApplicationAmount   = new AdApplicationAmount();
         $mAdTran               = new AdTran();
-
         # Application details and Validation
         $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
-            // ->where('advert_vehicle_active_details.status', "<>", 0)
-            // ->where('advert_active_applicants.status', "<>", 0)
+            // ->where('rig_vehicle_active_details.status', "<>", 0)
+            // ->where('rig_active_applicants.status', "<>", 0)
             ->first();
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
@@ -236,15 +304,13 @@ class AdPaymentController extends Controller
 
         # Application type hence the charge type
         switch ($applicationDetail->application_type) {
-            case (0):
+            case ('PERMANANT'):
                 $chargeCategory = $confApplicationType['PERMANANT'];
                 break;
-            case (1):
+            case ('TEMPORARY'):
                 $chargeCategory = $confApplicationType['TEMPORARY'];
                 break;
         }
-
-        return $chargeCategory;
 
         # Charges for the application
         $regisCharges = $mAdApplicationAmount->getChargesbyId($applicationId)
@@ -272,13 +338,14 @@ class AdPaymentController extends Controller
 
         return [
             "applicationDetails"    => $applicationDetail,
-            "advertCharges"            => $regisCharges,
+            "advertCharges"         => $regisCharges,
             "chargeCategory"        => $chargeCategory,
             "chargeId"              => $regisCharges->id,
             "regAmount"             => $regisCharges->amount,
             "refRoundAmount"        => round($regisCharges->amount)
         ];
     }
+
 
     /**
      * | Post Other Payment Modes for Cheque,DD,Neft

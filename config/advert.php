@@ -57,7 +57,7 @@ return [
     ],
     "PARAM_ID" => [
         "REGISTRATION" => 5,
-        "RECEIPT"      => 6,
+        "RECEIPT"      => 56,
         "APPROVE"      => 7,
     ],
     "RIG_RELATIVE_PATH" => [
@@ -77,7 +77,7 @@ return [
     ],
     "APPLICATION_TYPE" => [                                       // related to TRANSACTION_TYPE
         "PERMANANT" => 1,
-        "TEMPORARY"   => 2
+        "TEMPORARY" => 2
     ],
 
     'PAYMENT_MODE' => [
