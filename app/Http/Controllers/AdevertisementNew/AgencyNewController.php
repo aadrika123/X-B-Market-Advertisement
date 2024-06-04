@@ -34,6 +34,7 @@ use App\Models\AdvertisementNew\Location;
 use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
+use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 use Carbon\Carbon;
@@ -72,6 +73,7 @@ class AgencyNewController extends Controller
     protected $_tempId;
     protected $_paramTempId;
     protected $_hoardingAddress;
+    protected $_saveApplicationAmount;
 
     public function __construct()
     {
@@ -84,6 +86,7 @@ class AgencyNewController extends Controller
         $this->_agencyObj = new AgencyHoarding();
         $this->_activeHObj = new AdvActiveHoarding();
         $this->_hoardingAddress = new AdHoardingAddress();
+        $this->_saveApplicationAmount = new AdApplicationAmount();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -826,11 +829,18 @@ class AgencyNewController extends Controller
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
             $hoardId                        = $request->hoardingId;
-            $hoardingType                    = $request->hoardingType;
+            $hoardingType                   = $request->hoardingType;
+            $applicationTypeId              = 0;
             if ($hoardId &&  $hoardingType == 1) {
                 $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
             }
             $ulbId      = $request->ulbId ?? 2;
+            #check Aplication Type 
+            if ($request->applicationType == 'PERMANANT') {
+                $applicationTypeId = 1;  // Use assignment operator here
+            } else {
+                $applicationTypeId = 2;  // Use assignment operator here
+            }
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
             if (!$ulbWorkflowId) {
@@ -879,6 +889,8 @@ class AgencyNewController extends Controller
             foreach ($request->addressField as $address) {
                 $this->_hoardingAddress->saveMltplAddress($AgencyId, $address);
             }
+            # save Application Rate 
+            $this->_saveApplicationAmount->saveApplicationRate($request,$AgencyId,$applicationTypeId);
             $var = [
                 'relatedId' => $AgencyId,
                 "Status"    => 2,
@@ -1551,7 +1563,7 @@ class AgencyNewController extends Controller
             // $mPetTran                   = new RigTran();
             // $mUlbMater                  = new UlbMaster();
 
-            
+
             $ApplicationDetails = $mAgencApproveHording->getRigApprovedApplicationById($applicationId)
                 ->where('agency_hoardings.status', '<>', 0)                                                       // Static
                 ->first();
@@ -1559,12 +1571,12 @@ class AgencyNewController extends Controller
                 throw new Exception("application Not found!");
             }
             # get Address
-            $getAddress= $mHoardingAddress->getAddress($applicationId)->get();
-            
+            $getAddress = $mHoardingAddress->getAddress($applicationId)->get();
+
             # return Details 
             $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
             $approveApplicationDetails['address']                  = $getAddress;
-            
+
 
             return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
         } catch (Exception $e) {

@@ -285,6 +285,59 @@ class AgencyHoarding extends Model
             ->where('agency_hoardings.approve', 1)
             ->first();
     }
+    /**
+     * get details of approve applications 
+     */
+    public function getAppicationDetails($applicationId)
+    {
+        return self::select(
+            'agency_hoardings.from_date',
+            'agency_hoardings.to_date',
+            'agency_hoardings.advertiser',
+            'ulb_masters.ulb_name',
+            'wf_roles.role_name AS current_role_name',
+            'hoarding_masters.ward_id',
+            'hoarding_masters.address',
+            'ulb_ward_masters.ward_name',
+            'm_circle.circle_name as zone_name',
+            'agency_masters.agency_name as agencyName',
+            'agency_hoardings.registration_no',
+            'agency_hoardings.allotment_date',
+            'agency_hoardings.purpose',
+            'agency_hoardings.adv_type',
+            'agency_hoardings.application_type',
+            'agency_hoardings.total_vehicle',
+            'measurement_sizes.measurement',
+            'agency_hoardings.total_ballon',
+            'hoarding_rates.size',
+            'agency_hoardings.size_square_feet',
+            'agency_hoardings.application_no',
+            'agency_hoardings.no_of_hoarding'
+
+
+
+        )
+            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
+            ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+            ->leftJoin('measurement_sizes', function ($join) {
+                $join->on('measurement_sizes.id', '=', 'agency_hoardings.hoard_size_id')
+                    ->where('measurement_sizes.status', 1);
+            })
+            ->leftJoin('hoarding_rates', function ($join) {
+                $join->on('hoarding_rates.id', '=', 'agency_hoardings.hoard_size_id')
+                    ->where('hoarding_rates.status', 1);
+            })
+
+
+            ->Join('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->Join('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
+            ->where('agency_hoardings.id', $applicationId)
+            ->where('agency_hoardings.status', true)
+            // ->where('agency_hoardings.approve', 1)
+            ->first();
+    }
 
     /**
      * application details of hoarding
@@ -417,7 +470,7 @@ class AgencyHoarding extends Model
             ->where('wf_active_documents.status', '!=', 0)
             ->where('wf_active_documents.workflow_id', $workflowIds)
             ->leftJoin('workflow_tracks', function ($join) use ($workflowIds) {
-                $join->on('workflow_tracks.ref_table_id_value','agency_hoardings.id')
+                $join->on('workflow_tracks.ref_table_id_value', 'agency_hoardings.id')
                     ->where('workflow_tracks.status', true)
                     ->where('workflow_tracks.message', '<>', null)
                     ->where('workflow_tracks.workflow_id', $workflowIds);
@@ -454,14 +507,14 @@ class AgencyHoarding extends Model
             ->get();
     }
 
-     /**
+    /**
      * | Get all details according to key 
      */
     public function getAllApprovdApplicationDetails($email)
     {
         return DB::table('agency_hoarding_approve_applications')
             ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
-            ->join('agency_hoardings','agency_hoardings.id','agency_hoarding_approve_applications.id')
+            ->join('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
@@ -469,6 +522,15 @@ class AgencyHoarding extends Model
             //     $join->on('rig_trans.related_id', '=', 'rig_active_registrations.id')
             //         ->where('rig_trans.status', 1);
             // });
-            ;
+        ;
+    }
+
+    /**
+     * | Save the status in Active table
+     */
+    public function saveApplicationStatus($applicationId, $refRequest)
+    {
+        return self::where('id', $applicationId)
+            ->update($refRequest);
     }
 }
