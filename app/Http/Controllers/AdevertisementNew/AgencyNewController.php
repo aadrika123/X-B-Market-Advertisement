@@ -1580,13 +1580,13 @@ class AgencyNewController extends Controller
                 if (!$tranDetails) {
                     throw new Exception("Transaction details not found there is some error in data !");
                 }
-               
+                $approveApplicationDetails['transactionDetails']      = $tranDetails;
             }
 
             # return Details 
             $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
             $approveApplicationDetails['address']                  = $getAddress;
-            $approveApplicationDetails['transactionDetails'] = $tranDetails;
+            
 
 
 
