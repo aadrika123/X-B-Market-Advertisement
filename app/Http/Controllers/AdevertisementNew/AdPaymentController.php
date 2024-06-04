@@ -439,10 +439,13 @@ class AdPaymentController extends Controller
                 "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
                 "address"       => $applicationDetails->address,
                 "tokenNo"       => $transactionDetails->token_no,
-                'type'          => $applicationDetails->application_type,
+                'application_type'          => $applicationDetails->application_type,
                 "ulb_address"     => $transactionDetails->address,
+                "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
+                'amountInWords' => getIndianCurrency($transactionDetails->amount) . "Only /-",
                 "ulbDetails"      =>  $ulbDetails
+
 
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
@@ -468,6 +471,8 @@ class AdPaymentController extends Controller
                 'ulb_masters.ulb_name',
                 'agency_hoardings.application_no',
                 'agency_hoardings.address',
+                'agency_hoardings.application_type',
+                'agency_hoardings.advertiser'
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
