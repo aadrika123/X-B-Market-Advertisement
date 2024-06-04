@@ -261,8 +261,6 @@ class AgencyHoarding extends Model
             'agency_hoardings.application_no',
             'agency_hoardings.no_of_hoarding'
 
-
-
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
@@ -314,7 +312,8 @@ class AgencyHoarding extends Model
             'agency_hoardings.size_square_feet',
             'agency_hoardings.application_no',
             'agency_hoardings.no_of_hoarding',
-            'agency_hoardings.ulb_id'
+            'agency_hoardings.ulb_id',
+            'agency_hoardings.initiator'
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
