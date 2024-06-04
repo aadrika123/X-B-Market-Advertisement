@@ -44,6 +44,6 @@ class AdPaymentReq extends FormRequest
             'status'    => false,
             'message'   => "Validation Error!",
             'error'     => $validator->errors()
-        ], 422));
+        ], 200));
     }
 }
