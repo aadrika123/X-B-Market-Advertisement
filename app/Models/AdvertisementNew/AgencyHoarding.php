@@ -333,7 +333,7 @@ class AgencyHoarding extends Model
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.id', $applicationId)
             ->where('agency_hoardings.status', true);
-            // ->where('agency_hoardings.approve', 1)
+        // ->where('agency_hoardings.approve', 1)
     }
 
     /**
@@ -516,7 +516,7 @@ class AgencyHoarding extends Model
             ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1)
             // ->leftJoin('rig_trans', function ($join) {
-            //     $join->on('rig_trans.related_id', '=', 'rig_active_registrations.id')
+            //     $join->on('rig_trans.related_id', '=', 'agency_hoardings.id')
             //         ->where('rig_trans.status', 1);
             // });
         ;
@@ -529,5 +529,15 @@ class AgencyHoarding extends Model
     {
         return self::where('id', $applicationId)
             ->update($refRequest);
+    }
+
+    /**
+     * | Get application details by id
+     */
+    public function getApplicationById($id)
+    {
+        return self::join('ulb_masters', 'ulb_masters.id', 'agency_hoardings.ulb_id')
+            ->where('agency_hoardings.id', $id)
+            ->where('agency_hoardings.status', 1);
     }
 }

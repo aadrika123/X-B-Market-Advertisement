@@ -74,4 +74,14 @@ class AgencyHoardingApproveApplication extends Model
             ->join('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
             ->where('agency_hoarding_approve_applications.id', $registrationId);
     }
+
+    /**
+     * | Get application details according to id
+     */
+    public function getApproveDetailById($id)
+    {
+        return AgencyHoardingApproveApplication::join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoarding_approve_applications.ulb_id')
+            ->where('agency_hoarding_approve_applications.application_id', $id)
+            ->where('agency_hoarding_approve_applications.status', '<>', 0);
+    }
 }

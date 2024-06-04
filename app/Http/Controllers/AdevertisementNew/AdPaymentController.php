@@ -11,8 +11,11 @@ use App\Models\AdvertisementNew\AdChequeDtl;
 use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AdTranDetail;
 use App\Models\AdvertisementNew\AgencyHoarding;
+use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
+use App\Models\AdvertisementNew\AgencyHoardingRejectedApplication;
 use App\Models\AdvertisementNew\AgencyMaster;
 use App\Models\Payment\TempTransaction;
+use App\Models\UlbMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
@@ -391,5 +394,104 @@ class AdPaymentController extends Controller
             'ward_no'           => $req['ref_ward_id']
         ];
         $mTempTransaction->tempTransaction($tranReqs);
+    }
+
+
+    /**
+     * | Get data for payment Receipt
+        | Serial No :
+        | Under Con
+     */
+    public function generatePaymentReceipt(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'transactionNo' => 'required|',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $now            = Carbon::now();
+            $toward         = "Hoarding Payment Receipt";
+            $mRigTran       = new AdTran();
+            $mUlbMater      = new UlbMaster();
+
+            # Get transaction details according to trans no
+            $transactionDetails = $mRigTran->getTranDetailsByTranNo($request->transactionNo)->first();
+            if (!$transactionDetails) {
+                throw new Exception("transaction details not found! for $request->transactionNo");
+            }
+            # check the transaction related details in related table
+            $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
+            $ulbDetails         =  $mUlbMater->getUlbDetails($transactionDetails->ulb_id);
+
+            $returnData = [
+                "transactionNo" => $transactionDetails->tran_no,
+                "todayDate"     => $now->format('d-m-Y'),
+                "applicationNo" => $applicationDetails->application_no,
+                "applicantName" => $applicationDetails->applicant_name,
+                "paidAmount"    => $transactionDetails->amount,
+                "toward"        => $toward,
+                "paymentMode"   => $transactionDetails->payment_mode,
+                "ulb"           => $applicationDetails->ulb_name,
+                "paymentDate"   => Carbon::parse($transactionDetails->tran_date)->format('d-m-Y'),
+                "address"       => $applicationDetails->address,
+                "tokenNo"       => $transactionDetails->token_no,
+                'type'          => $applicationDetails->application_type,
+                "ulb_address"     => $transactionDetails->address,
+                "ulb_email"       => $transactionDetails->email,
+                "ulbDetails"      =>  $ulbDetails
+
+            ];
+            return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", responseTime(), $request->getMethod(), $request->deviceId);
+        }
+    }
+
+    /**
+     * | Serch application from every registration table
+        | Serial No 
+        | Working
+     */
+    public function getApplicationRelatedDetails($transactionDetails)
+    {
+        $mAgencyHoardings     = new AgencyHoarding();
+        $mAgencyApproveApplication   = new AgencyHoardingApproveApplication();
+        $mAgencyRejectedApplications   = new AgencyHoardingRejectedApplication();
+
+        # first level chain
+        $refApplicationDetails = $mAgencyHoardings->getApplicationById($transactionDetails->related_id)
+            ->select(
+                'ulb_masters.ulb_name',
+                'agency_hoardings.application_no',
+                'agency_hoardings.address',
+            )->first();
+        if (!$refApplicationDetails) {
+            # Second level chain
+            $refApplicationDetails = $mAgencyApproveApplication->getApproveDetailById($transactionDetails->related_id)
+                ->select(
+                    'ulb_masters.ulb_name',
+                    'agency_hoarding_approve_applications.application_no',
+                    'agency_hoarding_approve_applications.address',
+                )->first();
+        }
+
+        if (!$refApplicationDetails) {
+            # Fourth level chain
+            $refApplicationDetails = $mAgencyRejectedApplications->getRejectedApplicationById($transactionDetails->related_id)
+                ->select(
+                    'ulb_masters.ulb_name',
+                    'agency_hoarding_rejected_application.application_no',
+                    'agency_hoarding_rejected_application.address',
+                )->first();
+        }
+        # Check the existence of final data
+        if (!$refApplicationDetails) {
+            throw new Exception("application details not found!");
+        }
+        return $refApplicationDetails;
     }
 }

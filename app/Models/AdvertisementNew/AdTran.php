@@ -78,4 +78,22 @@ class AdTran extends Model
             ->where('status', 1)
             ->orderByDesc('id');
     }
+
+    /**
+     * | Get transaction details according to transaction no
+     */
+    public function getTranDetailsByTranNo($tranNo)
+    {
+        return AdTran::select(
+            'ad_trans.id AS refTransId',
+            'ad_trans.*',
+            'ulb_masters.ulb_name',
+            'ulb_masters.email',
+            'ulb_masters.address'
+        )
+            ->where('ad_trans.tran_no', $tranNo)
+            ->where('ad_trans.status', 1)
+            ->join('ulb_masters', 'ulb_masters.id', 'ad_trans.ulb_id')
+            ->orderByDesc('ad_trans.id');
+    }
 }

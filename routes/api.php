@@ -622,6 +622,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 });
 Route::controller(AdPaymentController::class)->group(function () {
     Route::post('advertisement/offline-payment', 'offlinePayment');
+    Route::post("advertisement/payment-receipt", "generatePaymentReceipt");                                   # Admin / Agency
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
     Route::post('advertisement/approve-applications', 'getApproveApplications');
