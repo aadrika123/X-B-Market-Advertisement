@@ -62,6 +62,7 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoardings.purpose',
             'agency_hoardings.advertiser',
             'agency_hoardings.mobile_no as mobileNo',
+            'agency_hoardings.payment_status',
             DB::raw("CASE 
             WHEN agency_hoardings.payment_status = '1' THEN 'Paid'
             WHEN agency_hoardings.payment_status = '0' THEN 'Unpaid'

@@ -68,4 +68,14 @@ class AdTran extends Model
             ->where('status', 1)
             ->orderByDesc('id');
     }
+
+    /**
+     * | Get transaction by application No
+     */
+    public function getTranByApplicationId($applicationId)
+    {
+        return AdTran::where('related_id', $applicationId)
+            ->where('status', 1)
+            ->orderByDesc('id');
+    }
 }

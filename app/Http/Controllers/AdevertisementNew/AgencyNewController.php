@@ -36,6 +36,7 @@ use App\Models\Advertisements\RefRequiredDocument;
 use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
 use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
+use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -890,7 +891,7 @@ class AgencyNewController extends Controller
                 $this->_hoardingAddress->saveMltplAddress($AgencyId, $address);
             }
             # save Application Rate 
-            $this->_saveApplicationAmount->saveApplicationRate($request,$AgencyId,$applicationTypeId);
+            $this->_saveApplicationAmount->saveApplicationRate($request, $AgencyId, $applicationTypeId);
             $var = [
                 'relatedId' => $AgencyId,
                 "Status"    => 2,
@@ -1560,7 +1561,7 @@ class AgencyNewController extends Controller
             $mAgencApproveHording       = new AgencyHoardingApproveApplication();
             $mHoardingAddress           = new AdHoardingAddress();
             // $mRigRegistrationCharge     = new RigRegistrationCharge();6
-            // $mPetTran                   = new RigTran();
+            $mAdTran                   = new AdTran();
             // $mUlbMater                  = new UlbMaster();
 
 
@@ -1572,10 +1573,21 @@ class AgencyNewController extends Controller
             }
             # get Address
             $getAddress = $mHoardingAddress->getAddress($applicationId)->get();
+            # get payment DETAILS
+            if ($ApplicationDetails->payment_status != 0) {
+                # Get Transaction details 
+                $tranDetails = $mAdTran->getTranByApplicationId($applicationId)->first();
+                if (!$tranDetails) {
+                    throw new Exception("Transaction details not found there is some error in data !");
+                }
+               
+            }
 
             # return Details 
             $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
             $approveApplicationDetails['address']                  = $getAddress;
+            $approveApplicationDetails['transactionDetails'] = $tranDetails;
+
 
 
             return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
