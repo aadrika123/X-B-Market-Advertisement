@@ -98,6 +98,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->purpose                        = $request->purpose;
         $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
         $mAgencyHoarding->mobile_no                      = $request->mobileNo;
+        $mAgencyHoarding->location                      = $request->location;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
