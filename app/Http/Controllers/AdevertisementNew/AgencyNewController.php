@@ -1470,6 +1470,7 @@ class AgencyNewController extends Controller
                         // WHEN agency_hoardings.payment_status = 1 THEN 'Paid'
                         // WHEN agency_hoardings.payment_status = 0 THEN 'Unpaid'
                         // END as paymentStatus")
+                        "agency_hoardings.payment_status"
                     )
                     ->where('agency_hoarding_approve_applications.status', '<>', 0)
                     // ->where('agency_hoarding_approve_applications.approve_user_id', $userId)
