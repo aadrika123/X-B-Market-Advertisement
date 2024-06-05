@@ -440,7 +440,7 @@ class AdPaymentController extends Controller
                 "address"       => $applicationDetails->address,
                 "tokenNo"       => $transactionDetails->token_no,
                 'application_type'          => $applicationDetails->application_type,
-                'asvertisement_type' =>$applicationDetails->adv_type,
+                'advertisement_type' =>$applicationDetails->adv_type,
                 "ulb_address"     => $transactionDetails->address,
                 "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
