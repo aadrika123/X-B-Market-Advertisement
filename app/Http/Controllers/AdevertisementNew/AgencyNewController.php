@@ -38,6 +38,7 @@ use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
+use App\Models\AdvertisementNew\Feedback;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -1634,6 +1635,25 @@ class AgencyNewController extends Controller
                 "total" => $paginator->total()
             ];
             return responseMsgs(true, "Advertisement Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+
+
+    public function feedback(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId' => 'required',
+            'remarks' => 'nullable'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $mFeedback = new Feedback();
+            $data = $mFeedback->feedback($req);
+            return responseMsgs(true, "Application saved Succefully !!!", $data, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
