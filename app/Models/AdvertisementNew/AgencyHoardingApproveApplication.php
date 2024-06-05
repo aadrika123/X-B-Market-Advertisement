@@ -67,7 +67,8 @@ class AgencyHoardingApproveApplication extends Model
             WHEN agency_hoardings.payment_status = '1' THEN 'Paid'
             WHEN agency_hoardings.payment_status = '0' THEN 'Unpaid'
             END AS paymentStatus"),
-            'agency_hoardings.rate as amount'
+            'agency_hoardings.rate as amount',
+            'agency_hoardings.location',
         )
             ->join('ulb_masters', 'ulb_masters.id', 'agency_hoarding_approve_applications.ulb_id')
             // ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'agency_hoarding_approve_applications.ward_id')
