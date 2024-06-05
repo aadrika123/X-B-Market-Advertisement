@@ -85,4 +85,15 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoarding_approve_applications.application_id', $id)
             ->where('agency_hoarding_approve_applications.status', '<>', 0);
     }
+
+
+    public function getApprovePaidApplication()
+    {
+        return AgencyHoardingApproveApplication::select('agency_hoarding_approve_applications.application_no','agency_hoardings.payment_status','agency_hoardings.from_date','agency_hoardings.to_date','agency_hoarding_approve_applications.adv_type')
+            ->join('agency_hoardings', 'agency_hoardings.id', '=', 'agency_hoarding_approve_applications.id')
+            ->where('agency_hoardings.payment_status', 1)
+            ->where('agency_hoarding_approve_applications.status', true)
+            ->orderByDesc('agency_hoarding_approve_applications.id');
+           // ->get();
+    }
 }

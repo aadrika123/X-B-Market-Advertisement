@@ -503,4 +503,46 @@ class AdPaymentController extends Controller
         }
         return $refApplicationDetails;
     }
+
+
+    
+    public function listCollection(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'advertisement_type'=>'nullable|in:TEMPORARY,PERMANANT'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $perPage = $req->perPage ? $req->perPage : 10;
+            if (!isset($req->fromDate))
+                $fromDate = Carbon::now()->format('Y-m-d');                                                
+            else
+                $fromDate = $req->fromDate;
+            if (!isset($req->toDate))
+                $toDate = Carbon::now()->format('Y-m-d');                                              
+            else
+                $toDate = $req->toDate;
+            $mAdvPayment = new AdTran();
+            $data = $mAdvPayment->Tran($fromDate, $toDate);  
+            if($req->advertisement_type)
+            {
+                $data = $data->where('ad_trans.tran_type', $req->advertisement_type);
+            }                           
+            $paginator = $data->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+                'collectAmount' => $paginator->sum('amount')
+            ];
+            return responseMsgs(true, "Advertisement Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }

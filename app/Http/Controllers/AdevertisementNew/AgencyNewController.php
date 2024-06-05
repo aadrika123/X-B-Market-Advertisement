@@ -1596,4 +1596,42 @@ class AgencyNewController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
         }
     }
+
+    public function listCollection(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate'
+        ]);
+        if ($validator->fails()) {
+            return  $validator->errors();
+        }
+        try {
+            $perPage = $req->perPage ? $req->perPage : 10;
+            if (!isset($req->fromDate))
+                $fromDate = Carbon::now()->format('Y-m-d');                                                
+            else
+                $fromDate = $req->fromDate;
+            if (!isset($req->toDate))
+                $toDate = Carbon::now()->format('Y-m-d');                                              
+            else
+                $toDate = $req->toDate;
+            $mAdvPayment = new AgencyHoardingApproveApplication();
+            $data = $mAdvPayment->getApprovePaidApplication();
+            if($fromDate && $toDate)             
+            {
+                $data = $data->whereBetween('agency_hoardings.from_date',[$fromDate,$toDate]);
+            }              
+            $paginator = $data->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total()
+            ];
+            return responseMsgs(true, "Advertisement Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
 }

@@ -584,6 +584,9 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/list-approval-applications', 'listfinisherApproveApplications');       # 28   (List Approval Application)
         Route::post('advertisement/get-approve-details', 'getApprovedApplicationDetails');                 # 28   (List Approval Application)
 
+
+        //Written by prity pandey
+        Route::post("advertisement/approved-paid-reports", "listCollection");
     });
     /**
      * created by = Arshad Hussain 
@@ -622,7 +625,10 @@ Route::group(['middleware' => ['checkToken']], function () {
 });
 Route::controller(AdPaymentController::class)->group(function () {
     Route::post('advertisement/offline-payment', 'offlinePayment');
-    Route::post("advertisement/payment-receipt", "generatePaymentReceipt");                                   # Admin / Agency
+    Route::post("advertisement/payment-receipt", "generatePaymentReceipt");
+
+    //Written by prity pandey
+    Route::post("advertisement/collection-receipt", "listCollection");                                  # Admin / Agency
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
     Route::post('advertisement/approve-applications', 'getApproveApplications');
