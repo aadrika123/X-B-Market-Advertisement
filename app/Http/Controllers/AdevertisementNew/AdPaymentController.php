@@ -472,7 +472,8 @@ class AdPaymentController extends Controller
                 'agency_hoardings.application_no',
                 'agency_hoardings.address',
                 'agency_hoardings.application_type',
-                'agency_hoardings.advertiser'
+                'agency_hoardings.advertiser',
+                'agency_hoardings.adv_type'
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
