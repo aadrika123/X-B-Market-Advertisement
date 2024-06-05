@@ -219,7 +219,8 @@ class AgencyHoarding extends Model
             WHEN agency_hoardings.current_role_id = 6 THEN 'AT LIPIK'
             WHEN agency_hoardings.current_role_id = 10 THEN 'AT TAX  SUPRERINTENDENT'
             ELSE 'Unknown Role'
-        END AS application_at")
+        END AS application_at"),
+        "agency_hoardings.payment_status"
         )
             ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
