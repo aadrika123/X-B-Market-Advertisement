@@ -440,6 +440,7 @@ class AdPaymentController extends Controller
                 "address"       => $applicationDetails->address,
                 "tokenNo"       => $transactionDetails->token_no,
                 'application_type'          => $applicationDetails->application_type,
+                'asvertisement_type' =>$applicationDetails->adv_type,
                 "ulb_address"     => $transactionDetails->address,
                 "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
@@ -482,6 +483,7 @@ class AdPaymentController extends Controller
                     'ulb_masters.ulb_name',
                     'agency_hoarding_approve_applications.application_no',
                     'agency_hoarding_approve_applications.address',
+                    'agency_hoarding_approve_applications.adv_type',
                 )->first();
         }
 
@@ -492,6 +494,7 @@ class AdPaymentController extends Controller
                     'ulb_masters.ulb_name',
                     'agency_hoarding_rejected_application.application_no',
                     'agency_hoarding_rejected_application.address',
+                    'agency_hoarding_rejected_application.adv_type',
                 )->first();
         }
         # Check the existence of final data
