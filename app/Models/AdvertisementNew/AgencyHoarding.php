@@ -262,9 +262,9 @@ class AgencyHoarding extends Model
             'agency_hoardings.no_of_hoarding'
 
         )
-            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
-            ->join('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
-            ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
+            ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
+            ->leftjoin('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
             ->leftJoin('measurement_sizes', function ($join) {
                 $join->on('measurement_sizes.id', '=', 'agency_hoardings.hoard_size_id')
                     ->where('measurement_sizes.status', 1);
