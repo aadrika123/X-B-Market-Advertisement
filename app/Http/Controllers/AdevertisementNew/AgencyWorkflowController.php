@@ -48,6 +48,7 @@ use App\Models\AdvertisementNew\HoardType;
 use App\Models\AdvertisementNew\TemporaryHoardingType;
 use App\BLL\Advert;
 use App\BLL\Advert\CalculateRate;
+use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\MeasurementSize;
 use App\Models\IdGenerationParam;
 use App\Pipelines\Advertisement\SearchByApplicationNo;
@@ -1250,6 +1251,7 @@ class AgencyWorkflowController extends Controller
         }
 
         try {
+
             $data = $this->_agencyObj->checkdtlsById($request->applicationId);
             if (!$data) {
                 throw new Exception("Application Not Found!");
@@ -1264,7 +1266,9 @@ class AgencyWorkflowController extends Controller
             $advertisementType = $data->adv_type;
 
             $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+            $mHoardingAddress           = new AdHoardingAddress();
 
+            $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();
 
             if ($data->application_type == 'PERMANANT') {
                 $query = $this->_agencyObj->getApproveDetails($request);
@@ -1338,7 +1342,9 @@ class AgencyWorkflowController extends Controller
                         throw new Exception("Invalid Advertisement Type!");
                 }
             }
-            return responseMsgs(true, "Data According To Parameter!", remove_null($query), "", "01", "652 ms", "POST", "");
+            $approveApplicationDetails["applicationDetails"] = $query;
+            $approveApplicationDetails['address'] = $getAddress;
+            return responseMsgs(true, "Data According To Parameter!", remove_null($approveApplicationDetails), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
