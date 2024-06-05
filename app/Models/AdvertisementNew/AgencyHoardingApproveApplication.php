@@ -94,6 +94,5 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoardings.payment_status', 1)
             ->where('agency_hoarding_approve_applications.status', true)
             ->orderByDesc('agency_hoarding_approve_applications.id');
-           // ->get();
     }
 }

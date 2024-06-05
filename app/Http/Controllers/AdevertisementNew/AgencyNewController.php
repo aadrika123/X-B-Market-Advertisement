@@ -1618,10 +1618,14 @@ class AgencyNewController extends Controller
                 $toDate = $req->toDate;
             $mAdvPayment = new AgencyHoardingApproveApplication();
             $data = $mAdvPayment->getApprovePaidApplication();
-            if($fromDate && $toDate)             
-            {
-                $data = $data->whereBetween('agency_hoardings.from_date',[$fromDate,$toDate]);
-            }              
+            // if($fromDate)             
+            // {
+            //     $data = $data->where('agency_hoardings.from_date',$fromDate);
+            // }   
+            // if($toDate)             
+            // {
+            //     $data = $data->where('agency_hoardings.to_date',$toDate);
+            // }            
             $paginator = $data->paginate($perPage);
             $list = [
                 "current_page" => $paginator->currentPage(),
