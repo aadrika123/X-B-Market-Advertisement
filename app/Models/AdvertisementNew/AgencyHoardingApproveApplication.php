@@ -89,8 +89,28 @@ class AgencyHoardingApproveApplication extends Model
 
     public function getApprovePaidApplication()
     {
-        return AgencyHoardingApproveApplication::select('agency_hoarding_approve_applications.id','agency_hoarding_approve_applications.application_no','agency_hoardings.payment_status','agency_hoardings.from_date','agency_hoardings.to_date','agency_hoarding_approve_applications.adv_type','agency_hoarding_approve_applications.mobile_no','agency_hoarding_approve_applications.apply_date')
+        return AgencyHoardingApproveApplication::select(
+            'agency_hoarding_approve_applications.id',
+            'agency_hoarding_approve_applications.application_no',
+            'agency_hoardings.payment_status',
+            'agency_hoardings.from_date',
+            'agency_hoardings.to_date',
+            'agency_hoarding_approve_applications.adv_type',
+            'agency_hoarding_approve_applications.mobile_no',
+            'agency_hoarding_approve_applications.apply_date',
+            DB::raw("CASE 
+            WHEN feedback.verify_status = '1' THEN 'Verified'
+            WHEN feedback.verify_status = '0' THEN 'Unverified'
+            END AS VerifiedStatus"),
+            'feedback.remarks'
+        )
+
             ->join('agency_hoardings', 'agency_hoardings.id', '=', 'agency_hoarding_approve_applications.id')
+
+            ->leftJoin('feedback', function ($join) {
+                $join->on('feedback.application_id', '=', 'agency_hoardings.id')
+                    ->where('feedback.status', 1);
+            })
             ->where('agency_hoardings.payment_status', 1)
             ->where('agency_hoarding_approve_applications.status', true)
             ->orderByDesc('agency_hoarding_approve_applications.id');

@@ -87,6 +87,7 @@ class AgencyWorkflowController extends Controller
     protected $_DocList;
     private $_refapplications;
     private $_documentLists;
+    private $_tempId;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -105,6 +106,7 @@ class AgencyWorkflowController extends Controller
         $this->_moduleId        = Config::get('workflow-constants.ADVERTISMENT_MODULE');
         $this->_docCode         = Config::get('workflow-constants.HOARDING_DOC_CODE');
         $this->_tempParamId     = Config::get('workflow-constants.TEMP_AG_ID');
+        $this->_tempId          = Config::get('advert.PARAM_ID.APPROVE');
         $this->_paramId         = Config::get('workflow-constants.AGY_ID');
         $this->_baseUrl         = Config::get('constants.BASE_URL');
         $this->_docUrl          = Config::get('workflow-constants.DOC_URL');
@@ -1062,16 +1064,19 @@ class AgencyWorkflowController extends Controller
 
         # handle status to approve or reject 
         if ($req->status == 1) {
-            $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+            // $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
+            $idGeneration       = new PrefixIdGenerator($this->_tempId, $application->ulb_id);
+            $registrationNo      = $idGeneration->generate();
+            $registrationNo      = str_replace('/', '-', $registrationNo);
             $approveApplicationRep = $approveApplications
                 ->update([
                     "approve" => 1,                                                                                    // approve                    
-                    "registration_no" => $regNo,
+                    "registration_no" => $registrationNo,
                     "allotment_date"  => $currentDateTime
                 ]);
             $returnData = [
                 "applicationId" => $application->application_no,
-                "registration_no" => $regNo
+                "registration_no" => $registrationNo
             ];
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');

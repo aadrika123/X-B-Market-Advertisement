@@ -58,7 +58,7 @@ return [
     "PARAM_ID" => [
         "REGISTRATION" => 5,
         "RECEIPT"      => 56,
-        "APPROVE"      => 7,
+        "APPROVE"      => 51,
     ],
     "RIG_RELATIVE_PATH" => [
         "REGISTRATION" => 'Uploads/RigMachine',
@@ -134,6 +134,7 @@ return [
         "APPLICATION"                => 1,
         "CHALLAN"                    => 2,
         "RECEIPT"                    => 56,
-        "CASH_VERIFICATION_ID"       => 4
+        "CASH_VERIFICATION_ID"       => 4,
+        "APPROVAL"                   => 51
     ],
 ];

@@ -586,6 +586,7 @@ Route::group(['middleware' => ['checkToken']], function () {
 
 
         //Written by prity pandey
+        // Modified by Arshad Hussain
         Route::post("advertisement/approved-paid-reports", "listCollection");
         Route::post("advertisement/feedback", "feedback");
     });

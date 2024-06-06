@@ -440,7 +440,7 @@ class AdPaymentController extends Controller
                 "address"       => $applicationDetails->address,
                 "tokenNo"       => $transactionDetails->token_no,
                 'application_type'          => $applicationDetails->application_type,
-                'advertisement_type' =>$applicationDetails->adv_type,
+                'advertisement_type' => $applicationDetails->adv_type,
                 "ulb_address"     => $transactionDetails->address,
                 "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
@@ -503,15 +503,15 @@ class AdPaymentController extends Controller
         }
         return $refApplicationDetails;
     }
-
-
-    
+    /**
+     * |written by prity 
+     */
     public function listCollection(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'advertisement_type'=>'nullable|in:TEMPORARY,PERMANANT'
+            'advertisement_type' => 'nullable|in:TEMPORARY,PERMANANT'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -519,19 +519,18 @@ class AdPaymentController extends Controller
         try {
             $perPage = $req->perPage ? $req->perPage : 10;
             if (!isset($req->fromDate))
-                $fromDate = Carbon::now()->format('Y-m-d');                                                
+                $fromDate = Carbon::now()->format('Y-m-d');
             else
                 $fromDate = $req->fromDate;
             if (!isset($req->toDate))
-                $toDate = Carbon::now()->format('Y-m-d');                                              
+                $toDate = Carbon::now()->format('Y-m-d');
             else
                 $toDate = $req->toDate;
             $mAdvPayment = new AdTran();
-            $data = $mAdvPayment->Tran($fromDate, $toDate);  
-            if($req->advertisement_type)
-            {
+            $data = $mAdvPayment->Tran($fromDate, $toDate);
+            if ($req->advertisement_type) {
                 $data = $data->where('ad_trans.tran_type', $req->advertisement_type);
-            }                           
+            }
             $paginator = $data->paginate($perPage);
             $list = [
                 "current_page" => $paginator->currentPage(),
