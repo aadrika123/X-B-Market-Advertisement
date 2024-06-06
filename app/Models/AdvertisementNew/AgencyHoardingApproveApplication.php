@@ -99,8 +99,8 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoarding_approve_applications.mobile_no',
             'agency_hoarding_approve_applications.apply_date',
             DB::raw("CASE 
-            WHEN feedback.verify_status = '1' THEN 'Verified'
-            WHEN feedback.verify_status = '0' THEN 'Unverified'
+            WHEN feedback.remarks IS NOT NULL THEN 'Verified'
+            ELSE 'Unverified'
             END AS VerifiedStatus"),
             'feedback.remarks'
         )
