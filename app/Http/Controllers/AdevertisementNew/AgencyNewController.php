@@ -1598,7 +1598,7 @@ class AgencyNewController extends Controller
         }
     }
 
-    public function listCollection(Request $req)
+    public function approvePaidList(Request $req)
     {
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',

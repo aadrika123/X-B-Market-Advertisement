@@ -88,6 +88,7 @@ class AgencyWorkflowController extends Controller
     private $_refapplications;
     private $_documentLists;
     private $_tempId;
+    protected $incrementStatus;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -118,6 +119,7 @@ class AgencyWorkflowController extends Controller
         // $this->Repository = $agency_repo;
 
         $this->_wfMasterId = Config::get('workflow-constants.AGENCY_WF_MASTER_ID');
+        $this->incrementStatus  = true;
     }
 
     public function listInbox(Request $req)
@@ -1064,9 +1066,8 @@ class AgencyWorkflowController extends Controller
 
         # handle status to approve or reject 
         if ($req->status == 1) {
-            // $regNo = "AG/AMC-" . Carbon::now()->milli . Carbon::now()->diffInMicroseconds() . strtotime($currentDateTime);
             $idGeneration       = new PrefixIdGenerator($this->_tempId, $application->ulb_id);
-            $registrationNo      = $idGeneration->generate();
+            $registrationNo      = $idGeneration->getUniqueId();
             $registrationNo      = str_replace('/', '-', $registrationNo);
             $approveApplicationRep = $approveApplications
                 ->update([
@@ -1887,4 +1888,5 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
-}
+
+   }

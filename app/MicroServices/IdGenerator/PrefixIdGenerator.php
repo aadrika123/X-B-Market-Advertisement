@@ -61,5 +61,40 @@ class PrefixIdGenerator implements iIdGenerator
         }
 
         return $prefixString . '-' . $id . $flag;
-    }  
+    }
+
+    /**
+     * | Generate Order Id
+        | Serial No :
+        | Working
+     */
+    public function getUniqueId()
+    {
+        $paramId = $this->paramId;
+        $mIdGenerationParams = new ModelsIdGenerationParam();
+        $mUlbMaster = new UlbMaster();
+        $ulbDtls = $mUlbMaster::findOrFail($this->ulbId);
+
+        $ulbDistrictCode = $ulbDtls->district_code;
+        $ulbCategory = $ulbDtls->category;
+        $code = $ulbDtls->code;
+
+        $params = $mIdGenerationParams->getParams($paramId);
+        $prefixString = $params->string_val;
+        $stringVal = $ulbDistrictCode . $ulbCategory . $code;
+
+        $stringSplit = collect(str_split($stringVal));
+        $flag = ($stringSplit->sum()) % 9;
+        $intVal = $params->int_val;
+        if ($this->incrementStatus == true) {
+            $id = str_pad($intVal, 4, "0", STR_PAD_LEFT);
+            $intVal += 1;
+            $params->int_val = $intVal;
+            $params->save();
+        }
+        $uniqueId = ((date('dm') . $id));
+        $uniqueId = explode("=", chunk_split($uniqueId, 26, "="))[0];
+
+        return $prefixString . '-' . $uniqueId;
+    }
 }
