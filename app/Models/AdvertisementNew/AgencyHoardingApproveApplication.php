@@ -99,14 +99,12 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoarding_approve_applications.mobile_no',
             'agency_hoarding_approve_applications.apply_date',
             DB::raw("CASE 
-            WHEN feedback.remarks IS NOT NULL THEN 'Verified'
-            ELSE 'Unverified'
+            WHEN feedback.remarks IS NOT NULL THEN 1
+            ELSE 2
             END AS VerifiedStatus"),
             'feedback.remarks'
         )
-
             ->join('agency_hoardings', 'agency_hoardings.id', '=', 'agency_hoarding_approve_applications.id')
-
             ->leftJoin('feedback', function ($join) {
                 $join->on('feedback.application_id', '=', 'agency_hoardings.id')
                     ->where('feedback.status', 1);
