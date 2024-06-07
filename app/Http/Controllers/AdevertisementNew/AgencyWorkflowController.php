@@ -1262,6 +1262,9 @@ class AgencyWorkflowController extends Controller
             if (!$data) {
                 throw new Exception("Application Not Found!");
             }
+            if ($data->payment_status == 0) {
+                throw new Exception("Please Pay your Advertisement Amount ");
+            }
             $fromDate = Carbon::parse($data->from_date);
             $toDate = Carbon::parse($data->to_date);
 
@@ -1888,5 +1891,4 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
-
-   }
+}
