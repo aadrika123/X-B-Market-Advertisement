@@ -434,6 +434,8 @@ class AdPaymentController extends Controller
                 "transactionNo" => $transactionDetails->tran_no,
                 "todayDate"     => $now->format('d-m-Y'),
                 "applicationNo" => $applicationDetails->application_no,
+                'mobile_no'     =>$applicationDetails->mobile_no,
+                "total_nodays"    => $numberOfDays,
                 "applicantName" => $applicationDetails->applicant_name,
                 "paidAmount"    => $transactionDetails->amount,
                 "toward"        => $toward,
@@ -449,7 +451,7 @@ class AdPaymentController extends Controller
                 "ulb_email"       => $transactionDetails->email,
                 'amountInWords' => getIndianCurrency($transactionDetails->amount) . "Only /-",
                 "ulbDetails"      =>  $ulbDetails,
-                "total_nodays"    => $numberOfDays
+                
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -478,7 +480,8 @@ class AdPaymentController extends Controller
                 'agency_hoardings.advertiser',
                 'agency_hoardings.adv_type',
                 'agency_hoardings.from_date',
-                'agency_hoardings.to_date'
+                'agency_hoardings.to_date',
+                'agency_hoardings.mobile_no'
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
