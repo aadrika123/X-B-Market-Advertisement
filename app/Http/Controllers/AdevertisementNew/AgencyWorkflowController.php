@@ -1275,6 +1275,7 @@ class AgencyWorkflowController extends Controller
             $advertisementType = $data->adv_type;
 
             $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+            
             $mHoardingAddress           = new AdHoardingAddress();
 
             $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();
@@ -1351,6 +1352,7 @@ class AgencyWorkflowController extends Controller
                         throw new Exception("Invalid Advertisement Type!");
                 }
             }
+            $query->total_nodays = $numberOfDays;
             $approveApplicationDetails["applicationDetails"] = $query;
             $approveApplicationDetails['address'] = $getAddress;
             return responseMsgs(true, "Data According To Parameter!", remove_null($approveApplicationDetails), "", "01", "652 ms", "POST", "");

@@ -425,6 +425,9 @@ class AdPaymentController extends Controller
             }
             # check the transaction related details in related table
             $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
+            $fromDate = Carbon::parse($applicationDetails->from_date);
+            $toDate = Carbon::parse($applicationDetails->to_date);
+            $numberOfDays = $toDate->diffInDays($fromDate);
             $ulbDetails         =  $mUlbMater->getUlbDetails($transactionDetails->ulb_id);
 
             $returnData = [
@@ -445,9 +448,8 @@ class AdPaymentController extends Controller
                 "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
                 'amountInWords' => getIndianCurrency($transactionDetails->amount) . "Only /-",
-                "ulbDetails"      =>  $ulbDetails
-
-
+                "ulbDetails"      =>  $ulbDetails,
+                "total_nodays"    => $numberOfDays
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {
@@ -474,7 +476,9 @@ class AdPaymentController extends Controller
                 'agency_hoardings.address',
                 'agency_hoardings.application_type',
                 'agency_hoardings.advertiser',
-                'agency_hoardings.adv_type'
+                'agency_hoardings.adv_type',
+                'agency_hoardings.from_date',
+                'agency_hoardings.to_date'
             )->first();
         if (!$refApplicationDetails) {
             # Second level chain
