@@ -7,6 +7,7 @@ use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopPayment;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -19,10 +20,16 @@ class ShopPaymentBll
     private $_mShopPayments;
     public $_shopDetails;
     public $_tranId;
+    private $_shopLastDemand;
+    private $_mShopDemand;
+    private $_now;
+
 
     public function __construct()
     {
         $this->_mShopPayments = new ShopPayment();
+        $this->_mShopDemand   = new MarShopDemand();
+        $this->_now           = Carbon::now();
     }
 
     /**
@@ -159,4 +166,113 @@ class ShopPaymentBll
             ->where('financial_year', '<=', $req->toFYear)
             ->sum('amount');
     }
+
+    /**
+     * | Shop demand
+     * | @param Request $req
+     */
+    public function getActiveShop(Request $req)
+    {
+        try{
+            $currentYm = Carbon::now()->format("Y-m");
+            $sql = "with demand_genrated as (
+                select distinct shop_id
+                from mar_shop_demands
+                where status =1 and  TO_CHAR(cast(monthly as date),'YYYY-MM') = TO_CHAR(CURRENT_DATE,'YYYY-MM')
+            )
+            select id
+            from mar_shops
+            left join demand_genrated on demand_genrated.shop_id = mar_shops.id
+            where status =1 AND demand_genrated.shop_id IS null ";
+            $data = DB::select($sql);
+            $excelData=[
+                "shopId","status","errors","response",
+            ];
+            $size = collect($data)->count("id");
+            foreach($data as $key=>$val)
+            {
+                DB::beginTransaction();
+                echo"=========index( ".$key." [remain---->".($size - $key)."]  ".$val->id.")===========\n\n";
+                $newReq = new Request(["shopId"=>$val->id]);
+                $exrow["shopId"]=$val->id;
+                $respons = null;
+                try{
+                    $respons = $this->shopDemand($newReq);
+                    $exrow["status"]="Success";
+                    DB::commit();
+                    DB::commit();
+                }
+                catch(Exception $e)
+                {
+                    DB::rollBack();
+                    DB::rollBack();
+                    $exrow["status"]="Faild";
+                    $exrow["error"]=$e->getMessage();
+                }
+                echo("=======".$exrow["status"]."=======\n\n");
+                $exrow["response"]=json_decode($respons??"");
+                array_push($excelData,$exrow);
+            }
+            echo"=========end===========\n";
+            print_var($excelData);
+        }
+        catch(Exception $e)
+        {
+            dd("fatel Error",$e->getMessage(),$e->getFile(),$e->getLine());
+        }
+    }
+    /**
+     * | generate shop demands yearly
+     * | 
+     */
+    public function shopDemand($req)
+    {
+        // Get the current month
+        $currentMonth = Carbon::now()->startOfMonth();
+
+        $shopDetails = Shop::find($req->shopId);
+        #check shop last demand 
+        $this->_shopLastDemand = $this->_mShopDemand->CheckConsumerDemand($req)->get()->sortByDesc("financial_year")->first();;
+
+        if ($this->_shopLastDemand) {
+            $lastDemandMonth = Carbon::parse($this->_shopLastDemand->monthly)->startOfMonth();
+            if ($lastDemandMonth->eq($currentMonth)) {
+                throw new Exception("Demand is already generated for this month.");
+            }
+        }
+        if ($this->_shopLastDemand) {
+            $startDate          = Carbon::parse($this->_shopLastDemand->monthly);
+            $endDate            = Carbon::parse($this->_now);
+        }
+        # If the demand is generated for the first time
+        else {
+            $endDate            = Carbon::parse($this->_now);
+            $startDate          = Carbon::parse($shopDetails->created_at);
+        }
+
+        $demandFrom = Carbon::parse($startDate);
+        $months = [];
+        $currentMonth = $demandFrom->copy()->startOfMonth();
+        while ($currentMonth->lte($endDate)) {
+            $months[] = $currentMonth->format('Y-m-d');
+            $currentMonth->addMonth();
+        }
+        DB::beginTransaction();
+        foreach ($months as $month) {
+            $amount = $shopDetails->rate;                                        // rate is fixed for each month
+            $payableAmt = $amount;
+            $arrear = $amount;
+            // Insert demand
+            $demandReqs = [
+                'shop_id' => $req->shopId,
+                'amount' => $amount,
+                'monthly' => $month,
+                'payment_date' => Carbon::now(),
+                'user_id' => $req->auth['id'] ?? 0,
+                'ulb_id' => $shopDetails->ulb_id,
+            ];
+            $this->_mShopDemand::create($demandReqs);
+        }
+    }
+
 }
