@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Rentals;
 
 use App\BLL\Market\ShopPaymentBll;
+use App\BLL\PayWithEasebuzzLib;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\ShopRequest;
 use App\MicroServices\DocumentUpload;
 use App\Models\Master\MCircle;
 use App\Models\Master\MMarket;
+use App\Models\Rentals\MarEasebuzzPayRequest;
+use App\Models\Rentals\MarEasebuzzPayResponse;
 use App\Models\Rentals\MarShopDemand;
 use App\Models\Rentals\MarShopDemandLog;
 use App\Models\Rentals\MarShopLog;
@@ -45,12 +48,126 @@ class ShopController extends Controller
 
     protected $_ulbLogoUrl;
     protected $_callbackUrl;
+    
+    protected $_MarEasebuzzPayRequest;
+    protected $_MarEasebuzzPayResponse;
 
     public function __construct()
     {
         $this->_mShops = new Shop();                                                                // Object Of Shop Model
         $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                 // Logo Url for Reciept
         $this->_callbackUrl = Config::get('constants.CALLBACK_URL');                                // Callback Url for Payment
+
+        
+        $this->_MarEasebuzzPayRequest = new MarEasebuzzPayRequest();
+        $this->_MarEasebuzzPayResponse = new MarEasebuzzPayResponse();
+    }
+
+    public function initPayment(Request $request){
+        try{
+            $user = Auth()->user();
+            $rules = [
+                "shopId" => "required|exists:" . $this->_mShops->getConnectionName() . "." . $this->_mShops->getTable() . ",id,status,1",
+                "uptoFYear"=>[
+                    "required",
+                    "regex:/^\d{4}-\d{4}$/",
+                    function ($attribute, $value, $fail){
+                        list($fromYear,$uptoYear) = explode("-",$value);
+                        if(($fromYear+1) != $uptoYear || $value > getCurrentSesstion())
+                        {
+                            $fail('The '.$attribute.' is invalid');
+                        }
+
+                    },
+                ],
+                    
+            ];
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return validationErrorV2($validator);
+            }
+            $shop = $this->_mShops->find($request->shopId);
+            $request->merge(["toFYear"=>$request->uptoFYear]);
+            $demand = $this->calculateShopRateFinancialwise($request);dd($demand);
+            if(!$demand->original["status"]){
+                throw new Exception($demand->original["message"]);
+            }
+            $demand = $demand->original["data"];            
+            if($demand["amount"]<=0){
+                throw new Exception("Payment Already Clear");
+            }
+            $data = [
+                "userId" => $user && $user->getTable() == "users" ? $user->id : null,
+                "applicationId"=>$shop->id,
+                "applicationNo" => $shop->shop_no,
+                "moduleId" => 30,
+                "email" => ($shop->email_id ?? "test@gmail.com"),
+                "phone" => ($shop->contact_no ? $shop->contact_no : "1234567890"),
+                "amount" => $demand["amount"],
+                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/',$shop->shop_owner_name) ? $shop->shop_owner_name :"test user",
+                "frontSuccessUrl" => $request->frontSuccessUrl,
+                "frontFailUrl" => $request->frontFailUrl,
+            ];
+            
+            $easebuzzObj = new PayWithEasebuzzLib();
+            $result =  $easebuzzObj->initPayment($data);
+            if (!$result["status"]) {
+                throw new Exception("Payment Not Initiated Due To Internal Server Error");
+            }
+            
+            $data["url"] = $result["data"];
+            $data = collect($data)->merge($demand)->merge($result);
+            $request->merge($data->toArray());
+            $this->_MarEasebuzzPayRequest->mar_shop_id = $shop->id;
+            $this->_MarEasebuzzPayRequest->order_id = $data["txnid"] ?? "";
+            $this->_MarEasebuzzPayRequest->demand_amt = $demand["amount"] ?? "0";
+            $this->_MarEasebuzzPayRequest->payable_amount = $data["amount"] ?? "0";
+            $this->_MarEasebuzzPayRequest->penalty_amount = 0;
+            $this->_MarEasebuzzPayRequest->rebate_amount = 0;
+            $this->_MarEasebuzzPayRequest->request_json = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+            $this->_MarEasebuzzPayRequest->save();
+            return responseMsg(true, "Payment Initiated", remove_null($data));
+
+        }catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    public function easebuzzHandelResponse(Request $request){
+        try{
+            $requestData = $this->_MarEasebuzzPayRequest->where("order_id", $request->txnid)->where("status", 2)->first();
+            if (!$requestData) {
+                throw new Exception("Request Data Not Found");
+            }
+            $requestPayload = json_decode($requestData->request_json, true);
+            $request->merge($requestPayload);
+            $request->merge([
+                "paymentMode" => "ONLINE",
+                "shopId" => $requestData->mar_shop_id,
+                "paymentGatewayType" => $request->payment_source,
+            ]);
+            $respnse = $this->shopPayment($request);
+            $tranId = $respnse->original["data"]["tranId"];
+            $request->merge(["tranId"=>$tranId]);
+            $this->_MarEasebuzzPayResponse->request_id = $requestData->id;
+            $this->_MarEasebuzzPayResponse->mar_shop_id = $requestData->mar_shop_id;
+            $this->_MarEasebuzzPayResponse->module_id = $request->moduleId;
+            $this->_MarEasebuzzPayResponse->order_id = $request->txnid;
+            $this->_MarEasebuzzPayResponse->payable_amount = $requestData->payable_amount;
+            $this->_MarEasebuzzPayResponse->payment_id = $request->easepayid;
+            $this->_MarEasebuzzPayResponse->tran_id = $request->tranId;
+            $this->_MarEasebuzzPayResponse->error_message = $request->error_message;
+            $this->_MarEasebuzzPayResponse->user_id = $request->userId;
+            $this->_MarEasebuzzPayResponse->response_data = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+            $this->_MarEasebuzzPayResponse->save();
+            $requestData->status = 1;
+            $requestData->update();
+
+            return $respnse;
+        } catch(Exception $e){
+            return responseMsg(false, $e->getMessage(), "");
+        }
+
     }
 
     /**
@@ -71,6 +188,7 @@ class ShopController extends Controller
         // Business Logics
         try {
             $shop = $shopPmtBll->shopPayment($req);
+            $shop['paymentAmount'] = $shop['amount'];
             DB::commit();
             $mobile = $shop['mobile'];
             // $mobile="8271522513";
@@ -120,7 +238,7 @@ class ShopController extends Controller
             //     //     ],
             //     // ));
             // }
-            return responseMsgs(true, "Payment Done Successfully", ['paymentAmount' => $shop['amount']], "055001", "1.0", responseTime(), "POST", $req->deviceId);
+            return responseMsgs(true, "Payment Done Successfully", $shop, "055001", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055001", "1.0", responseTime(), "POST", $req->deviceId);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AdevertisementNew;
 
+use App\BLL\PayWithEasebuzzLib;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AgencyNew\AdPaymentReq;
 use App\MicroServices\IdGeneration;
@@ -10,6 +11,8 @@ use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdChequeDtl;
 use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AdTranDetail;
+use App\Models\AdvertisementNew\AdvEasebuzzPayRequest;
+use App\Models\AdvertisementNew\AdvEasebuzzPayResponse;
 use App\Models\AdvertisementNew\AgencyHoarding;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
 use App\Models\AdvertisementNew\AgencyHoardingRejectedApplication;
@@ -52,6 +55,11 @@ class AdPaymentController extends Controller
     private $_offlineVerificationModes;
     private $_offlineMode;
 
+    private $_AgencyHoarding;
+    private $_AdApplicationAmount;
+    protected $_AdvEasebuzzPayRequest;
+    protected $_AdvEasebuzzPayResponse;
+
 
     # Class constructer 
     public function __construct()
@@ -81,6 +89,108 @@ class AdPaymentController extends Controller
         // $this->_DB          = DB::connection($this->_DB_NAME);
         $this->_DB_NAME2    = "pgsql_masters";
         $this->_DB2         = DB::connection($this->_DB_NAME2);
+
+        $this->_AgencyHoarding = new AgencyHoarding();
+        $this->_AdApplicationAmount   = new AdApplicationAmount();
+        $this->_AdvEasebuzzPayRequest = new AdvEasebuzzPayRequest();
+        $this->_AdvEasebuzzPayResponse = new AdvEasebuzzPayResponse();
+    }
+
+
+    public function initPayment(Request $request){
+        try{
+            $user = Auth()->user();
+            $rules = [
+                "id" => "required|exists:" . $this->_AgencyHoarding->getConnectionName() . "." . $this->_AgencyHoarding->getTable() . ",id,status,true,approve,1",                
+                    
+            ];
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return validationErrorV2($validator);
+            }
+            $Hoarding = $this->_AgencyHoarding->find($request->id);
+            # Charges for the application
+            $regisCharges = collect($this->checkParamForPayment($request,$this->_paymentMode[1]));
+
+            if (($regisCharges)->isEmpty()) {
+                throw new Exception("Charges not found!");
+            }   
+            if($regisCharges["refRoundAmount"]<=0){
+                throw new Exception("Payment Already Clear");
+            }
+            $data = [
+                "userId" => $user && $user->getTable() == "users" ? $user->id : null,
+                "applicationId"=>$Hoarding->id,
+                "applicationNo" => $Hoarding->application_no,
+                "moduleId" => 14,
+                "email" => ($Hoarding->email_id ?? "test@gmail.com"),
+                "phone" => ($Hoarding->mobile_no ? $Hoarding->mobile_no : "1234567890"),
+                "amount" => $regisCharges["refRoundAmount"],
+                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/',$Hoarding->advertiser) ? $Hoarding->advertiser :"test user",
+                "frontSuccessUrl" => $request->frontSuccessUrl,
+                "frontFailUrl" => $request->frontFailUrl,
+            ];
+            
+            $easebuzzObj = new PayWithEasebuzzLib();
+            $result =  $easebuzzObj->initPayment($data);
+            if (!$result["status"]) {
+                throw new Exception("Payment Not Initiated Due To Internal Server Error");
+            }
+            
+            $data["url"] = $result["data"];
+            $data = collect($data)->merge($regisCharges)->merge($result);
+            $request->merge($data->toArray());
+            $this->_AdvEasebuzzPayRequest->related_id = $Hoarding->id;
+            $this->_AdvEasebuzzPayRequest->order_id = $data["txnid"] ?? "";
+            $this->_AdvEasebuzzPayRequest->demand_amt = $demand["amount"] ?? "0";
+            $this->_AdvEasebuzzPayRequest->payable_amount = $data["amount"] ?? "0";
+            $this->_AdvEasebuzzPayRequest->penalty_amount = 0;
+            $this->_AdvEasebuzzPayRequest->rebate_amount = 0;
+            $this->_AdvEasebuzzPayRequest->request_json = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+            $this->_AdvEasebuzzPayRequest->save();
+            return responseMsg(true, "Payment Initiated", remove_null($data));
+
+        }catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    public function easebuzzHandelResponse(Request $request){
+        try{
+            $requestData = $this->_AdvEasebuzzPayRequest->where("order_id", $request->txnid)->where("status", 2)->first();
+            if (!$requestData) {
+                throw new Exception("Request Data Not Found");
+            }
+            $requestPayload = json_decode($requestData->request_json, true);
+            $request->merge($requestPayload);
+            $request->merge([
+                "paymentMode" => $this->_paymentMode[1],
+                "id" => $requestData->related_id,
+                "paymentGatewayType" => $request->payment_source,
+            ]);
+            $newRequest = new AdPaymentReq($request->all());
+            $respnse = $this->offlinePayment($newRequest);
+            $tranId = $respnse->original["data"]["tranId"];
+            $request->merge(["tranId"=>$tranId]);
+            $this->_AdvEasebuzzPayResponse->request_id = $requestData->id;
+            $this->_AdvEasebuzzPayResponse->related_id = $requestData->related_id;
+            $this->_AdvEasebuzzPayResponse->module_id = $request->moduleId;
+            $this->_AdvEasebuzzPayResponse->order_id = $request->txnid;
+            $this->_AdvEasebuzzPayResponse->payable_amount = $requestData->payable_amount;
+            $this->_AdvEasebuzzPayResponse->payment_id = $request->easepayid;
+            $this->_AdvEasebuzzPayResponse->tran_id = $request->tranId;
+            $this->_AdvEasebuzzPayResponse->error_message = $request->error_message;
+            $this->_AdvEasebuzzPayResponse->user_id = $request->userId;
+            $this->_AdvEasebuzzPayResponse->response_data = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
+            $this->_AdvEasebuzzPayResponse->save();
+            $requestData->status = 1;
+            $requestData->update();
+
+            return $respnse;
+        } catch(Exception $e){
+            return responseMsg(false, $e->getMessage(), "");
+        }
+
     }
 
 
@@ -155,7 +265,8 @@ class AdPaymentController extends Controller
             $payRelatedDetails['applicationDetails']->save();
             DB::commit();
             $returnData = [
-                "transactionNo" => $transactionNo
+                "transactionNo" => $transactionNo,
+                'tranId'        => $RigTrans['transactionId'],
             ];
             return responseMsgs(true, "Paymet done!", $returnData, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -284,6 +395,7 @@ class AdPaymentController extends Controller
 
     public function checkParamForPayment($req, $paymentMode)
     {
+        $user = Auth()->user();
         $applicationId          = $req->id;
         $confPaymentMode        = $this->_paymentMode;
         $confApplicationType    = $this->_applicationType;
@@ -328,7 +440,7 @@ class AdPaymentController extends Controller
             throw new Exception("Payment has been done!");
         }
         if ($paymentMode == $confPaymentMode['1']) {
-            if ($applicationDetail->citizen_id != authUser($req)->id) {
+            if (($user && $user->getTable()!="users" ) && $applicationDetail->citizen_id != authUser($req)->id) {
                 throw new Exception("You are not he Autherized User!");
             }
         }

@@ -253,6 +253,14 @@ if (!function_exists("validationError")) {
     }
 }
 
+if (!function_exists("validationErrorV2")) {
+    function validationErrorV2($validator)
+    {
+        $response = ['status' => false, "message" => 'Validation Error', "errors" => $validator->errors()];
+        return response()->json($response, 200);
+    }
+}
+
 // getClientIpAddress
 if (!function_exists('getClientIpAddress')) {
     function getClientIpAddress()

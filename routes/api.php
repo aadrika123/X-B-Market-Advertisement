@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Advertisements\AdvertisementController;
 use App\Http\Controllers\AdevertisementNew\AgencyNewController;
 use App\Http\Controllers\AdevertisementNew\AgencyWorkflowController;
+use App\Http\Controllers\EasebuzzPaymentContoller;
 
 /*
 |--------------------------------------------------------------------------
@@ -626,6 +627,8 @@ Route::group(['middleware' => ['checkToken']], function () {
     });
 });
 Route::controller(AdPaymentController::class)->group(function () {
+    Route::post('advertisement/init-payment', "initPayment")->middleware("checkToken");
+    Route::post('advertisement/easebuzz-handel-response', "easebuzzHandelResponse");
     Route::post('advertisement/offline-payment', 'offlinePayment');
     Route::post("advertisement/payment-receipt", "generatePaymentReceipt");
 
@@ -634,4 +637,9 @@ Route::controller(AdPaymentController::class)->group(function () {
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
     Route::post('advertisement/approve-applications', 'getApproveApplications');
+});
+
+# Easebuzz payament operation
+Route::controller(EasebuzzPaymentContoller::class)->group(function () {
+    Route::post('advert/payment/easebuzz/collect-callback-data', 'callBackResponse');
 });

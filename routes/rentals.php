@@ -37,6 +37,8 @@ Route::group(['middleware' => ['checkToken']], function () {
      * | Status - Closed (27 sep 2023)
      */
     Route::controller(ShopController::class)->group(function () {
+        Route::post('shop/init-payment', "initPayment");
+        Route::post('shop/easebuzz-handel-response', "easebuzzHandelResponse");
         Route::post('shop-payments', 'shopPayment');                                                            // 01  Shop Payments
         Route::post('crud/shop/store', 'store');                                                                // 02  Store Shop Data
         Route::post('crud/shop/edit', 'edit');                                                                  // 03  Edit Shop Details

@@ -116,7 +116,7 @@ class ShopPaymentBll
             'paid_to' => $req->toFYear,
             'payment_date' => Carbon::now(),
             'payment_status' => '1',
-            'user_id' => $req->auth['id'] ?? 0,
+            'user_id' => $req->auth['id'] ?? $req->userId ?? 0,
             'ulb_id' => $shopDetails->ulb_id,
             'remarks' => $req->remarks,
             'pmt_mode' => $req->paymentMode,
