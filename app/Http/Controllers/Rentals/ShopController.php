@@ -66,6 +66,7 @@ class ShopController extends Controller
     public function initPayment(Request $request)
     {
         try {
+
             $user = Auth()->user();
             $rules = [
                 "shopId" => "required|exists:" . $this->_mShops->getConnectionName() . "." . $this->_mShops->getTable() . ",id,status,1",
@@ -88,7 +89,6 @@ class ShopController extends Controller
             $shop = $this->_mShops->find($request->shopId);
             $request->merge(["toFYear" => $request->uptoFYear]);
             $demand = $this->calculateShopRateFinancialwise($request);
-            dd($demand);
             if (!$demand->original["status"]) {
                 throw new Exception($demand->original["message"]);
             }
