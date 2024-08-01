@@ -88,7 +88,7 @@ class ShopController extends Controller
             }
             $shop = $this->_mShops->find($request->shopId);
             $request->merge(["toFYear"=>$request->uptoFYear]);
-            $demand = $this->calculateShopRateFinancialwise($request);dd($demand);
+            $demand = $this->calculateShopRateFinancialwise($request);
             if(!$demand->original["status"]){
                 throw new Exception($demand->original["message"]);
             }
