@@ -48,7 +48,7 @@ class ShopController extends Controller
 
     protected $_ulbLogoUrl;
     protected $_callbackUrl;
-    
+
     protected $_MarEasebuzzPayRequest;
     protected $_MarEasebuzzPayResponse;
 
@@ -58,63 +58,63 @@ class ShopController extends Controller
         $this->_ulbLogoUrl = Config::get('constants.ULB_LOGO_URL');                                 // Logo Url for Reciept
         $this->_callbackUrl = Config::get('constants.CALLBACK_URL');                                // Callback Url for Payment
 
-        
+
         $this->_MarEasebuzzPayRequest = new MarEasebuzzPayRequest();
         $this->_MarEasebuzzPayResponse = new MarEasebuzzPayResponse();
     }
 
-    public function initPayment(Request $request){
-        try{
+    public function initPayment(Request $request)
+    {
+        try {
             $user = Auth()->user();
             $rules = [
                 "shopId" => "required|exists:" . $this->_mShops->getConnectionName() . "." . $this->_mShops->getTable() . ",id,status,1",
-                "uptoFYear"=>[
+                "uptoFYear" => [
                     "required",
                     "regex:/^\d{4}-\d{4}$/",
-                    function ($attribute, $value, $fail){
-                        list($fromYear,$uptoYear) = explode("-",$value);
-                        if(($fromYear+1) != $uptoYear || $value > getCurrentSesstion())
-                        {
-                            $fail('The '.$attribute.' is invalid');
+                    function ($attribute, $value, $fail) {
+                        list($fromYear, $uptoYear) = explode("-", $value);
+                        if (($fromYear + 1) != $uptoYear || $value > getCurrentSesstion()) {
+                            $fail('The ' . $attribute . ' is invalid');
                         }
-
                     },
                 ],
-                    
+
             ];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return validationErrorV2($validator);
             }
             $shop = $this->_mShops->find($request->shopId);
-            $request->merge(["toFYear"=>$request->uptoFYear]);
-            $demand = $this->calculateShopRateFinancialwise($request);dd($demand);
-            if(!$demand->original["status"]){
+            $request->merge(["toFYear" => $request->uptoFYear]);
+            $demand = $this->calculateShopRateFinancialwise($request);
+            dd($demand);
+            if (!$demand->original["status"]) {
                 throw new Exception($demand->original["message"]);
             }
-            $demand = $demand->original["data"];            
-            if($demand["amount"]<=0){
+            $demand = $demand->original["data"];
+            if ($demand["amount"] <= 0) {
                 throw new Exception("Payment Already Clear");
             }
             $data = [
                 "userId" => $user && $user->getTable() == "users" ? $user->id : null,
-                "applicationId"=>$shop->id,
+                "applicationId" => $shop->id,
                 "applicationNo" => $shop->shop_no,
                 "moduleId" => 30,
                 "email" => ($shop->email_id ?? "test@gmail.com"),
                 "phone" => ($shop->contact_no ? $shop->contact_no : "1234567890"),
                 "amount" => $demand["amount"],
-                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/',$shop->shop_owner_name) ? $shop->shop_owner_name :"test user",
+                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/', $shop->shop_owner_name) ? $shop->shop_owner_name : "test user",
                 "frontSuccessUrl" => $request->frontSuccessUrl,
                 "frontFailUrl" => $request->frontFailUrl,
             ];
-            
+
             $easebuzzObj = new PayWithEasebuzzLib();
             $result =  $easebuzzObj->initPayment($data);
             if (!$result["status"]) {
                 throw new Exception("Payment Not Initiated Due To Internal Server Error");
             }
-            
+
             $data["url"] = $result["data"];
             $data = collect($data)->merge($demand)->merge($result);
             $request->merge($data->toArray());
@@ -127,14 +127,14 @@ class ShopController extends Controller
             $this->_MarEasebuzzPayRequest->request_json = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
             $this->_MarEasebuzzPayRequest->save();
             return responseMsg(true, "Payment Initiated", remove_null($data));
-
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
     }
 
-    public function easebuzzHandelResponse(Request $request){
-        try{
+    public function easebuzzHandelResponse(Request $request)
+    {
+        try {
             $requestData = $this->_MarEasebuzzPayRequest->where("order_id", $request->txnid)->where("status", 2)->first();
             if (!$requestData) {
                 throw new Exception("Request Data Not Found");
@@ -148,7 +148,7 @@ class ShopController extends Controller
             ]);
             $respnse = $this->shopPayment($request);
             $tranId = $respnse->original["data"]["tranId"];
-            $request->merge(["tranId"=>$tranId]);
+            $request->merge(["tranId" => $tranId]);
             $this->_MarEasebuzzPayResponse->request_id = $requestData->id;
             $this->_MarEasebuzzPayResponse->mar_shop_id = $requestData->mar_shop_id;
             $this->_MarEasebuzzPayResponse->module_id = $request->moduleId;
@@ -164,10 +164,9 @@ class ShopController extends Controller
             $requestData->update();
 
             return $respnse;
-        } catch(Exception $e){
+        } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
-
     }
 
     /**
@@ -2566,30 +2565,48 @@ class ShopController extends Controller
     public function getsearchShopByMobileNoNameShopNo(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            "searchType" => "required|string|in:shopNo,mobileNo,name",
-            "value" => "required|string",
+            'searchType' => 'required|string|in:shopNo,mobileNo,name',
+            'value' => 'required|string',
         ]);
-        if ($validator->fails())
-            return responseMsgs(false, $validator->errors(), []);
+
+        if ($validator->fails()) {
+            return responseMsgs(false, $validator->errors(), [], '055052', '1.0', responseTime(), 'POST');
+        }
+
         try {
-            $mshop = new Shop();
-            $listShop = $mshop->getShopData();
-            if ($req->searchType == 'mobileNo') {
-                $listShop = $listShop->where('contact_no', $req->value);
+            $searchType = $req->searchType;
+            $value = $req->value;
+
+            $listShop = Shop::query()
+                ->select(
+                    'mar_shops.*',
+                    'mc.circle_name',
+                    'mm.market_name',
+                    'mst.shop_type',
+                    'msp.amount as last_payment_amount'
+                )
+                ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+                ->leftjoin('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+                ->Join('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+                ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+                ->where('mar_shops.status', '1');
+
+            if ($searchType == 'mobileNo') {
+                $listShop->where('contact_no', $value);
+            } elseif ($searchType == 'shopNo') {
+                $listShop->where('amc_shop_no', strtoupper($value));
+            } elseif ($searchType == 'name') {
+                $listShop->where('allottee', 'LIKE', "%$value%");
             }
-            if ($req->searchType == 'shopNo') {
-                $val = strtoupper($req->value);
-                $listShop = $listShop->where('shop_no', $val);
-            }
-            if ($req->searchType == 'name') {
-                $listShop = $listShop->where('allottee', $req->value);
-            }
+
             $listShop = $listShop->get();
-            return responseMsgs(true, "Shop List Fetch Successfully !!!", $listShop, "055052", "1.0", responseTime(), "POST");
+
+            return responseMsgs(true, 'Shop List Fetch Successfully !!!', $listShop, '055052', '1.0', responseTime(), 'POST');
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055052", "1.0", responseTime(), "POST");
+            return responseMsgs(false, $e->getMessage(), [], '055052', '1.0', responseTime(), 'POST');
         }
     }
+
 
     /**
      * | Payment From Pinelab 
