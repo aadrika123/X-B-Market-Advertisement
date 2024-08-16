@@ -85,11 +85,12 @@ class Shop extends Model
       'mm.market_name',
       'mst.shop_type',
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->orderByDesc('id')
-      ->where('mar_shops.ulb_id', $ulbId);
+      ->where('mar_shops.ulb_id', $ulbId)
+      ->where('mar_shops.shop_category_id',1);
   }
 
   /**
