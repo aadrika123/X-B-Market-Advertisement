@@ -90,7 +90,7 @@ class Shop extends Model
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->orderByDesc('id')
       ->where('mar_shops.ulb_id', $ulbId)
-      ->where('mar_shops.shop_category_id',3);
+      ->where('mar_shops.shop_category_id',2);
   }
 
   /**
