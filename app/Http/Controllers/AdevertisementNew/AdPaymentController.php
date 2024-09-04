@@ -440,7 +440,7 @@ class AdPaymentController extends Controller
             throw new Exception("Payment has been done!");
         }
         if ($paymentMode == $confPaymentMode['1']) {
-            if (($user && $user->getTable()!="users" ) && $applicationDetail->citizen_id != authUser($req)->id) {
+            if (($user && $user->getTable()!="users" ) && $applicationDetail->user_id != authUser($req)->id) {
                 throw new Exception("You are not he Autherized User!");
             }
         }

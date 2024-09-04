@@ -208,7 +208,7 @@ class AgencyWorkflowController extends Controller
             'agency_hoardings.*',
             'agency_masters.agency_name as agencyName'
         )
-            ->join('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->where('agency_hoardings.status', true)
             ->where('agency_hoardings.ulb_id', $ulbId)
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
@@ -882,7 +882,8 @@ class AgencyWorkflowController extends Controller
 
     public function getApplicationsDetails($request)
     {
-
+        $user = authUser($request);
+        $userTye = $user->user_type;
         $forwardBackward        = new WorkflowMap();
         $mWorkflowTracks        = new WorkflowTrack();
         $mCustomDetails         = new CustomDetail();
@@ -891,6 +892,7 @@ class AgencyWorkflowController extends Controller
         $mwaterOwner            = new AgencyMaster();
         $mhoardMaster           = new HoardingMaster();
         # applicatin details
+
         $applicationDetails = $mAgencyHoard->getFullDetails($request)->get();
         if (collect($applicationDetails)->first() == null) {
             return responseMsg(false, "Application Data Not found!", $request->applicationId);
@@ -1173,6 +1175,9 @@ class AgencyWorkflowController extends Controller
         if ($validated->fails())
             return validationError($validated);
         try {
+            $user           = authUser($request);
+            $userType       = $user->user_type;
+            $userId         = $user->id;
             $key            = $request->filterBy;
             $paramenter     = $request->parameter;
             $pages          = $request->perPage ? $request->perPage : 10;
@@ -1181,7 +1186,13 @@ class AgencyWorkflowController extends Controller
             if ($key !== null) {
                 switch ($key) {
                     case "applicationNo":
-                        $data = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        $data = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter,);
+                        if ($userType !== 'Citizen') {
+                            $data->where('agency_masters.email', $request->auth['email']);
+                            $data->where('agency_masters.status', 1);
+                        } else {
+                            $data->where('agency_hoardings.user_id', $userId);
+                        }
                         if ($paramenter !== null) {
                             $data->where('agency_hoardings.' . $refstring, 'LIKE', '%' . $paramenter . '%');
                         }
@@ -1220,7 +1231,14 @@ class AgencyWorkflowController extends Controller
                         throw new Exception("Data provided in filterBy is not valid!");
                 }
             } else {
-                $ReturnDetails = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email'])->paginate($pages);
+                $ReturnDetails = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter,);
+                if ($userType !== 'Citizen') {
+                    $ReturnDetails->where('agency_masters.email', $request->auth['email']);
+                    $ReturnDetails->where('agency_masters.status', 1);
+                } else {
+                    $ReturnDetails->where('agency_hoardings.user_id', $userId);
+                }
+                $ReturnDetails = $ReturnDetails->paginate($pages);
                 if (!$ReturnDetails) {
                     throw new Exception('data not found');
                 }
@@ -1275,7 +1293,7 @@ class AgencyWorkflowController extends Controller
             $advertisementType = $data->adv_type;
 
             $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
-            
+
             $mHoardingAddress           = new AdHoardingAddress();
 
             $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();

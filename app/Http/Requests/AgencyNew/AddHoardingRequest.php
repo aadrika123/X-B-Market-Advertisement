@@ -25,8 +25,10 @@ class AddHoardingRequest extends FormRequest
      */
     public function rules()
     {
+        $userType = authUser(request())->user_type;
         return [
-            'agencyId'             => 'required|integer|min:1',
+            'agencyId'             => $userType !== 'Citizen' ? 'required|integer|min:1' : 'nullable|integer|min:1',
+            // 'agencyId'             => 'nullable|integer|min:1',
             'hoardingId'           => 'nullable|integer|min:1',
             'hoardingType'         => 'nullable|string',
             'allotmentDate'        => 'nullable|date',

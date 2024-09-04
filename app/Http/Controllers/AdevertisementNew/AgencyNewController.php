@@ -1424,6 +1424,8 @@ class AgencyNewController extends Controller
         try {
             $canTakePayment             = false;
             $user                       = authUser($request);
+            $userType                   = $user->user_type;
+            $userId                     = $user->id;
             $userId                     = $user->id;
             // $confWorkflowMasterId       = $this->_workflowMasterId;
             $key                        = $request->filterBy;
@@ -1440,43 +1442,42 @@ class AgencyNewController extends Controller
             // $this->checkParamForUser($user, $roleDetails);
 
             try {
-                $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails($request->auth['email'])
-                    ->select(
-                        DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
-                        DB::raw("TO_CHAR(agency_hoarding_approve_applications.apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
-                        "agency_hoardings.id",
-                        "agency_hoarding_approve_applications.application_no",
-                        "agency_hoarding_approve_applications.apply_date",
-                        "agency_hoarding_approve_applications.address",
-                        "agency_hoarding_approve_applications.application_type",
-                        // "agency_hoardings.payment_status",
-                        "agency_hoarding_approve_applications.status",
-                        "agency_hoarding_approve_applications.id",
-                        "agency_hoarding_approve_applications.parked",
-                        "agency_hoarding_approve_applications.doc_upload_status",
-                        "agency_hoarding_approve_applications.doc_verify_status",
-                        // "agency_hoarding_approve_applications.approve_date",
-                        // "agency_hoarding_approve_applications.approve_end_date",
-                        "agency_hoarding_approve_applications.doc_verify_status",
-                        "agency_hoardings.user_type",
-                        "agency_hoardings.mobile_no",
-                        "wf_roles.role_name",
-                        "agency_hoarding_approve_applications.status as registrationSatus",
-                        DB::raw("CASE 
+                if ($userType !== "Citizen") {
+                    $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails($request->auth['email']);
+                } else {
+                    $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetailsCitizen($userId);
+                }
+
+                $baseQuerry->select(
+                    DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
+                    DB::raw("TO_CHAR(agency_hoarding_approve_applications.apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
+                    "agency_hoardings.id",
+                    "agency_hoarding_approve_applications.application_no",
+                    "agency_hoarding_approve_applications.apply_date",
+                    "agency_hoarding_approve_applications.address",
+                    "agency_hoarding_approve_applications.application_type",
+                    "agency_hoarding_approve_applications.status",
+                    "agency_hoarding_approve_applications.id",
+                    "agency_hoarding_approve_applications.parked",
+                    "agency_hoarding_approve_applications.doc_upload_status",
+                    "agency_hoarding_approve_applications.doc_verify_status",
+                    "agency_hoarding_approve_applications.doc_verify_status",
+                    "agency_hoardings.user_type",
+                    "agency_hoardings.mobile_no",
+                    "wf_roles.role_name",
+                    "agency_hoarding_approve_applications.status as registrationSatus",
+                    DB::raw("CASE 
                         WHEN agency_hoardings.approve = 1 THEN 'Approved'
                         WHEN agency_hoardings.approve = 2 THEN 'Rejected'
                         WHEN agency_hoardings.approve = 0 THEN 'Pending'
                         END as current_status"),
-                        // DB::raw("CASE 
-                        // WHEN agency_hoardings.payment_status = 1 THEN 'Paid'
-                        // WHEN agency_hoardings.payment_status = 0 THEN 'Unpaid'
-                        // END as paymentStatus")
-                        "agency_hoardings.payment_status"
-                    )
+                    // DB::raw("CASE 
+                    // WHEN agency_hoardings.payment_status = 1 THEN 'Paid'
+                    // WHEN agency_hoardings.payment_status = 0 THEN 'Unpaid'
+                    // END as paymentStatus")
+                    "agency_hoardings.payment_status"
+                )
                     ->where('agency_hoarding_approve_applications.status', '<>', 0)
-                    // ->where('agency_hoarding_approve_applications.approve_user_id', $userId)
-                    // ->where('agency_hoarding_approve_applications.finisher_role_id', $roleDetails->role_id)
-                    // ->where('agency_hoarding_approve_applications.current_role_id', $roleDetails->role_id)
                     ->orderByDesc('agency_hoarding_approve_applications.id');
 
                 # Collect querry Exceptions 
@@ -1588,7 +1589,7 @@ class AgencyNewController extends Controller
             # return Details 
             $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
             $approveApplicationDetails['address']                  = $getAddress;
-            
+
 
 
 
@@ -1610,11 +1611,11 @@ class AgencyNewController extends Controller
         try {
             $perPage = $req->perPage ? $req->perPage : 10;
             if (!isset($req->fromDate))
-                $fromDate = Carbon::now()->format('Y-m-d');                                                
+                $fromDate = Carbon::now()->format('Y-m-d');
             else
                 $fromDate = $req->fromDate;
             if (!isset($req->toDate))
-                $toDate = Carbon::now()->format('Y-m-d');                                              
+                $toDate = Carbon::now()->format('Y-m-d');
             else
                 $toDate = $req->toDate;
             $mAdvPayment = new AgencyHoardingApproveApplication();
