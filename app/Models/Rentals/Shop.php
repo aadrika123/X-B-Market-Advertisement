@@ -89,8 +89,8 @@ class Shop extends Model
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->orderByDesc('id')
-      ->where('mar_shops.ulb_id', $ulbId)
-      ->where('mar_shops.shop_category_id',2);
+      ->where('mar_shops.ulb_id', $ulbId);
+    // ->where('mar_shops.shop_category_id',2);
   }
 
   /**
@@ -251,10 +251,10 @@ class Shop extends Model
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where('mar_shops.status', '1');
-      // ->where(function ($query) use ($value) {
-      //   $query->orwhere('shop_no', 'ILIKE', '%' . $value . '%')
-      //     ->orwhere("allottee", 'ILIKE', '%' . $value . '%')
-      //     ->orwhere("contact_no", 'ILIKE', '%' . $value . '%');
-      // });
+    // ->where(function ($query) use ($value) {
+    //   $query->orwhere('shop_no', 'ILIKE', '%' . $value . '%')
+    //     ->orwhere("allottee", 'ILIKE', '%' . $value . '%')
+    //     ->orwhere("contact_no", 'ILIKE', '%' . $value . '%');
+    // });
   }
 }
