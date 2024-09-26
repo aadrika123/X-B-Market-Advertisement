@@ -97,12 +97,13 @@ class AdPaymentController extends Controller
     }
 
 
-    public function initPayment(Request $request){
-        try{
+    public function initPayment(Request $request)
+    {
+        try {
             $user = Auth()->user();
             $rules = [
-                "id" => "required|exists:" . $this->_AgencyHoarding->getConnectionName() . "." . $this->_AgencyHoarding->getTable() . ",id,status,true,approve,1",                
-                    
+                "id" => "required|exists:" . $this->_AgencyHoarding->getConnectionName() . "." . $this->_AgencyHoarding->getTable() . ",id,status,true,approve,1",
+
             ];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
@@ -110,33 +111,33 @@ class AdPaymentController extends Controller
             }
             $Hoarding = $this->_AgencyHoarding->find($request->id);
             # Charges for the application
-            $regisCharges = collect($this->checkParamForPayment($request,$this->_paymentMode[1]));
+            $regisCharges = collect($this->checkParamForPayment($request, $this->_paymentMode[1]));
 
             if (($regisCharges)->isEmpty()) {
                 throw new Exception("Charges not found!");
-            }   
-            if($regisCharges["refRoundAmount"]<=0){
+            }
+            if ($regisCharges["refRoundAmount"] <= 0) {
                 throw new Exception("Payment Already Clear");
             }
             $data = [
                 "userId" => $user && $user->getTable() == "users" ? $user->id : null,
-                "applicationId"=>$Hoarding->id,
+                "applicationId" => $Hoarding->id,
                 "applicationNo" => $Hoarding->application_no,
                 "moduleId" => 14,
                 "email" => ($Hoarding->email_id ?? "test@gmail.com"),
                 "phone" => ($Hoarding->mobile_no ? $Hoarding->mobile_no : "1234567890"),
                 "amount" => $regisCharges["refRoundAmount"],
-                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/',$Hoarding->advertiser) ? $Hoarding->advertiser :"test user",
+                "firstname" => preg_match('/^[a-zA-Z0-9&\-._ \'()\/,@]+$/', $Hoarding->advertiser) ? $Hoarding->advertiser : "test user",
                 "frontSuccessUrl" => $request->frontSuccessUrl,
                 "frontFailUrl" => $request->frontFailUrl,
             ];
-            
+
             $easebuzzObj = new PayWithEasebuzzLib();
             $result =  $easebuzzObj->initPayment($data);
             if (!$result["status"]) {
                 throw new Exception("Payment Not Initiated Due To Internal Server Error");
             }
-            
+
             $data["url"] = $result["data"];
             $data = collect($data)->merge($regisCharges)->merge($result);
             $request->merge($data->toArray());
@@ -149,14 +150,14 @@ class AdPaymentController extends Controller
             $this->_AdvEasebuzzPayRequest->request_json = json_encode($request->all(), JSON_UNESCAPED_UNICODE);
             $this->_AdvEasebuzzPayRequest->save();
             return responseMsg(true, "Payment Initiated", remove_null($data));
-
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
     }
 
-    public function easebuzzHandelResponse(Request $request){
-        try{
+    public function easebuzzHandelResponse(Request $request)
+    {
+        try {
             $requestData = $this->_AdvEasebuzzPayRequest->where("order_id", $request->txnid)->where("status", 2)->first();
             if (!$requestData) {
                 throw new Exception("Request Data Not Found");
@@ -171,7 +172,7 @@ class AdPaymentController extends Controller
             $newRequest = new AdPaymentReq($request->all());
             $respnse = $this->offlinePayment($newRequest);
             $tranId = $respnse->original["data"]["tranId"];
-            $request->merge(["tranId"=>$tranId]);
+            $request->merge(["tranId" => $tranId]);
             $this->_AdvEasebuzzPayResponse->request_id = $requestData->id;
             $this->_AdvEasebuzzPayResponse->related_id = $requestData->related_id;
             $this->_AdvEasebuzzPayResponse->module_id = $request->moduleId;
@@ -187,10 +188,9 @@ class AdPaymentController extends Controller
             $requestData->update();
 
             return $respnse;
-        } catch(Exception $e){
+        } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
         }
-
     }
 
 
@@ -282,8 +282,9 @@ class AdPaymentController extends Controller
      */
     public function saveAdvertRequestStatus($request, $offlinePaymentVerModes, $charges, $waterTransId, $activeConRequest)
     {
-        $mAdTranDetail          = new AdTranDetail();
-        $mAgencyHoarding        = new AgencyHoarding();
+        $mAdTranDetail                 = new AdTranDetail();
+        $mAgencyHoarding               = new AgencyHoarding();
+        $mAgencyApproveHoarding        = new AgencyHoardingApproveApplication();
         $mAdTran                = new AdTran();
         $applicationId          = $activeConRequest->id;
 
@@ -297,6 +298,7 @@ class AdPaymentController extends Controller
             ];                                                                              // Update Charges Paid Status // Static
             $mAdTran->saveStatusInTrans($waterTransId, $tranReq);
             $mAgencyHoarding->saveApplicationStatus($applicationId, $refReq);
+            $mAgencyApproveHoarding->saveApproveApplicationStatus($applicationId, $refReq);
         } else {
             $charges->paid_status = 1;                                                      // Update Charges Paid Status // Static
             $refReq = [
@@ -304,6 +306,7 @@ class AdPaymentController extends Controller
                 "current_role_id"   => $activeConRequest->initiator_role_id
             ];
             $mAgencyHoarding->saveApplicationStatus($applicationId, $refReq);
+            $mAgencyApproveHoarding->saveApproveApplicationStatus($applicationId, $refReq);
         }
         $charges->save();                                                                   // ❕❕ Save Charges ❕❕
 
@@ -440,7 +443,7 @@ class AdPaymentController extends Controller
             throw new Exception("Payment has been done!");
         }
         if ($paymentMode == $confPaymentMode['1']) {
-            if (($user && $user->getTable()!="users" ) && $applicationDetail->user_id != authUser($req)->id) {
+            if (($user && $user->getTable() != "users") && $applicationDetail->user_id != authUser($req)->id) {
                 throw new Exception("You are not he Autherized User!");
             }
         }
@@ -546,7 +549,7 @@ class AdPaymentController extends Controller
                 "transactionNo" => $transactionDetails->tran_no,
                 "todayDate"     => $now->format('d-m-Y'),
                 "applicationNo" => $applicationDetails->application_no,
-                'mobile_no'     =>$applicationDetails->mobile_no,
+                'mobile_no'     => $applicationDetails->mobile_no,
                 "total_nodays"    => $numberOfDays,
                 "applicantName" => $applicationDetails->applicant_name,
                 "paidAmount"    => $transactionDetails->amount,
@@ -563,7 +566,7 @@ class AdPaymentController extends Controller
                 "ulb_email"       => $transactionDetails->email,
                 'amountInWords' => getIndianCurrency($transactionDetails->amount) . "Only /-",
                 "ulbDetails"      =>  $ulbDetails,
-                
+
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);
         } catch (Exception $e) {

@@ -76,6 +76,7 @@ class AgencyNewController extends Controller
     protected $_paramTempId;
     protected $_hoardingAddress;
     protected $_saveApplicationAmount;
+    protected $_agencyApproveApplication;
 
     public function __construct()
     {
@@ -86,6 +87,7 @@ class AgencyNewController extends Controller
         $this->_locatObj  = new Location();
         $this->_advObj     = new AdvertiserMaster();
         $this->_agencyObj = new AgencyHoarding();
+        $this->_agencyApproveApplication = new AgencyHoardingApproveApplication();
         $this->_activeHObj = new AdvActiveHoarding();
         $this->_hoardingAddress = new AdHoardingAddress();
         $this->_saveApplicationAmount = new AdApplicationAmount();
@@ -886,7 +888,13 @@ class AgencyNewController extends Controller
             $idGeneration       = new PrefixIdGenerator($this->_tempParamId, $ulbId);
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
-            $AgencyId           =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
+            #requirement is that if agency not want the applcation proceed for workflow , so application is directly add into approve applications       
+            if ($request->directHoarding = null) {
+                $AgencyId           =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
+            } else {
+                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId);
+            }
+
             // Save multiple addresses
             foreach ($request->addressField as $address) {
                 $this->_hoardingAddress->saveMltplAddress($AgencyId, $address);

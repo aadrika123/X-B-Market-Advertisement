@@ -1083,7 +1083,7 @@ class AgencyWorkflowController extends Controller
             ];
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');
-            $approveApplicationRep->id = $approveApplications->id;
+            // $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
             return $msg  = "register Application Approved!";
             // return responseMsgs(true, 'register Application Approved!', $returnData);

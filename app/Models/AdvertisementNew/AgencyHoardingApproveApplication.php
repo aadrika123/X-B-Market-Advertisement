@@ -113,4 +113,54 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoarding_approve_applications.status', true)
             ->orderByDesc('agency_hoarding_approve_applications.id');
     }
+    public function saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId)
+    {
+        $mAgencyApproveHoarding = new AgencyHoardingApproveApplication();
+        $mAgencyApproveHoarding->agency_id                      = $request->agencyId;
+        $mAgencyApproveHoarding->hoarding_id                    = $request->hoardingId;
+        $mAgencyApproveHoarding->agency_name                    = $request->agencyName;
+        // $mAgencyApproveHoarding->hoarding_type                  = $request->hoardingType;
+        $mAgencyApproveHoarding->allotment_date                 = $request->allotmentDate ?? null;
+        $mAgencyApproveHoarding->rate                           = $request->rate;
+        $mAgencyApproveHoarding->from_date                      = $request->from;
+        $mAgencyApproveHoarding->to_date                        = $request->to;
+        $mAgencyApproveHoarding->user_id                        = $refRequest['empId'] ?? $refRequest['citizenId'];
+        $mAgencyApproveHoarding->user_type                      = $refRequest['userType'];
+        $mAgencyApproveHoarding->apply_from                     = $refRequest['applyFrom'];
+        $mAgencyApproveHoarding->initiator                      = $refRequest['initiatorRoleId'];
+        $mAgencyApproveHoarding->workflow_id                    = $refRequest['ulbWorkflowId'];
+        $mAgencyApproveHoarding->ulb_id                         = $ulbId;
+        $mAgencyApproveHoarding->finisher                       = $refRequest['finisherRoleId'];
+        $mAgencyApproveHoarding->current_role_id                = $refRequest['initiatorRoleId'];
+        $mAgencyApproveHoarding->application_no                 = $applicationNo;
+        $mAgencyApproveHoarding->address                        = $request->residenceAddress;
+        // $mAgencyApproveHoarding->doc_status                     = $request->doc_status ?? null;
+        $mAgencyApproveHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
+        $mAgencyApproveHoarding->advertiser                     = $request->advertiser;
+        $mAgencyApproveHoarding->apply_date                     = $this->_applicationDate;
+        $mAgencyApproveHoarding->adv_type                       = $request->hoardingType;
+        $mAgencyApproveHoarding->hoard_size_id                  = $request->squareFeetId;
+        $mAgencyApproveHoarding->application_type               = $request->applicationType;
+        $mAgencyApproveHoarding->size_square_feet               = $request->squarefeet;
+        $mAgencyApproveHoarding->total_ballon                   = $request->Noofballons;
+        $mAgencyApproveHoarding->total_vehicle                  = $request->Noofvehicle;
+        $mAgencyApproveHoarding->vehicle_type_id                = $request->vehicleType;
+        $mAgencyApproveHoarding->purpose                        = $request->purpose;
+        $mAgencyApproveHoarding->no_of_hoarding                 = $request->Noofhoardings;
+        $mAgencyApproveHoarding->mobile_no                      = $request->mobileNo;
+        $mAgencyApproveHoarding->location                      = $request->location;
+        if ($request->applicationType == 'PERMANANT') {
+            $mAgencyApproveHoarding->property_type_id                  = $request->propertyId;
+        }
+        $mAgencyApproveHoarding->save();
+        return $mAgencyApproveHoarding->id;
+    }
+    /**
+     * | Save the status in Active table
+     */
+    public function saveApproveApplicationStatus($applicationId, $refRequest)
+    {
+        return self::where('id', $applicationId)
+            ->update($refRequest);
+    }
 }
