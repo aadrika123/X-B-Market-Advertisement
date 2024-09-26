@@ -1174,8 +1174,11 @@ class AgencyNewController extends Controller
             $mHoardApplication = new AgencyHoarding();
             $mHoardApproveApplication = new AgencyHoardingApproveApplication();
             $moduleId          = Config::get('workflow-constants.ADVERTISMENT_MODULE');
+            $hoardDetails = $mHoardApplication->checkdtlsById($req->applicationId);
+            if ($hoardDetails == null) {
+                $hoardDetails = $mHoardApproveApplication->checkdtlsById($req->applicationId);
+            }
 
-            $hoardDetails = $mHoardApproveApplication->checkdtlsById($req->applicationId)->first();
             if (!$hoardDetails)
                 throw new Exception("Application Not Found for this application Id");
 
