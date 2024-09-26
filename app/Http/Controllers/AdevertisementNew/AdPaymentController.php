@@ -221,10 +221,11 @@ class AdPaymentController extends Controller
 
             # Check the params for checking payment method
             $payRelatedDetails  = $this->checkParamForPayment($req, $req->paymentMode);
-            $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'];
+            $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'] ?? 2;
             $wardId             = $payRelatedDetails['applicationDetails']['ward_id'];
             $tranType           = $payRelatedDetails['applicationDetails']['application_type'];
             $tranTypeId         = $payRelatedDetails['chargeCategory'];
+
 
             DB::beginTransaction();
             # Generate transaction no 
@@ -260,7 +261,7 @@ class AdPaymentController extends Controller
                 ]);
                 $this->postOtherPaymentModes($req);
             }
-            $this->saveAdvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+             $this->saveAdvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             $payRelatedDetails['applicationDetails']->payment_status = 1;
             $payRelatedDetails['applicationDetails']->save();
             DB::commit();
@@ -285,8 +286,9 @@ class AdPaymentController extends Controller
         $mAdTranDetail                 = new AdTranDetail();
         $mAgencyHoarding               = new AgencyHoarding();
         $mAgencyApproveHoarding        = new AgencyHoardingApproveApplication();
-        $mAdTran                = new AdTran();
-        $applicationId          = $activeConRequest->id;
+        $mAdTran                       = new AdTran();
+        $applicationId                 = $activeConRequest->id;
+        //   return   $approve                       = $mAgencyApproveHoarding->getApproveApplication($applicationId);
 
         if (in_array($request['paymentMode'], $offlinePaymentVerModes)) {
             $charges->paid_status = 2;                                                      // Static
@@ -298,7 +300,6 @@ class AdPaymentController extends Controller
             ];                                                                              // Update Charges Paid Status // Static
             $mAdTran->saveStatusInTrans($waterTransId, $tranReq);
             $mAgencyHoarding->saveApplicationStatus($applicationId, $refReq);
-            $mAgencyApproveHoarding->saveApproveApplicationStatus($applicationId, $refReq);
         } else {
             $charges->paid_status = 1;                                                      // Update Charges Paid Status // Static
             $refReq = [
@@ -306,16 +307,16 @@ class AdPaymentController extends Controller
                 "current_role_id"   => $activeConRequest->initiator_role_id
             ];
             $mAgencyHoarding->saveApplicationStatus($applicationId, $refReq);
-            $mAgencyApproveHoarding->saveApproveApplicationStatus($applicationId, $refReq);
         }
         $charges->save();                                                                   // ❕❕ Save Charges ❕❕
 
-        $refTranDetails = [
+         $refTranDetails = [
             "id"            => $applicationId,
             "refChargeId"   => $charges->id,
             "roundAmount"   => $request->roundAmount,
             "tranTypeId"    => $request->tranTypeId
         ];
+        $mAgencyApproveHoarding->saveApproveApplicationStatus($applicationId, $refReq);
         # Save Trans Details                                                   
         $mAdTranDetail->saveTransDetails($waterTransId, $refTranDetails);
     }
@@ -410,7 +411,7 @@ class AdPaymentController extends Controller
         $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
             ->first();
         if ($applicationDetail == null) {
-            $applicationDetail = $mAgencyApproveHoarding->getApproveDetails($applicationId);
+            $applicationDetail = $mAgencyApproveHoarding->getApproveDetail($applicationId);
         }
 
         if (is_null($applicationDetail)) {
@@ -495,23 +496,23 @@ class AdPaymentController extends Controller
             $madvertChequeDtl->postChequeDtl($chequeReqs);
         }
 
-        $tranReqs = [
-            'transaction_id'    => $req['tranId'],
-            'application_id'    => $req['id'],
-            'module_id'         => $moduleId,
-            'workflow_id'       => $req['workflowId'],
-            'transaction_no'    => $req['tranNo'],
-            'application_no'    => $req['applicationNo'],
-            'amount'            => $req['amount'],
-            'payment_mode'      => strtoupper($req['paymentMode']),
-            'cheque_dd_no'      => $req['chequeNo'],
-            'bank_name'         => $req['bankName'],
-            'tran_date'         => $req['todayDate'],
-            'user_id'           => $req['userId'],
-            'ulb_id'            => $req['ulbId'],
-            'ward_no'           => $req['ref_ward_id']
-        ];
-        $mTempTransaction->tempTransaction($tranReqs);
+        // $tranReqs = [
+        //     'transaction_id'    => $req['tranId'],
+        //     'application_id'    => $req['id'],
+        //     'module_id'         => $moduleId,
+        //     'workflow_id'       => $req['workflowId'],
+        //     'transaction_no'    => $req['tranNo'],
+        //     'application_no'    => $req['applicationNo'],
+        //     'amount'            => $req['amount'],
+        //     'payment_mode'      => strtoupper($req['paymentMode']),
+        //     'cheque_dd_no'      => $req['chequeNo'],
+        //     'bank_name'         => $req['bankName'],
+        //     'tran_date'         => $req['todayDate'],
+        //     'user_id'           => $req['userId'],
+        //     'ulb_id'            => $req['ulbId'],
+        //     'ward_no'           => $req['ref_ward_id']
+        // ];
+        // $mTempTransaction->tempTransaction($tranReqs);
     }
 
 

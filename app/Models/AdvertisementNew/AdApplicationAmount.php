@@ -24,6 +24,7 @@ class AdApplicationAmount extends Model
         $mRigRegistrationCharge->paid_status        = $req->refPaidstatus ?? 0;
         $mRigRegistrationCharge->application_category_name = $req->applicationType;
         $mRigRegistrationCharge->save();
+        return $mRigRegistrationCharge->id;
     }
     /**
      * | Get registration charges accordng to application id 

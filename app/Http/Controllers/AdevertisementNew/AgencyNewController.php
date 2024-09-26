@@ -904,6 +904,7 @@ class AgencyNewController extends Controller
             }
             # save Application Rate 
             $this->_saveApplicationAmount->saveApplicationRate($request, $AgencyId, $applicationTypeId);
+            
             $var = [
                 'relatedId' => $AgencyId,
                 "Status"    => 2,
