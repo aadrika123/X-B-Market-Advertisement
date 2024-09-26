@@ -889,10 +889,13 @@ class AgencyNewController extends Controller
             $applicationNo      = $idGeneration->generate();
             $applicationNo      = str_replace('/', '-', $applicationNo);
             #requirement is that if agency not want the applcation proceed for workflow , so application is directly add into approve applications       
-            if ($request->directHoarding = null) {
+            if ($request->directHoarding == null) {
                 $AgencyId           =  $this->_agencyObj->saveRequestDetails($request, $refRequest, $applicationNo, $ulbId);
             } else {
-                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId);
+                $idGeneration       = new PrefixIdGenerator($this->_tempId, $ulbId);
+                $registrationNo      = $idGeneration->getUniqueId();
+                $registrationNo      = str_replace('/', '-', $registrationNo);
+                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo);
             }
 
             // Save multiple addresses

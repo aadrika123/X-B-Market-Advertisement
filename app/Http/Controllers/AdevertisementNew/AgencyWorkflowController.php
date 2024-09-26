@@ -89,6 +89,7 @@ class AgencyWorkflowController extends Controller
     private $_documentLists;
     private $_tempId;
     protected $incrementStatus;
+    protected $_agencyApproveappObj;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -100,6 +101,7 @@ class AgencyWorkflowController extends Controller
         $this->_locatObj        = new Location();
         $this->_advObj          = new AdvertiserMaster();
         $this->_agencyObj       = new AgencyHoarding();
+        $this->_agencyApproveappObj       = new AgencyHoardingApproveApplication();
         $this->_activeHObj      = new AdvActiveHoarding();
         $this->_mRefReqDocs     = new RefRequiredDocument();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
@@ -1083,6 +1085,8 @@ class AgencyWorkflowController extends Controller
             ];
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');
+
+            $approveApplications->delete();
             // $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
             return $msg  = "register Application Approved!";
@@ -1094,8 +1098,9 @@ class AgencyWorkflowController extends Controller
                 ]);
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_rejected_applications');
-            $approveApplicationRep->id = $approveApplications->id;
+            // $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
+            $approveApplications->delete();
             return $msg  = "register Application Rejected!";
 
             // return responseMsgs(true, 'register Application Rejected!', $application->application_no);
@@ -1275,8 +1280,7 @@ class AgencyWorkflowController extends Controller
         }
 
         try {
-
-            $data = $this->_agencyObj->checkdtlsById($request->applicationId);
+            $data = $this->_agencyApproveappObj->checkdtlsById($request->applicationId);
             if (!$data) {
                 throw new Exception("Application Not Found!");
             }
@@ -1292,14 +1296,14 @@ class AgencyWorkflowController extends Controller
             #different advertisement type 
             $advertisementType = $data->adv_type;
 
-            $query = $this->_agencyObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+            $query = $this->_agencyApproveappObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
 
             $mHoardingAddress           = new AdHoardingAddress();
 
             $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();
 
             if ($data->application_type == 'PERMANANT') {
-                $query = $this->_agencyObj->getApproveDetails($request);
+                $query =  $this->_agencyApproveappObj->getApproveDetails($request);
                 $query->value = $query['measurement'];
                 $query->key = 'SIZES';
             } else {

@@ -113,14 +113,15 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoarding_approve_applications.status', true)
             ->orderByDesc('agency_hoarding_approve_applications.id');
     }
-    public function saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId)
+    public function saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo)
     {
+        $currentDate = Carbon::now();
         $mAgencyApproveHoarding = new AgencyHoardingApproveApplication();
         $mAgencyApproveHoarding->agency_id                      = $request->agencyId;
         $mAgencyApproveHoarding->hoarding_id                    = $request->hoardingId;
         $mAgencyApproveHoarding->agency_name                    = $request->agencyName;
         // $mAgencyApproveHoarding->hoarding_type                  = $request->hoardingType;
-        $mAgencyApproveHoarding->allotment_date                 = $request->allotmentDate ?? null;
+        $mAgencyApproveHoarding->allotment_date                 = $currentDate;
         $mAgencyApproveHoarding->rate                           = $request->rate;
         $mAgencyApproveHoarding->from_date                      = $request->from;
         $mAgencyApproveHoarding->to_date                        = $request->to;
@@ -135,7 +136,7 @@ class AgencyHoardingApproveApplication extends Model
         $mAgencyApproveHoarding->application_no                 = $applicationNo;
         $mAgencyApproveHoarding->address                        = $request->residenceAddress;
         // $mAgencyApproveHoarding->doc_status                     = $request->doc_status ?? null;
-        $mAgencyApproveHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
+        $mAgencyApproveHoarding->doc_upload_status              = $request->doc_upload_status ?? 1;                          // document is already approve offline application
         $mAgencyApproveHoarding->advertiser                     = $request->advertiser;
         $mAgencyApproveHoarding->apply_date                     = $this->_applicationDate;
         $mAgencyApproveHoarding->adv_type                       = $request->hoardingType;
@@ -148,7 +149,9 @@ class AgencyHoardingApproveApplication extends Model
         $mAgencyApproveHoarding->purpose                        = $request->purpose;
         $mAgencyApproveHoarding->no_of_hoarding                 = $request->Noofhoardings;
         $mAgencyApproveHoarding->mobile_no                      = $request->mobileNo;
-        $mAgencyApproveHoarding->location                      = $request->location;
+        $mAgencyApproveHoarding->location                       = $request->location;
+        $mAgencyApproveHoarding->registration_no                = $registrationNo;
+        $mAgencyApproveHoarding->approve                       = 1;                                                  //static because application is already approve offline
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyApproveHoarding->property_type_id                  = $request->propertyId;
         }
@@ -162,5 +165,68 @@ class AgencyHoardingApproveApplication extends Model
     {
         return self::where('id', $applicationId)
             ->update($refRequest);
+    }
+    /**
+     * 
+     */
+    public function checkdtlsById($agencyId)
+    {
+        return self::where('id', $agencyId)
+            ->where('status', 1)
+            ->first();
+    }
+    /**
+     * get details of approve applications 
+     */
+    public function getApproveDetails($request)
+    {
+        return self::select(
+            'agency_hoarding_approve_applications.from_date',
+            'agency_hoarding_approve_applications.to_date',
+            'agency_hoarding_approve_applications.advertiser',
+            'ulb_masters.ulb_name',
+            'wf_roles.role_name AS current_role_name',
+            'hoarding_masters.ward_id',
+            'hoarding_masters.address',
+            'ulb_ward_masters.ward_name',
+            'm_circle.circle_name as zone_name',
+            'agency_masters.agency_name as agencyName',
+            'agency_hoarding_approve_applications.registration_no',
+            'agency_hoarding_approve_applications.allotment_date',
+            'agency_hoarding_approve_applications.purpose',
+            'agency_hoarding_approve_applications.adv_type',
+            'agency_hoarding_approve_applications.application_type',
+            'agency_hoarding_approve_applications.total_vehicle',
+            'measurement_sizes.measurement',
+            'agency_hoarding_approve_applications.total_ballon',
+            'hoarding_rates.size',
+            'agency_hoarding_approve_applications.size_square_feet',
+            'agency_hoarding_approve_applications.application_no',
+            'agency_hoarding_approve_applications.no_of_hoarding'
+
+        )
+            ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')
+            ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoarding_approve_applications.hoarding_id')
+            ->leftjoin('wf_roles', 'wf_roles.id', '=', 'agency_hoarding_approve_applications.current_role_id')
+            ->leftJoin('measurement_sizes', function ($join) {
+                $join->on('measurement_sizes.id', '=', 'agency_hoarding_approve_applications.hoard_size_id')
+                    ->where('measurement_sizes.status', 1);
+            })
+            ->leftJoin('ulb_ward_masters', function ($join) {
+                $join->on('ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+                    ->where('ulb_ward_masters.status', 1);
+            })
+            ->leftJoin('hoarding_rates', function ($join) {
+                $join->on('hoarding_rates.id', '=', 'agency_hoarding_approve_applications.hoard_size_id')
+                    ->where('hoarding_rates.status', 1);
+            })
+
+
+            ->leftJoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoarding_approve_applications.ulb_id')
+            ->where('agency_hoarding_approve_applications.id', $request->applicationId)
+            ->where('agency_hoarding_approve_applications.status', true)
+            ->where('agency_hoarding_approve_applications.approve', 1)
+            ->first();
     }
 }
