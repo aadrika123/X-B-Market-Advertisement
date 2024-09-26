@@ -399,17 +399,20 @@ class AdPaymentController extends Controller
     public function checkParamForPayment($req, $paymentMode)
     {
         $user = Auth()->user();
-        $applicationId          = $req->id;
-        $confPaymentMode        = $this->_paymentMode;
-        $confApplicationType    = $this->_applicationType;
-        $mAgencyHoarding        = new AgencyHoarding();
-        $mAdApplicationAmount   = new AdApplicationAmount();
-        $mAdTran               = new AdTran();
-        # Application details and Validation
+        $applicationId                 = $req->id;
+        $confPaymentMode               = $this->_paymentMode;
+        $confApplicationType           = $this->_applicationType;
+        $mAgencyHoarding               = new AgencyHoarding();
+        $mAgencyApproveHoarding        = new AgencyHoardingApproveApplication();
+        $mAdApplicationAmount          = new AdApplicationAmount();
+        $mAdTran                       = new AdTran();
+        # Application details a nd Validation
         $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
-            // ->where('rig_vehicle_active_details.status', "<>", 0)
-            // ->where('rig_active_applicants.status', "<>", 0)
             ->first();
+        if ($applicationDetail == null) {
+            $applicationDetail = $mAgencyApproveHoarding->getApproveDetails($applicationId);
+        }
+
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
         }
