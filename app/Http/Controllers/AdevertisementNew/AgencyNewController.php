@@ -896,7 +896,7 @@ class AgencyNewController extends Controller
                 $registrationNo      = $idGeneration->getUniqueId();
                 $registrationNo      = str_replace('/', '-', $registrationNo);
                 $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo);
-            }
+            };
 
             // Save multiple addresses
             foreach ($request->addressField as $address) {
@@ -909,8 +909,11 @@ class AgencyNewController extends Controller
                 "Status"    => 2,
 
             ];
-            $this->uploadHoardDocument($AgencyId, $mDocuments, $request->auth);
-            $this->_agencyObj->updateUploadStatus($AgencyId, true);                       //update status when doc upload 
+            $this->uploadHoardDocument($AgencyId, $mDocuments, $request->auth, $request);
+            if ($request->directHoarding == null) {
+                $this->_agencyObj->updateUploadStatus($AgencyId, true);            //update status when doc upload 
+            }
+
             # save for  work flow track
             if ($user->user_type == "Citizen") {                                                        // Static
                 $receiverRoleId = $advtRole['DA'];
@@ -975,16 +978,20 @@ class AgencyNewController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function uploadHoardDocument($AgencyId, $documents, $auth)
+    public function uploadHoardDocument($AgencyId, $documents, $auth, $request)
     {
         $docUpload = new DocumentUpload;
         $mWfActiveDocument = new WfActiveDocument();
         $mAgencyHoarding = new AgencyHoarding();
+        $mAgencyapproveApplication = new AgencyHoardingApproveApplication();
         $relativePath   = Config::get('constants.AGENCY_ADVET.RELATIVE_PATH');
 
-        collect($documents)->map(function ($doc) use ($AgencyId, $docUpload, $mWfActiveDocument, $mAgencyHoarding, $relativePath, $auth) {
+        collect($documents)->map(function ($doc) use ($AgencyId, $docUpload, $mWfActiveDocument, $mAgencyHoarding, $relativePath, $auth, $mAgencyapproveApplication) {
             $metaReqs = array();
             $getApplicationDtls = $mAgencyHoarding->getApplicationDtls($AgencyId);
+            if ($getApplicationDtls == null) {
+                $getApplicationDtls = $mAgencyapproveApplication->getApplicationDtls($AgencyId);
+            }
             $refImageName = $doc['docCode'];
             $refImageName = $getApplicationDtls->id . '-' . $refImageName;
             $documentImg = $doc['image'];
@@ -1165,9 +1172,10 @@ class AgencyNewController extends Controller
         try {
             $mWfActiveDocument = new WfActiveDocument();
             $mHoardApplication = new AgencyHoarding();
+            $mHoardApproveApplication = new AgencyHoardingApproveApplication();
             $moduleId          = Config::get('workflow-constants.ADVERTISMENT_MODULE');
 
-            $hoardDetails = $mHoardApplication->checkdtlsById($req->applicationId)->first();
+            $hoardDetails = $mHoardApproveApplication->checkdtlsById($req->applicationId)->first();
             if (!$hoardDetails)
                 throw new Exception("Application Not Found for this application Id");
 
@@ -1580,7 +1588,7 @@ class AgencyNewController extends Controller
 
 
             $ApplicationDetails = $mAgencApproveHording->getRigApprovedApplicationById($applicationId)
-                ->where('agency_hoardings.status', '<>', 0)                                                       // Static
+                ->where('agency_hoarding_approve_applications.status', '<>', 0)                                                       // Static
                 ->first();
             if (is_null($ApplicationDetails)) {
                 throw new Exception("application Not found!");

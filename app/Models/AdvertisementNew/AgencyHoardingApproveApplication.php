@@ -37,14 +37,14 @@ class AgencyHoardingApproveApplication extends Model
         return AgencyHoardingApproveApplication::select(
             DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
             'agency_hoarding_approve_applications.id as approve_id',
-            'agency_hoardings.id',
+            'agency_hoarding_approve_applications.id',
             "agency_hoarding_approve_applications.application_no",
             "agency_hoarding_approve_applications.apply_date",
             "agency_hoarding_approve_applications.address",
             "agency_hoarding_approve_applications.application_type",
             // "agency_haordings.payment_status",
-            "agency_hoardings.from_date",
-            "agency_hoardings.to_date",
+            "agency_hoarding_approve_applications.from_date",
+            "agency_hoarding_approve_applications.to_date",
             "agency_hoarding_approve_applications.status",
             // "agency_hoarding_approve_applications.registration_id",
             "agency_hoarding_approve_applications.parked",
@@ -58,21 +58,21 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoarding_approve_applications.ulb_id',
             // 'ulb_ward_masters.ward_name',
             'ulb_masters.ulb_name',
-            'agency_hoardings.no_of_hoarding as totalHoarding',
-            'agency_hoardings.purpose',
-            'agency_hoardings.advertiser',
-            'agency_hoardings.mobile_no as mobileNo',
-            'agency_hoardings.payment_status',
+            'agency_hoarding_approve_applications.no_of_hoarding as totalHoarding',
+            'agency_hoarding_approve_applications.purpose',
+            'agency_hoarding_approve_applications.advertiser',
+            'agency_hoarding_approve_applications.mobile_no as mobileNo',
+            'agency_hoarding_approve_applications.payment_status',
             DB::raw("CASE 
-            WHEN agency_hoardings.payment_status = '1' THEN 'Paid'
-            WHEN agency_hoardings.payment_status = '0' THEN 'Unpaid'
+            WHEN agency_hoarding_approve_applications.payment_status = '1' THEN 'Paid'
+            WHEN agency_hoarding_approve_applications.payment_status = '0' THEN 'Unpaid'
             END AS paymentStatus"),
-            'agency_hoardings.rate as amount',
-            'agency_hoardings.location',
+            'agency_hoarding_approve_applications.rate as amount',
+            'agency_hoarding_approve_applications.location',
         )
             ->join('ulb_masters', 'ulb_masters.id', 'agency_hoarding_approve_applications.ulb_id')
             // ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', 'agency_hoarding_approve_applications.ward_id')
-            ->join('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
+            ->leftjoin('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
             ->where('agency_hoarding_approve_applications.id', $registrationId);
     }
 
@@ -152,6 +152,7 @@ class AgencyHoardingApproveApplication extends Model
         $mAgencyApproveHoarding->location                       = $request->location;
         $mAgencyApproveHoarding->registration_no                = $registrationNo;
         $mAgencyApproveHoarding->approve                       = 1;                                                  //static because application is already approve offline
+        $mAgencyApproveHoarding->direct_hoarding               = 1;                                                  //static because application is already approve offline
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyApproveHoarding->property_type_id                  = $request->propertyId;
         }
@@ -227,6 +228,15 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoarding_approve_applications.id', $request->applicationId)
             ->where('agency_hoarding_approve_applications.status', true)
             ->where('agency_hoarding_approve_applications.approve', 1)
+            ->first();
+    }
+    /**
+     * | Get application details by Id
+     */
+    public function getApplicationDtls($appId)
+    {
+        return self::select('*')
+            ->where('id', $appId)
             ->first();
     }
 }
