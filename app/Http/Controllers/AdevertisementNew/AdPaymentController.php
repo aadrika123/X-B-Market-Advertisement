@@ -90,7 +90,7 @@ class AdPaymentController extends Controller
         $this->_DB_NAME2    = "pgsql_masters";
         $this->_DB2         = DB::connection($this->_DB_NAME2);
 
-        $this->_AgencyHoarding = new AgencyHoarding();
+        $this->_AgencyHoarding = new AgencyHoardingApproveApplication();
         $this->_AdApplicationAmount   = new AdApplicationAmount();
         $this->_AdvEasebuzzPayRequest = new AdvEasebuzzPayRequest();
         $this->_AdvEasebuzzPayResponse = new AdvEasebuzzPayResponse();
@@ -261,7 +261,7 @@ class AdPaymentController extends Controller
                 ]);
                 $this->postOtherPaymentModes($req);
             }
-             $this->saveAdvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
+            $this->saveAdvertRequestStatus($req, $offlineVerificationModes, $payRelatedDetails['advertCharges'], $RigTrans['transactionId'], $payRelatedDetails['applicationDetails']);
             $payRelatedDetails['applicationDetails']->payment_status = 1;
             $payRelatedDetails['applicationDetails']->save();
             DB::commit();
@@ -310,7 +310,7 @@ class AdPaymentController extends Controller
         }
         $charges->save();                                                                   // ❕❕ Save Charges ❕❕
 
-         $refTranDetails = [
+        $refTranDetails = [
             "id"            => $applicationId,
             "refChargeId"   => $charges->id,
             "roundAmount"   => $request->roundAmount,
