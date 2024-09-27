@@ -82,7 +82,7 @@ class AgencyHoardingApproveApplication extends Model
     public function getApproveDetailById($id)
     {
         return AgencyHoardingApproveApplication::join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoarding_approve_applications.ulb_id')
-            ->where('agency_hoarding_approve_applications.application_id', $id)
+            ->where('agency_hoarding_approve_applications.id', $id)
             ->where('agency_hoarding_approve_applications.status', '<>', 0);
     }
 
