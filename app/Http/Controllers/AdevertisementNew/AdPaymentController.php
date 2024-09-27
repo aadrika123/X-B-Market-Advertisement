@@ -9,6 +9,7 @@ use App\MicroServices\IdGeneration;
 use App\MicroServices\IdGenerator\PrefixIdGenerator;
 use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdChequeDtl;
+use App\Models\AdvertisementNew\AdDirectApplicationAmount;
 use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AdTranDetail;
 use App\Models\AdvertisementNew\AdvEasebuzzPayRequest;
@@ -406,6 +407,7 @@ class AdPaymentController extends Controller
         $mAgencyHoarding               = new AgencyHoarding();
         $mAgencyApproveHoarding        = new AgencyHoardingApproveApplication();
         $mAdApplicationAmount          = new AdApplicationAmount();
+        $mAdDirectApplicationAmount          = new AdDirectApplicationAmount();
         $mAdTran                       = new AdTran();
         # Application details a nd Validation
         $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
@@ -413,6 +415,7 @@ class AdPaymentController extends Controller
         if ($applicationDetail == null) {
             $applicationDetail = $mAgencyApproveHoarding->getApproveDetail($applicationId);
         }
+
 
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
@@ -435,10 +438,20 @@ class AdPaymentController extends Controller
         }
 
         # Charges for the application
-        $regisCharges = $mAdApplicationAmount->getChargesbyId($applicationId)
-            ->where('charge_category', $chargeCategory)
-            ->where('paid_status', 0)
-            ->first();
+        if ($applicationDetail->direct_hoarding != 1) {
+            $regisCharges = $mAdApplicationAmount->getChargesbyId($applicationId)
+                ->where('charge_category', $chargeCategory)
+                ->where('paid_status', 0)
+                ->first();
+        } else {
+            #charges for direct application 
+            $regisCharges = $mAdDirectApplicationAmount->getChargesbyId($applicationId)
+                ->where('charge_category', $chargeCategory)
+                ->where('paid_status', 0)
+                ->first();
+        }
+
+
 
         if (is_null($regisCharges)) {
             throw new Exception("Charges not found!");

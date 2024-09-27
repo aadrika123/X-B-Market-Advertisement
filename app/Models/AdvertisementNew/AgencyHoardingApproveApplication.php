@@ -260,7 +260,8 @@ class AgencyHoardingApproveApplication extends Model
             'hoarding_rates.size',
             'agency_hoarding_approve_applications.size_square_feet',
             'agency_hoarding_approve_applications.application_no',
-            'agency_hoarding_approve_applications.no_of_hoarding'
+            'agency_hoarding_approve_applications.no_of_hoarding',
+            'agency_hoarding_approve_applications.direct_hoarding'
 
         )
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')

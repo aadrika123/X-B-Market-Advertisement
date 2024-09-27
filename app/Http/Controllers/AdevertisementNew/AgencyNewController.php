@@ -35,6 +35,7 @@ use App\Models\Advertisements\AdvActiveHoarding;
 use App\Models\Advertisements\RefRequiredDocument;
 use App\Http\Requests\AgencyNew\AddNewAgencyRequest;
 use App\Models\AdvertisementNew\AdApplicationAmount;
+use App\Models\AdvertisementNew\AdDirectApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\AdTran;
 use App\Models\AdvertisementNew\AgencyHoardingApproveApplication;
@@ -77,6 +78,7 @@ class AgencyNewController extends Controller
     protected $_hoardingAddress;
     protected $_saveApplicationAmount;
     protected $_agencyApproveApplication;
+    protected $_saveDirectApplicationAmount;
 
     public function __construct()
     {
@@ -91,6 +93,7 @@ class AgencyNewController extends Controller
         $this->_activeHObj = new AdvActiveHoarding();
         $this->_hoardingAddress = new AdHoardingAddress();
         $this->_saveApplicationAmount = new AdApplicationAmount();
+        $this->_saveDirectApplicationAmount = new AdDirectApplicationAmount();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId = Config::get('workflow-constants.ADVERTISMENT_MODULE_ID');
@@ -903,8 +906,13 @@ class AgencyNewController extends Controller
                 $this->_hoardingAddress->saveMltplAddress($AgencyId, $address);
             }
             # save Application Rate 
-            $this->_saveApplicationAmount->saveApplicationRate($request, $AgencyId, $applicationTypeId);
-            
+            if ($request->directHoarding == null) {
+                $this->_saveApplicationAmount->saveApplicationRate($request, $AgencyId, $applicationTypeId);
+            } else {
+                $this->_saveDirectApplicationAmount->saveApplicationRate($request, $AgencyId, $applicationTypeId);
+            }
+
+
             $var = [
                 'relatedId' => $AgencyId,
                 "Status"    => 2,

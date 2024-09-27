@@ -1085,10 +1085,9 @@ class AgencyWorkflowController extends Controller
             ];
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');
-
-            $approveApplications->delete();
-            // $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
+            $approveApplications->delete();
             return $msg  = "register Application Approved!";
             // return responseMsgs(true, 'register Application Approved!', $returnData);
         } else {
@@ -1098,7 +1097,7 @@ class AgencyWorkflowController extends Controller
                 ]);
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_rejected_applications');
-            // $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->id = $approveApplications->id;
             $approveApplicationRep->save();
             $approveApplications->delete();
             return $msg  = "register Application Rejected!";
