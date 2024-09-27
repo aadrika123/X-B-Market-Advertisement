@@ -568,7 +568,7 @@ class AdPaymentController extends Controller
                 "applicationNo" => $applicationDetails->application_no,
                 'mobile_no'     => $applicationDetails->mobile_no,
                 "total_nodays"    => $numberOfDays,
-                "applicantName" => $applicationDetails->applicant_name,
+                "applicantName" => $applicationDetails->advertiser,
                 "paidAmount"    => $transactionDetails->amount,
                 "toward"        => $toward,
                 "paymentMode"   => $transactionDetails->payment_mode,
@@ -623,6 +623,11 @@ class AdPaymentController extends Controller
                     'agency_hoarding_approve_applications.application_no',
                     'agency_hoarding_approve_applications.address',
                     'agency_hoarding_approve_applications.adv_type',
+                    'agency_hoarding_approve_applications.advertiser',
+                    'agency_hoarding_approve_applications.application_type',
+                    'agency_hoarding_approve_applications.from_date',
+                    'agency_hoarding_approve_applications.mobile_no',
+                    'agency_hoarding_approve_applications.to_date',
                 )->first();
         }
 
