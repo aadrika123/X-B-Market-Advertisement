@@ -180,6 +180,15 @@ class AgencyHoardingApproveApplication extends Model
             ->first();
     }
     /**
+     * 
+     */
+    public function checkdtlsByIds($agencyId)
+    {
+        return self::where('id', $agencyId)
+            ->where('status', 1)
+            ->first();
+    }
+    /**
      * get details of approve applications 
      */
     public function getApproveDetails($request)

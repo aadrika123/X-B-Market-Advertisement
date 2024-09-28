@@ -1282,7 +1282,7 @@ class AgencyWorkflowController extends Controller
         }
 
         try {
-            $data = $this->_agencyApproveappObj->checkdtlsById($request->applicationId);
+            $data = $this->_agencyApproveappObj->checkdtlsByIds($request->applicationId);
             if (!$data) {
                 throw new Exception("Application Not Found!");
             }
