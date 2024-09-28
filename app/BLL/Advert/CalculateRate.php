@@ -172,7 +172,7 @@ class CalculateRate
         $fromDate = Carbon::parse($req->from);
         $toDate = Carbon::parse($req->to);
 
-        $monthsDifference = $fromDate->diffInMonths($toDate);                                                 //month diference
+        $monthsDifference = $fromDate->diffInMonths($toDate)+1;                                                 //month diference
         $numberOfDays = $toDate->diffInDays($fromDate) + 1;                                                       // days difference    
 
         #Application Type Permnanant

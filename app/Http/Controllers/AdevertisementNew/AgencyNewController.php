@@ -837,6 +837,9 @@ class AgencyNewController extends Controller
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
             $hoardId                        = $request->hoardingId;
             $hoardingType                   = $request->hoardingType;
+            if($request->rate == 0){
+                throw new Exception("Please Select Proper Date Range");
+            }
             $applicationTypeId              = 0;
             if ($hoardId &&  $hoardingType == 1) {
                 $this->checkHoardingParams($request, $hoardId);                                    //check alloted date  if same hoarding 
