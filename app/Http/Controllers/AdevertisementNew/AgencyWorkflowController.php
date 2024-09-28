@@ -48,6 +48,7 @@ use App\Models\AdvertisementNew\HoardType;
 use App\Models\AdvertisementNew\TemporaryHoardingType;
 use App\BLL\Advert;
 use App\BLL\Advert\CalculateRate;
+use App\Models\AdvertisementNew\AdDirectApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\MeasurementSize;
 use App\Models\IdGenerationParam;
@@ -90,6 +91,7 @@ class AgencyWorkflowController extends Controller
     private $_tempId;
     protected $incrementStatus;
     protected $_agencyApproveappObj;
+    protected $_directapplicationAmount;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -104,6 +106,7 @@ class AgencyWorkflowController extends Controller
         $this->_agencyApproveappObj       = new AgencyHoardingApproveApplication();
         $this->_activeHObj      = new AdvActiveHoarding();
         $this->_mRefReqDocs     = new RefRequiredDocument();
+        $this->_directapplicationAmount    = new AdDirectApplicationAmount();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId        = Config::get('workflow-constants.ADVERTISMENT_MODULE');
@@ -1376,6 +1379,127 @@ class AgencyWorkflowController extends Controller
             $query->total_nodays = $numberOfDays;
             $approveApplicationDetails["applicationDetails"] = $query;
             $approveApplicationDetails['address'] = $getAddress;
+            return responseMsgs(true, "Data According To Parameter!", remove_null($approveApplicationDetails), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+
+    public function getdemandBill(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            ["applicationId" => "required"]
+        );
+
+        if ($validated->fails()) {
+            return validationError($validated);
+        }
+
+        try {
+            $data = $this->_agencyApproveappObj->checkdtlsById($request->applicationId);
+            if (!$data) {
+                throw new Exception("Application Not Found!");
+            }
+            // if ($data->payment_status == 0) {
+            //     throw new Exception("Please Pay your Advertisement Amount ");
+            // }
+            $fromDate = Carbon::parse($data->from_date);
+            $toDate = Carbon::parse($data->to_date);
+
+
+            #count number of days 
+            $numberOfDays = $toDate->diffInDays($fromDate);
+
+            #different advertisement type 
+            $advertisementType = $data->adv_type;
+
+            $query = $this->_agencyApproveappObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
+            #check demand of applications 
+            // if ($query->direct_hoarding == 1) {
+                $checkDmeand = $this->_directapplicationAmount->getChargesbyIds($request->applicationId);
+            // }
+
+            $mHoardingAddress           = new AdHoardingAddress();
+
+            $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();
+
+            if ($data->application_type == 'PERMANANT') {
+                $query =  $this->_agencyApproveappObj->getApproveDetails($request);
+                $query->value = $query['measurement'];
+                $query->key = 'SIZES';
+            } else {
+                switch ($advertisementType) {
+                    case 'TEMPORARY_ADVERTISEMENT':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'LAMP_POST':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ABOVE_KIOX_ADVERTISEMENT':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'AD_POL':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size'];
+                        $query->key = 'Size';
+                        break;
+                    case 'COMPASS_CANTILEVER':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'GLOSSINE_BOARD':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ADVERTISEMENT_ON_BALLONS':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['total_ballon'];
+                        $query->key = 'Total Ballon';
+                        break;
+                    case 'ADVERTISEMENT_ON_THE_CITY_BUS':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+
+                        break;
+                    case 'CITY_BUS_STOP':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+                        break;
+                    case 'ADVERTISEMENT_ON_THE_WALL':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['size_square_feet'];
+                        $query->key = 'Size';
+
+                        break;
+                    case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $query['total_vehicle'];
+                        $query->key = 'Total Vehicle';
+                        break;
+                    case 'ROAD_SHOW_ADVERTISING':
+                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query->value = $numberOfDays;
+                        $query->key = 'Total DAYS';
+                        break;
+                    default:
+                        throw new Exception("Invalid Advertisement Type!");
+                }
+            }
+            $query->total_nodays = $numberOfDays;
+            $approveApplicationDetails["applicationDetails"] = $query;
+            $approveApplicationDetails['address'] = $getAddress;
+            $approveApplicationDetails['demand'] = $checkDmeand;
             return responseMsgs(true, "Data According To Parameter!", remove_null($approveApplicationDetails), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");

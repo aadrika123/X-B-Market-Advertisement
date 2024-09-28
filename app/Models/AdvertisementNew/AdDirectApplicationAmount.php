@@ -3,8 +3,10 @@
 namespace App\Models\AdvertisementNew;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class AdDirectApplicationAmount extends Model
 {
@@ -38,6 +40,29 @@ class AdDirectApplicationAmount extends Model
     {
         return AdDirectApplicationAmount::where('application_id', $id)
             ->where('status', 1)
+            ->where('paid_status', 0)
             ->orderByDesc('id');
+    }
+    public function getChargesbyIds($id)
+    {
+        $charge = AdDirectApplicationAmount::select(
+            'ad_direct_application_amounts.amount',
+        )
+            ->where('application_id', $id)
+            ->where('status', 1)
+            ->where('paid_status', 0)
+            ->orderByDesc('id')
+           ->first();
+        if ($charge && is_numeric($charge->amount)) {
+            $amountInWords = getIndianCurrency($charge->amount) . " Only /-";
+        } else {
+            // Handle the case where amount is invalid
+            throw new Exception("Invalid amount or amount not found.");
+        }
+
+        return [
+            'amount' => $charge->amount,
+            'amountInWords' => $amountInWords
+        ];
     }
 }

@@ -176,6 +176,7 @@ class AgencyHoardingApproveApplication extends Model
     {
         return self::where('id', $agencyId)
             ->where('status', 1)
+            ->where('payment_status', 0)
             ->first();
     }
     /**
@@ -205,12 +206,14 @@ class AgencyHoardingApproveApplication extends Model
             'hoarding_rates.size',
             'agency_hoarding_approve_applications.size_square_feet',
             'agency_hoarding_approve_applications.application_no',
-            'agency_hoarding_approve_applications.no_of_hoarding'
+            'agency_hoarding_approve_applications.no_of_hoarding',
+            'agency_hoarding_approve_applications.direct_hoarding'
 
         )
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoarding_approve_applications.hoarding_id')
             ->leftjoin('wf_roles', 'wf_roles.id', '=', 'agency_hoarding_approve_applications.current_role_id')
+            
             ->leftJoin('measurement_sizes', function ($join) {
                 $join->on('measurement_sizes.id', '=', 'agency_hoarding_approve_applications.hoard_size_id')
                     ->where('measurement_sizes.status', 1);

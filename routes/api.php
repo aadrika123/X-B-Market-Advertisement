@@ -637,6 +637,7 @@ Route::controller(AdPaymentController::class)->group(function () {
 });
 Route::controller(AgencyWorkflowController::class)->group(function () {
     Route::post('advertisement/approve-applications', 'getApproveApplications');
+    Route::post('advertisement/get-demand-bill', 'getdemandBill');
 });
 
 # Easebuzz payament operation
