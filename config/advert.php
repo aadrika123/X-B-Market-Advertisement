@@ -99,10 +99,18 @@ return [
         "NEFT"
     ],
     "OFFLINE_PAYMENT_MODE" => [
-        "CHEQUE",
-        "DD",
-        "NEFT",
-        "CASH"
+        "1"  => "CHEQUE",
+        "2" =>  "DD",
+        "3" => "NEFT",
+        "4" =>  "CASH",
+        "5" => "ONLINE"
+    ],
+    "PAYMENT_OFFLINE_MODES" => [
+        "1" => "Cash",
+        "2" => "Cheque",
+        "3" => "DD",
+        "4" => "Neft",
+        "5" => "ONLINE"
     ],
     "API_KEY_PAYMENT" => "eff41ef6-d430-4887-aa55-9fcf46c72c99",
     "END_POINT_PAYMENT" => "api/payment/generate-orderid",

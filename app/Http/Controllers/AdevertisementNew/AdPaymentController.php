@@ -60,6 +60,7 @@ class AdPaymentController extends Controller
     private $_AdApplicationAmount;
     protected $_AdvEasebuzzPayRequest;
     protected $_AdvEasebuzzPayResponse;
+    protected $_paymentModes;
 
 
     # Class constructer 
@@ -85,6 +86,7 @@ class AdPaymentController extends Controller
         $this->_apiKey                      = Config::get('advert.API_KEY_PAYMENT');
         $this->_offlineVerificationModes    = Config::get("advert.VERIFICATION_PAYMENT_MODES");
         $this->_offlineMode                 = Config::get("advert.OFFLINE_PAYMENT_MODE");
+        $this->_paymentModes                = Config::get('advert.OFFLINE_PAYMENT_MODE');
         # Database connectivity
         // $this->_DB_NAME     = "pgsql_property";
         // $this->_DB          = DB::connection($this->_DB_NAME);
@@ -549,11 +551,19 @@ class AdPaymentController extends Controller
             $toward         = "Hoarding Payment Receipt";
             $mRigTran       = new AdTran();
             $mUlbMater      = new UlbMaster();
+            $madvertChequeDtl      = new AdChequeDtl();
+            $mPaymentModes      = $this->_paymentModes;
 
             # Get transaction details according to trans no
             $transactionDetails = $mRigTran->getTranDetailsByTranNo($request->transactionNo)->first();
             if (!$transactionDetails) {
                 throw new Exception("transaction details not found! for $request->transactionNo");
+            }
+            if (!in_array($transactionDetails['payment_mode'], [$mPaymentModes['4'], $mPaymentModes['5']])) {
+                $chequeDetails = $madvertChequeDtl->getChequeDtlsByTransId($transactionDetails->id)->first();
+                if ($chequeDetails->status == 2) {
+                    $chequeStatus = 'Note:This is Your Provisional Receipt';
+                }
             }
             # check the transaction related details in related table
             $applicationDetails = $this->getApplicationRelatedDetails($transactionDetails);
@@ -582,7 +592,12 @@ class AdPaymentController extends Controller
                 "advertiser"     => $applicationDetails->advertiser,
                 "ulb_email"       => $transactionDetails->email,
                 'amountInWords' => getIndianCurrency($transactionDetails->amount) . "Only /-",
+                "bankName"      => $chequeDetails->bank_name   ?? null,                                    // in case of cheque,dd,nfts
+                "branchName"    => $chequeDetails['branch_name'] ?? null,                                  // in case of chque,dd,nfts
+                "chequeNo"      => $chequeDetails['cheque_no']   ?? null,                                   // in case of chque,dd,nfts
+                "chequeDate"    => $chequeDetails['cheque_date'] ?? null,
                 "ulbDetails"      =>  $ulbDetails,
+               
 
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);

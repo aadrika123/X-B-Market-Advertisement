@@ -23,4 +23,10 @@ class AdChequeDtl extends Model
         $mPetChequeDtl->user_id            =  $req['user_id'];
         $mPetChequeDtl->save();
     }
+
+    public function getChequeDtlsByTransId($transId)
+    {
+        return AdChequeDtl::where('transaction_id', $transId)
+            ->where('status', '!=', 0);
+    }
 }
