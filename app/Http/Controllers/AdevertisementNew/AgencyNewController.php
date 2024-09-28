@@ -1185,7 +1185,7 @@ class AgencyNewController extends Controller
             $moduleId          = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $hoardDetails = $mHoardApplication->checkdtlsById($req->applicationId);
             if ($hoardDetails == null) {
-                $hoardDetails = $mHoardApproveApplication->checkdtlsById($req->applicationId);
+                $hoardDetails = $mHoardApproveApplication->checkdtlsByIds($req->applicationId);
             }
 
             if (!$hoardDetails)
