@@ -199,10 +199,10 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoarding_approve_applications.advertiser',
             'ulb_masters.ulb_name',
             'wf_roles.role_name AS current_role_name',
-            'hoarding_masters.ward_id',
+            // 'hoarding_masters.ward_id',
             'hoarding_masters.address',
-            'ulb_ward_masters.ward_name',
-            'm_circle.circle_name as zone_name',
+            // 'ulb_ward_masters.ward_name',
+            // 'm_circle.circle_name as zone_name',
             'agency_masters.agency_name as agencyName',
             'agency_hoarding_approve_applications.registration_no',
             'agency_hoarding_approve_applications.allotment_date',
@@ -216,13 +216,14 @@ class AgencyHoardingApproveApplication extends Model
             'agency_hoarding_approve_applications.size_square_feet',
             'agency_hoarding_approve_applications.application_no',
             'agency_hoarding_approve_applications.no_of_hoarding',
-            'agency_hoarding_approve_applications.direct_hoarding'
+            'agency_hoarding_approve_applications.direct_hoarding',
+            'agency_hoarding_approve_applications.mobile_no'
 
         )
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoarding_approve_applications.hoarding_id')
             ->leftjoin('wf_roles', 'wf_roles.id', '=', 'agency_hoarding_approve_applications.current_role_id')
-            
+
             ->leftJoin('measurement_sizes', function ($join) {
                 $join->on('measurement_sizes.id', '=', 'agency_hoarding_approve_applications.hoard_size_id')
                     ->where('measurement_sizes.status', 1);
