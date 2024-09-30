@@ -113,10 +113,11 @@ class AgencyHoardingApproveApplication extends Model
             ->where('agency_hoarding_approve_applications.status', true)
             ->orderByDesc('agency_hoarding_approve_applications.id');
     }
-    public function saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo)
+    public function saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo, $AgencyId)
     {
         $currentDate = Carbon::now();
         $mAgencyApproveHoarding = new AgencyHoardingApproveApplication();
+        $mAgencyApproveHoarding->id                             = $AgencyId;
         $mAgencyApproveHoarding->agency_id                      = $request->agencyId;
         $mAgencyApproveHoarding->hoarding_id                    = $request->hoardingId;
         $mAgencyApproveHoarding->agency_name                    = $request->agencyName;

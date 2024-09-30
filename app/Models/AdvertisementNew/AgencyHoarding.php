@@ -106,6 +106,52 @@ class AgencyHoarding extends Model
         return $mAgencyHoarding->id;
     }
     /**
+     * |this function for when request for direct Hoarding application  
+     */
+    public function saveRequestDetail($request, $refRequest, $applicationNo, $ulbId)
+    {
+        $mAgencyHoarding = new AgencyHoarding();
+        $mAgencyHoarding->agency_id                      = $request->agencyId;
+        $mAgencyHoarding->hoarding_id                    = $request->hoardingId;
+        $mAgencyHoarding->agency_name                    = $request->agencyName;
+        // $mAgencyHoarding->hoarding_type                  = $request->hoardingType;
+        $mAgencyHoarding->allotment_date                 = $request->allotmentDate ?? null;
+        $mAgencyHoarding->rate                           = $request->rate;
+        $mAgencyHoarding->from_date                      = $request->from;
+        $mAgencyHoarding->to_date                        = $request->to;
+        $mAgencyHoarding->user_id                        = $refRequest['empId'] ?? $refRequest['citizenId'];
+        $mAgencyHoarding->user_type                      = $refRequest['userType'];
+        $mAgencyHoarding->apply_from                     = $refRequest['applyFrom'];
+        $mAgencyHoarding->initiator                      = $refRequest['initiatorRoleId'];
+        $mAgencyHoarding->workflow_id                    = $refRequest['ulbWorkflowId'];
+        $mAgencyHoarding->ulb_id                         = $ulbId;
+        $mAgencyHoarding->finisher                       = $refRequest['finisherRoleId'];
+        $mAgencyHoarding->current_role_id                = $refRequest['initiatorRoleId'];
+        $mAgencyHoarding->application_no                 = $applicationNo;
+        $mAgencyHoarding->address                        = $request->residenceAddress;
+        // $mAgencyHoarding->doc_status                     = $request->doc_status ?? null;
+        $mAgencyHoarding->doc_upload_status              = $request->doc_upload_status ?? null;
+        $mAgencyHoarding->advertiser                     = $request->advertiser;
+        $mAgencyHoarding->apply_date                     = $this->_applicationDate;
+        $mAgencyHoarding->adv_type                       = $request->hoardingType;
+        $mAgencyHoarding->hoard_size_id                  = $request->squareFeetId;
+        $mAgencyHoarding->application_type               = $request->applicationType;
+        $mAgencyHoarding->size_square_feet               = $request->squarefeet;
+        $mAgencyHoarding->total_ballon                   = $request->Noofballons;
+        $mAgencyHoarding->total_vehicle                  = $request->Noofvehicle;
+        $mAgencyHoarding->vehicle_type_id                = $request->vehicleType;
+        $mAgencyHoarding->purpose                        = $request->purpose;
+        $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
+        $mAgencyHoarding->mobile_no                      = $request->mobileNo;
+        $mAgencyHoarding->location                       = $request->location;
+        $mAgencyHoarding->status                        = false;
+        if ($request->applicationType == 'PERMANANT') {
+            $mAgencyHoarding->property_type_id                  = $request->propertyId;
+        }
+        $mAgencyHoarding->save();
+        return $mAgencyHoarding->id;
+    }
+    /**
      * | Get Application Inbox List by Role Ids
      * | @param roleIds $roleIds
      */
@@ -540,7 +586,7 @@ class AgencyHoarding extends Model
     {
         return DB::table('agency_hoarding_approve_applications')
             ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
-            ->join('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
+            // ->join('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.id')
             ->where('agency_hoarding_approve_applications.user_id', $userId);
     }
 

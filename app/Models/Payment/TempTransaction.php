@@ -9,6 +9,7 @@ class TempTransaction extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $connection = 'pgsql_masters';
 
     /**
      * | Save temp details 

@@ -71,7 +71,7 @@ class AdPaymentController extends Controller
         $this->_occupancyType               = Config::get("advert.PROP_OCCUPANCY_TYPE");
         $this->_workflowMasterId            = Config::get("advert.WORKFLOW_MASTER_ID");
         $this->_advertParamId               = Config::get("advert.PARAM_ID");
-        $this->_advertModuleId              = Config::get('advert.RIG_MODULE_ID');
+        $this->_advertModuleId              = Config::get('advert.ADVERTISEMENT_MODULE_ID');
         $this->_userType                    = Config::get("advert.REF_USER_TYPE");
         $this->_advertWfRoles               = Config::get("advert.ROLE_LABEL");
         $this->_docReqCatagory              = Config::get("advert.DOC_REQ_CATAGORY");
@@ -500,7 +500,7 @@ class AdPaymentController extends Controller
 
         if ($req['paymentMode'] != $paymentMode[3]) {                                   // Not Cash
             $chequeReqs = [
-                'user_id'           => $req['userId'],
+                'user_id'           => $req['empId'],
                 'application_id'    => $req['id'],
                 'transaction_id'    => $req['tranId'],
                 'cheque_date'       => $req['chequeDate'],
@@ -511,23 +511,23 @@ class AdPaymentController extends Controller
             $madvertChequeDtl->postChequeDtl($chequeReqs);
         }
 
-        // $tranReqs = [
-        //     'transaction_id'    => $req['tranId'],
-        //     'application_id'    => $req['id'],
-        //     'module_id'         => $moduleId,
-        //     'workflow_id'       => $req['workflowId'],
-        //     'transaction_no'    => $req['tranNo'],
-        //     'application_no'    => $req['applicationNo'],
-        //     'amount'            => $req['amount'],
-        //     'payment_mode'      => strtoupper($req['paymentMode']),
-        //     'cheque_dd_no'      => $req['chequeNo'],
-        //     'bank_name'         => $req['bankName'],
-        //     'tran_date'         => $req['todayDate'],
-        //     'user_id'           => $req['userId'],
-        //     'ulb_id'            => $req['ulbId'],
-        //     'ward_no'           => $req['ref_ward_id']
-        // ];
-        // $mTempTransaction->tempTransaction($tranReqs);
+        $tranReqs = [
+            'transaction_id'    => $req['tranId'],
+            'application_id'    => $req['id'],
+            'module_id'         => $moduleId,
+            'workflow_id'       => $req['workflowId'],
+            'transaction_no'    => $req['tranNo'],
+            'application_no'    => $req['applicationNo'],
+            'amount'            => $req['amount'],
+            'payment_mode'      => strtoupper($req['paymentMode']),
+            'cheque_dd_no'      => $req['chequeNo'],
+            'bank_name'         => $req['bankName'],
+            'tran_date'         => $req['todayDate'],
+            'user_id'           => $req['empId'],
+            'ulb_id'            => $req['ulbId'],
+            'ward_no'           => $req['ref_ward_id']
+        ];
+        $mTempTransaction->tempTransaction($tranReqs);
     }
 
 
@@ -597,7 +597,7 @@ class AdPaymentController extends Controller
                 "chequeNo"      => $chequeDetails['cheque_no']   ?? null,                                   // in case of chque,dd,nfts
                 "chequeDate"    => $chequeDetails['cheque_date'] ?? null,
                 "ulbDetails"      =>  $ulbDetails,
-               
+
 
             ];
             return responseMsgs(true, 'payment Receipt!', $returnData, "", "01", responseTime(), $request->getMethod(), $request->deviceId);

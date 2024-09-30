@@ -837,7 +837,7 @@ class AgencyNewController extends Controller
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
             $hoardId                        = $request->hoardingId;
             $hoardingType                   = $request->hoardingType;
-            if($request->rate == 0){
+            if ($request->rate == 0) {
                 throw new Exception("Please Select Proper Date Range");
             }
             $applicationTypeId              = 0;
@@ -901,7 +901,8 @@ class AgencyNewController extends Controller
                 $idGeneration       = new PrefixIdGenerator($this->_tempId, $ulbId);
                 $registrationNo      = $idGeneration->getUniqueId();
                 $registrationNo      = str_replace('/', '-', $registrationNo);
-                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo);
+                $AgencyId           =  $this->_agencyObj->saveRequestDetail($request, $refRequest, $applicationNo, $ulbId);
+                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo, $AgencyId);
             };
 
             // Save multiple addresses
@@ -1485,7 +1486,7 @@ class AgencyNewController extends Controller
                 $baseQuerry->select(
                     DB::raw("REPLACE(agency_hoarding_approve_applications.application_type, '_', ' ') AS ref_application_type"),
                     DB::raw("TO_CHAR(agency_hoarding_approve_applications.apply_date, 'DD-MM-YYYY') as ref_application_apply_date"),
-                    "agency_hoardings.id",
+                    "agency_hoarding_approve_applications.id",
                     "agency_hoarding_approve_applications.application_no",
                     "agency_hoarding_approve_applications.apply_date",
                     "agency_hoarding_approve_applications.address",
@@ -1496,14 +1497,14 @@ class AgencyNewController extends Controller
                     "agency_hoarding_approve_applications.doc_upload_status",
                     "agency_hoarding_approve_applications.doc_verify_status",
                     "agency_hoarding_approve_applications.doc_verify_status",
-                    "agency_hoardings.user_type",
-                    "agency_hoardings.mobile_no",
+                    "agency_hoarding_approve_applications.user_type",
+                    "agency_hoarding_approve_applications.mobile_no",
                     "wf_roles.role_name",
                     "agency_hoarding_approve_applications.status as registrationSatus",
                     DB::raw("CASE 
-                        WHEN agency_hoardings.approve = 1 THEN 'Approved'
-                        WHEN agency_hoardings.approve = 2 THEN 'Rejected'
-                        WHEN agency_hoardings.approve = 0 THEN 'Pending'
+                        WHEN agency_hoarding_approve_applications.approve = 1 THEN 'Approved'
+                        WHEN agency_hoarding_approve_applications.approve = 2 THEN 'Rejected'
+                        WHEN agency_hoarding_approve_applications.approve = 0 THEN 'Pending'
                         END as current_status"),
                     // DB::raw("CASE 
                     // WHEN agency_hoardings.payment_status = 1 THEN 'Paid'

@@ -36,7 +36,7 @@ return [
         2 =>  "TENANTED",
     ],
     "WORKFLOW_MASTER_ID" => 39,
-    "RIG_MODULE_ID" => 15,
+    "ADVERTISEMENT_MODULE_ID" => 14,
     "ROLE_LABEL" => [
         "BO" => 11,
         "DA" => 6,
@@ -93,7 +93,8 @@ return [
         "Renewal" => 2
     ],
 
-    "VERIFICATION_PAYMENT_MODES" => [                           // The Verification payment modes which needs the verification
+    "VERIFICATION_PAYMENT_MODES" => [
+        "CASH",                          // The Verification payment modes which needs the verification
         "CHEQUE",
         "DD",
         "NEFT"
