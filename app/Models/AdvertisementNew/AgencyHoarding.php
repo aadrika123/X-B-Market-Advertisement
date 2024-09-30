@@ -372,7 +372,8 @@ class AgencyHoarding extends Model
             'agency_hoardings.no_of_hoarding',
             'agency_hoardings.ulb_id',
             'agency_hoardings.initiator',
-            'agency_hoardings.user_id'
+            'agency_hoardings.user_id',
+            'agency_hoardings.direct_hoarding'
         )
             ->leftJoin('agency_masters', function ($join) {
                 $join->on('agency_masters.id', 'agency_hoardings.agency_id');

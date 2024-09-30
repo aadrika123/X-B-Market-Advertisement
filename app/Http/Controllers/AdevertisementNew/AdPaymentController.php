@@ -221,7 +221,7 @@ class AdPaymentController extends Controller
             $epoch                      = strtotime($todayDate);
             $offlineVerificationModes   = $this->_offlineVerificationModes;
             $mAdTran                    = new AdTran();
-
+            
             # Check the params for checking payment method
             $payRelatedDetails  = $this->checkParamForPayment($req, $req->paymentMode);
             $ulbId              = $payRelatedDetails['applicationDetails']['ulb_id'] ?? 2;
@@ -411,13 +411,14 @@ class AdPaymentController extends Controller
         $mAdApplicationAmount          = new AdApplicationAmount();
         $mAdDirectApplicationAmount          = new AdDirectApplicationAmount();
         $mAdTran                       = new AdTran();
+
         # Application details a nd Validation
         $applicationDetail = $mAgencyHoarding->getAppicationDetails($applicationId)
             ->first();
+       
         if ($applicationDetail == null) {
             $applicationDetail = $mAgencyApproveHoarding->getApproveDetail($applicationId);
         }
-
 
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
@@ -440,7 +441,7 @@ class AdPaymentController extends Controller
         }
 
         # Charges for the application
-        if ($applicationDetail->direct_hoarding != 1) {
+        if ($applicationDetail->direct_hoarding == 0) {
             $regisCharges = $mAdApplicationAmount->getChargesbyId($applicationId)
                 ->where('charge_category', $chargeCategory)
                 ->where('paid_status', 0)
@@ -452,8 +453,6 @@ class AdPaymentController extends Controller
                 ->where('paid_status', 0)
                 ->first();
         }
-
-
 
         if (is_null($regisCharges)) {
             throw new Exception("Charges not found!");
