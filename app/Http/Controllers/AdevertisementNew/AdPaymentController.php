@@ -232,10 +232,11 @@ class AdPaymentController extends Controller
 
             DB::beginTransaction();
             # Generate transaction no 
+            // return $receiptIdParam;
             $idGeneration  = new PrefixIdGenerator($receiptIdParam,  $ulbId, $section, 0);
             $transactionNo = $idGeneration->generate();
             # Water Transactions
-            $req->merge([
+             $req->merge([
                 'empId'         => $user->id,
                 'userType'      => $user->user_type,
                 'todayDate'     => $todayDate->format('Y-m-d'),
@@ -419,7 +420,6 @@ class AdPaymentController extends Controller
         if ($applicationDetail == null) {
             $applicationDetail = $mAgencyApproveHoarding->getApproveDetail($applicationId);
         }
-
         if (is_null($applicationDetail)) {
             throw new Exception("Application details not found for ID:$applicationId!");
         }
@@ -453,7 +453,6 @@ class AdPaymentController extends Controller
                 ->where('paid_status', 0)
                 ->first();
         }
-
         if (is_null($regisCharges)) {
             throw new Exception("Charges not found!");
         }

@@ -901,8 +901,8 @@ class AgencyNewController extends Controller
                 $idGeneration       = new PrefixIdGenerator($this->_tempId, $ulbId);
                 $registrationNo      = $idGeneration->getUniqueId();
                 $registrationNo      = str_replace('/', '-', $registrationNo);
-                // $AgencyId           =  $this->_agencyObj->saveRequestDetail($request, $refRequest, $applicationNo, $ulbId);
-                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo,);
+                $AgencyId           =  $this->_agencyObj->saveRequestDetail($request, $refRequest, $applicationNo, $ulbId);
+                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo,$AgencyId);
             };
 
             // Save multiple addresses
