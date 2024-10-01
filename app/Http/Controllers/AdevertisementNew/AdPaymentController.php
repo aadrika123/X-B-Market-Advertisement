@@ -594,6 +594,7 @@ class AdPaymentController extends Controller
                 "branchName"    => $chequeDetails['branch_name'] ?? null,                                  // in case of chque,dd,nfts
                 "chequeNo"      => $chequeDetails['cheque_no']   ?? null,                                   // in case of chque,dd,nfts
                 "chequeDate"    => $chequeDetails['cheque_date'] ?? null,
+                "chequeStatus"    => $chequeStatus ?? null,
                 "ulbDetails"      =>  $ulbDetails,
 
 
