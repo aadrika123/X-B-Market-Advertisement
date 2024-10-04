@@ -173,7 +173,7 @@ class CalculateRate
         $toDate = Carbon::parse($req->to);
         $toDates = $toDate->addDay();
         $monthsDifference = $fromDate->diffInMonths($toDates);                                                 //month diference
-        $numberOfDays = $toDate->diffInDays($fromDate) + 1;                                                       // days difference    
+        $numberOfDays = $toDate->diffInDays($fromDate);                                                       // days difference    
 
         #Application Type Permnanant
         if ($applicationType == 'PERMANANT' &&  $advertisementType == 'ABOVE_GROUND') {                                        // application type = PERMANANT
@@ -233,7 +233,7 @@ class CalculateRate
                     }
                     $this->_perDayrate = $this->_getData->per_day_rate;
                     if ($numberOfDays > 3) {
-                        throw new Exception('Days should be less then or equal to 3 days ');
+                        throw new Exception('You Can Apply For Only Three Days');
                     }
 
                     $this->_rate = $numberOfDays * $this->_perDayrate * $noOfHoardings;                                            // THIS RATE TEMPORARY ADVERTISEMENT TYPE 
@@ -242,14 +242,14 @@ class CalculateRate
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_perMonth =  $this->_getData->per_month;
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not days');
+                        throw new Exception('You Can Apply For  Month');
                     }
                     $this->_rate = $monthsDifference * $this->_perMonth * $noOfHoardings;                                          // THIS RATE FOR ADVERTISEMENT ON LAMP POST
                     break;
                 case 'ABOVE_KIOX_ADVERTISEMENT':
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not days');
+                        throw new Exception('You Can Apply For  Month');
                     }
                     $this->_perMonth =  $this->_getData->per_month;
                     $this->_rate = $monthsDifference * $this->_perMonth * $noOfHoardings;                                          // THIIS RATE FOR ADVERTISEMENT ON KIOX
@@ -258,7 +258,7 @@ class CalculateRate
                     $this->_getData =  $this->_hoardingRate->getSizeByAdvertismentType($advertisementType);
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not days');
+                        throw new Exception('You Can Apply For  Month');
                     }
                     $this->_area  = $req->squarefeet;
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference * $noOfHoardings;                   // THIS RATE FOR ADVERTISEMENT ON COMPASS CANTIELEVER
@@ -277,7 +277,7 @@ class CalculateRate
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not days');
+                        throw new Exception('You Can Apply For  Month');
                     }
                     $this->_rate = $this->_area * $this->_getPerSquarerate * $monthsDifference * $noOfHoardings;                  // THIS RATE FOR ADVERTSIMENT ON GLOSSINE BOARD OF COMPANY
                     break;
@@ -291,7 +291,7 @@ class CalculateRate
                     $this->_getPerSquarerate =  $this->_getData->per_sq_rate;
                     $this->_area  = $req->squarefeet;
                     if ($monthsDifference == 0) {
-                        throw new Exception('Its Apply for month  Only not for days');
+                        throw new Exception('You Can Apply For  Month');
                     }
                     $this->_rate = $monthsDifference * $this->_area *  $this->_getPerSquarerate * $noOfHoardings;
                     break;
