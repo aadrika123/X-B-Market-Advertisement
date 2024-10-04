@@ -65,6 +65,19 @@ trait WorkflowTrait
             ->get();
         return $occupiedWard;
     }
+    /**
+     * | get Ward By Logged in User Id
+     * -------------------------------------------
+     * | @param userId > Current Logged In User Id
+     */
+    public function getWardByUserIdV1($userId)
+    {
+        $occupiedWard = WfWardUser::select('id', 'ward_id')
+            ->where('user_id', $userId)
+            ->where('is_suspended', false)
+            ->get();
+        return $occupiedWard;
+    }
 
     /**
      * | get workflow role Id by logged in User Id

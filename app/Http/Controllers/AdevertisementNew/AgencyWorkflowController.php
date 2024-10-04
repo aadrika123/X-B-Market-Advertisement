@@ -145,7 +145,7 @@ class AgencyWorkflowController extends Controller
             $ulbId                  = $user->ulb_id;
             $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
 
-            $occupiedWards  = $this->getWardByUserId($userId)->pluck('ward_id');
+            $occupiedWards  = $this->getWardByUserIdV1($userId)->pluck('ward_id');
             $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
             $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
@@ -155,11 +155,11 @@ class AgencyWorkflowController extends Controller
                 ->where('agency_hoardings.parked', false)
                 ->where('agency_hoardings.approve', 0);
             // Apply ward filter if the application type is not 'PERMANENT'
-            $inboxDetails = $inboxDetails->where(function ($query) use ($occupiedWards) {
-                $query->where('agency_hoardings.application_type', 'PERMANENT')
-                    ->orWhereIn('agency_hoardings.ward_mstr_id', $occupiedWards);
-            });
-            // Order by ID and paginate results
+            if (in_array($userId, [5615, 5651, 5618, 5649])) {
+                $inboxDetails->where('agency_hoardings.application_type', '=', 'TEMPORARY')
+                    ->whereIn('agency_hoardings.ward_mstr_id', $occupiedWards);
+            }
+            // // Order by ID and paginate results
             $inboxDetails = $inboxDetails->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
             return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
