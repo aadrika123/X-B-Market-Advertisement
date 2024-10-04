@@ -153,10 +153,15 @@ class AgencyWorkflowController extends Controller
                 ->whereIn('agency_hoardings.current_role_id', $roleId)
                 ->where('agency_hoardings.is_escalate', false)
                 ->where('agency_hoardings.parked', false)
-                ->where('agency_hoardings.approve', 0)
-                ->orderByDesc('agency_hoardings.id')
+                ->where('agency_hoardings.approve', 0);
+            // Apply ward filter if the application type is not 'PERMANENT'
+            $inboxDetails = $inboxDetails->where(function ($query) use ($occupiedWards) {
+                $query->where('agency_hoardings.application_type', 'PERMANENT')
+                    ->orWhereIn('agency_hoardings.ward_mstr_id', $occupiedWards);
+            });
+            // Order by ID and paginate results
+            $inboxDetails = $inboxDetails->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
-
             return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
@@ -242,11 +247,19 @@ class AgencyWorkflowController extends Controller
             $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
 
             $inboxDetails = $this->getConsumerWfBaseQuerry($workflowIds, $ulbId)
+
                 ->whereNotIn('agency_hoardings.current_role_id', $roleId)
                 ->where('agency_hoardings.is_escalate', false)
-                ->where('agency_hoardings.parked', false)
-                ->orderByDesc('agency_hoardings.id')
+                ->where('agency_hoardings.parked', false);
+            // Apply ward filter if the application type is not 'PERMANENT'
+            $inboxDetails = $inboxDetails->where(function ($query) use ($occupiedWards) {
+                $query->where('agency_hoardings.application_type', 'PERMANENT')
+                    ->orWhereIn('agency_hoardings.ward_mstr_id', $occupiedWards);
+            });
+            // Order by ID and paginate results
+            $inboxDetails = $inboxDetails->orderByDesc('agency_hoardings.id')
                 ->paginate($pages);
+
             return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
@@ -1417,7 +1430,7 @@ class AgencyWorkflowController extends Controller
             $query = $this->_agencyApproveappObj->getApproveDetails($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
             #check demand of applications 
             // if ($query->direct_hoarding == 1) {
-                $checkDmeand = $this->_directapplicationAmount->getChargesbyIds($request->applicationId);
+            $checkDmeand = $this->_directapplicationAmount->getChargesbyIds($request->applicationId);
             // }
 
             $mHoardingAddress           = new AdHoardingAddress();

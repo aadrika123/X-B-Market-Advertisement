@@ -98,7 +98,9 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->purpose                        = $request->purpose;
         $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
         $mAgencyHoarding->mobile_no                      = $request->mobileNo;
-        $mAgencyHoarding->location                      = $request->location;
+        $mAgencyHoarding->location                       = $request->location;
+        $mAgencyHoarding->zone_mstr_id                   = $request->zoneId ?? null;
+        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null ;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
@@ -144,6 +146,8 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->no_of_hoarding                 = $request->Noofhoardings;
         $mAgencyHoarding->mobile_no                      = $request->mobileNo;
         $mAgencyHoarding->location                       = $request->location;
+        $mAgencyHoarding->zone_mstr_id                   = $request->zoneId ?? null;
+        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null ;
         $mAgencyHoarding->status                        = false;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
