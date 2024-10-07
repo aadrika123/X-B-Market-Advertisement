@@ -1642,9 +1642,9 @@ class AgencyWorkflowController extends Controller
                   ah.approve
                 FROM
                   agency_hoardings AS ah
-                  JOIN agency_masters AS am ON am.id = ah.agency_id
-                  JOIN hoarding_masters AS hm ON hm.id = ah.hoarding_id
-                  JOIN hoarding_types as ht on ht.id=hm.hoarding_type_id
+                  LEFT JOIN agency_masters AS am ON am.id = ah.agency_id
+                  LEFT JOIN hoarding_masters AS hm ON hm.id = ah.hoarding_id
+                  LEFT JOIN hoarding_types as ht on ht.id=hm.hoarding_type_id
                 WHERE
                   ah.status = true
               )
