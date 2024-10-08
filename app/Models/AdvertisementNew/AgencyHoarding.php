@@ -100,7 +100,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->mobile_no                      = $request->mobileNo;
         $mAgencyHoarding->location                       = $request->location;
         $mAgencyHoarding->zone_mstr_id                   = $request->zoneId ?? null;
-        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null ;
+        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
         }
@@ -147,7 +147,7 @@ class AgencyHoarding extends Model
         $mAgencyHoarding->mobile_no                      = $request->mobileNo;
         $mAgencyHoarding->location                       = $request->location;
         $mAgencyHoarding->zone_mstr_id                   = $request->zoneId ?? null;
-        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null ;
+        $mAgencyHoarding->ward_mstr_id                   = $request->wardId ?? null;
         $mAgencyHoarding->status                        = false;
         if ($request->applicationType == 'PERMANANT') {
             $mAgencyHoarding->property_type_id                  = $request->propertyId;
@@ -274,6 +274,7 @@ class AgencyHoarding extends Model
           END AS approval_status"),
             DB::raw("CASE 
             WHEN agency_hoardings.current_role_id = 6 THEN 'AT LIPIK'
+            WHEN agency_hoardings.current_role_id = 13 THEN 'AT SECTION INCHARGE'
             WHEN agency_hoardings.current_role_id = 10 THEN 'AT TAX  SUPRERINTENDENT'
             ELSE 'Unknown Role'
         END AS application_at"),

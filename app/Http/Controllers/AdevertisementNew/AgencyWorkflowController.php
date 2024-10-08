@@ -1640,7 +1640,8 @@ class AgencyWorkflowController extends Controller
                   hm.hoarding_no,
                   hm.address,
                   ah.approve,
-                  ah.user_type
+                  ah.user_type,
+                  ah.current_role_id
                 FROM
                   agency_hoardings AS ah
                   LEFT JOIN agency_masters AS am ON am.id = ah.agency_id
@@ -1667,6 +1668,12 @@ class AgencyWorkflowController extends Controller
                   WHEN approve = 2 THEN 'Rejected'
                   ELSE 'Unknown Status'
                 END AS approval_status,
+                CASE 
+                   WHEN current_role_id  = 6 THEN 'AT LIPIK'
+                   WHEN current_role_id  = 13 THEN 'AT SECTION INCHARGE'
+                   WHEN current_role_id  = 10 THEN 'AT TAX  SUPRERINTENDENT'
+                   ELSE 'Unknown Role'
+                   END AS application_at,
                 approve 
               FROM
                 filtered_hoardings
