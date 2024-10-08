@@ -902,7 +902,7 @@ class AgencyNewController extends Controller
                 $registrationNo      = $idGeneration->getUniqueId();
                 $registrationNo      = str_replace('/', '-', $registrationNo);
                 $AgencyId           =  $this->_agencyObj->saveRequestDetail($request, $refRequest, $applicationNo, $ulbId);
-                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo,$AgencyId);
+                $AgencyId           =  $this->_agencyApproveApplication->saveRequestDetailsInApprove($request, $refRequest, $applicationNo, $ulbId, $registrationNo, $AgencyId);
             };
 
             // Save multiple addresses
@@ -1471,6 +1471,7 @@ class AgencyNewController extends Controller
             $refstring                  = Str::snake($key);
             $msg                        = "Approve application list!";
             $mAgencyHoarding            = new AgencyHoarding();
+            $mAgencApproveHording       = new AgencyHoardingApproveApplication();
 
             # Check params for role user 
             // $roleDetails = $this->getUserRollV2($userId, $user->ulb_id, $confWorkflowMasterId);
@@ -1478,9 +1479,9 @@ class AgencyNewController extends Controller
 
             try {
                 if ($userType !== "Citizen") {
-                    $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetails($request->auth['email']);
+                    $baseQuerry = $mAgencApproveHording->getAllApprovdApplicationDetails($request->auth['email']);
                 } else {
-                    $baseQuerry = $mAgencyHoarding->getAllApprovdApplicationDetailsCitizen($userId);
+                    $baseQuerry = $mAgencApproveHording->getAllApprovdApplicationDetailsCitizen($userId);
                 }
 
                 $baseQuerry->select(

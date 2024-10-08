@@ -576,13 +576,13 @@ class AgencyHoarding extends Model
     /**
      * | Get all details according to key 
      */
-    public function getAllApprovdApplicationDetails($email)
+    public function getAllApprovdApplicationDetails()
     {
         return DB::table('agency_hoarding_approve_applications')
             ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
-            ->leftjoin('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.hoarding_id')
+            // ->leftjoin('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.hoarding_id')
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')
-            ->where('agency_masters.email', $email)
+            // ->where('agency_masters.email', $email)
             ->where('agency_masters.status', 1);
     }
     /** 
