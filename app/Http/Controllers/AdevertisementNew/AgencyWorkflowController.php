@@ -1639,7 +1639,8 @@ class AgencyWorkflowController extends Controller
                   ht.type as hoarding_type,
                   hm.hoarding_no,
                   hm.address,
-                  ah.approve
+                  ah.approve,
+                  ah.user_type
                 FROM
                   agency_hoardings AS ah
                   LEFT JOIN agency_masters AS am ON am.id = ah.agency_id
@@ -1659,6 +1660,7 @@ class AgencyWorkflowController extends Controller
                 hoarding_type,
                 hoarding_no,
                 address,
+                user_type,
                 CASE 
                   WHEN approve = 0 THEN 'Pending'
                   WHEN approve = 1 THEN 'Approved'
