@@ -1324,64 +1324,64 @@ class AgencyWorkflowController extends Controller
             } else {
                 switch ($advertisementType) {
                     case 'TEMPORARY_ADVERTISEMENT':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'LAMP_POST':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'ABOVE_KIOX_ADVERTISEMENT':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'AD_POL':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'COMPASS_CANTILEVER':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'GLOSSINE_BOARD':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'ADVERTISEMENT_ON_BALLONS':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['total_ballon'];
                         $query->key = 'Total Ballon';
                         break;
                     case 'ADVERTISEMENT_ON_THE_CITY_BUS':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
 
                         break;
                     case 'CITY_BUS_STOP':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'ADVERTISEMENT_ON_THE_WALL':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
 
                         break;
                     case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $query['total_vehicle'];
                         $query->key = 'Total Vehicle';
                         break;
                     case 'ROAD_SHOW_ADVERTISING':
-                        $query = $this->_agencyObj->getApproveDetails($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetails($request);
                         $query->value = $numberOfDays;
                         $query->key = 'Total DAYS';
                         break;
