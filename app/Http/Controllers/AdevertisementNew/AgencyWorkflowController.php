@@ -909,12 +909,15 @@ class AgencyWorkflowController extends Controller
         $mAgencyHoard           = new AgencyHoarding();
         $mwaterOwner            = new AgencyMaster();
         $mhoardMaster           = new HoardingMaster();
+        $mhoardingAddress       = new AdHoardingAddress();
         # applicatin details
 
         $applicationDetails = $mAgencyHoard->getFullDetails($request)->get();
         if (collect($applicationDetails)->first() == null) {
             return responseMsg(false, "Application Data Not found!", $request->applicationId);
         }
+        $applicationId  =$applicationDetails->pluck('id');
+        $HoardingLocations = $mhoardingAddress->getAddress($applicationId)->get();
         # Ward Name
         $refApplication = collect($applicationDetails)->first();
         // $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
@@ -923,7 +926,7 @@ class AgencyWorkflowController extends Controller
             'apply_date' => collect($applicationDetails)->first()->allotment_date
         ];
         # DataArray
-        $basicDetails = $this->getBasicDetails($applicationDetails);
+        $basicDetails = $this->getBasicDetails($applicationDetails,$HoardingLocations);
 
         $firstView = [
             'headerTitle' => 'Basic Details',
@@ -982,11 +985,15 @@ class AgencyWorkflowController extends Controller
     /**
      * function for return data of basic details
      */
-    public function getBasicDetails($applicationDetails)
+    public function getBasicDetails($applicationDetails,$HoardingLocations)
     {
         $collectionApplications = collect($applicationDetails)->first();
+        $HoardingLocation     = collect($HoardingLocations);
         return new Collection([
-            ['displayString' => 'Agency Name',         'key' => 'agencyName',         'value' => $collectionApplications->agencyName],
+            // ['displayString' => 'Agency Name',         'key' => 'agencyName',         'value' => $collectionApplications->agencyName],
+            ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
+            ['displayString' => 'Locations',          'key' => 'locations',         'value' => $HoardingLocation],
+            ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
             ['displayString' => 'Apply Date',       '   key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
             ['displayString' => 'From Date',           'key' => 'fromDate',           'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
             ['displayString' => 'To Date',             'key' => 'toDate',             'value' => Carbon::parse($collectionApplications->to_date)->format('d/m/Y')],
