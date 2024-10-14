@@ -846,7 +846,7 @@ class AgencyNewController extends Controller
             }
             $ulbId      = $request->ulbId ?? 2;
             #check Aplication Type 
-            if ($request->applicationType == 'PERMANANT') {
+            if ($request->applicationType == 'PERMANENT') {
                 $applicationTypeId = 1;  // Use assignment operator here
             } else {
                 $applicationTypeId = 2;  // Use assignment operator here

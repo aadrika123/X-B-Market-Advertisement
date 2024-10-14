@@ -76,7 +76,7 @@ return [
         "RENEWAL"      => 2,
     ],
     "APPLICATION_TYPE" => [                                       // related to TRANSACTION_TYPE
-        "PERMANANT" => 1,
+        "PERMANENT" => 1,
         "TEMPORARY" => 2
     ],
 

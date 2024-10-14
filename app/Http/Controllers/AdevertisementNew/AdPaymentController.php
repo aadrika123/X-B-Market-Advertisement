@@ -403,7 +403,7 @@ class AdPaymentController extends Controller
 
     public function checkParamForPayment($req, $paymentMode)
     {
-        $user = Auth()->user();
+        // $user = Auth()->user();
         $applicationId                 = $req->id;
         $confPaymentMode               = $this->_paymentMode;
         $confApplicationType           = $this->_applicationType;
@@ -432,8 +432,8 @@ class AdPaymentController extends Controller
 
         # Application type hence the charge type
         switch ($applicationDetail->application_type) {
-            case ('PERMANANT'):
-                $chargeCategory = $confApplicationType['PERMANANT'];
+            case ('PERMANENT'):
+                $chargeCategory = $confApplicationType['PERMANENT'];
                 break;
             case ('TEMPORARY'):
                 $chargeCategory = $confApplicationType['TEMPORARY'];
