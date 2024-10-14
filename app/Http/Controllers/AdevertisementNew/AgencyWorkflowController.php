@@ -921,7 +921,7 @@ class AgencyWorkflowController extends Controller
         $HoardingLocations = $mhoardingAddress->getAddress($applicationId)->get();
         # Combine addresses into a single string
         $locations = $HoardingLocations->pluck('address')->toArray();
-         $combinedLocations = implode(', ', $locations);
+        $combinedLocations = implode(', ', $locations);
         # Ward Name
         $refApplication = collect($applicationDetails)->first();
         // $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
@@ -995,7 +995,7 @@ class AgencyWorkflowController extends Controller
         // $HoardingLocation     = collect($HoardingLocations);
         return new Collection([
             // ['displayString' => 'Agency Name',         'key' => 'agencyName',         'value' => $collectionApplications->agencyName],
-            ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
+            // ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
             ['displayString' => 'Locations',          'key' => 'locations',         'value' => $combinedLocations],
             ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
             ['displayString' => 'Apply Date',       '   key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
