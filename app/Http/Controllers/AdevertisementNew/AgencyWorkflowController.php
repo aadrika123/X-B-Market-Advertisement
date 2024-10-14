@@ -900,8 +900,8 @@ class AgencyWorkflowController extends Controller
 
     public function getApplicationsDetails($request)
     {
-        $user = authUser($request);
-        $userTye = $user->user_type;
+        // $user = authUser($request);
+        // $userTye = $user->user_type;
         $forwardBackward        = new WorkflowMap();
         $mWorkflowTracks        = new WorkflowTrack();
         $mCustomDetails         = new CustomDetail();
@@ -916,8 +916,12 @@ class AgencyWorkflowController extends Controller
         if (collect($applicationDetails)->first() == null) {
             return responseMsg(false, "Application Data Not found!", $request->applicationId);
         }
-        $applicationId  =$applicationDetails->pluck('id');
+        $applicationId  = $applicationDetails->pluck('id');
+
         $HoardingLocations = $mhoardingAddress->getAddress($applicationId)->get();
+        # Combine addresses into a single string
+        $locations = $HoardingLocations->pluck('address')->toArray();
+         $combinedLocations = implode(', ', $locations);
         # Ward Name
         $refApplication = collect($applicationDetails)->first();
         // $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
@@ -926,7 +930,7 @@ class AgencyWorkflowController extends Controller
             'apply_date' => collect($applicationDetails)->first()->allotment_date
         ];
         # DataArray
-        $basicDetails = $this->getBasicDetails($applicationDetails,$HoardingLocations);
+        $basicDetails = $this->getBasicDetails($applicationDetails, $combinedLocations);
 
         $firstView = [
             'headerTitle' => 'Basic Details',
@@ -985,14 +989,14 @@ class AgencyWorkflowController extends Controller
     /**
      * function for return data of basic details
      */
-    public function getBasicDetails($applicationDetails,$HoardingLocations)
+    public function getBasicDetails($applicationDetails, $combinedLocations)
     {
         $collectionApplications = collect($applicationDetails)->first();
-        $HoardingLocation     = collect($HoardingLocations);
+        // $HoardingLocation     = collect($HoardingLocations);
         return new Collection([
             // ['displayString' => 'Agency Name',         'key' => 'agencyName',         'value' => $collectionApplications->agencyName],
             ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
-            ['displayString' => 'Locations',          'key' => 'locations',         'value' => $HoardingLocation],
+            ['displayString' => 'Locations',          'key' => 'locations',         'value' => $combinedLocations],
             ['displayString' => 'Applied By',         'key' => 'appliedBy',         'value' => $collectionApplications->user_type],
             ['displayString' => 'Apply Date',       '   key' => 'applyDate',          'value' => Carbon::parse($collectionApplications->apply_date)->format('d-m-Y')],
             ['displayString' => 'From Date',           'key' => 'fromDate',           'value' => Carbon::parse($collectionApplications->from_date)->format('d/m/Y')],
