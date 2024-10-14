@@ -230,8 +230,8 @@ class AgencyHoarding extends Model
             ->leftJoin('hoarding_types', function ($join) {
                 $join->on('hoarding_types.id', 'hoarding_masters.hoarding_type_id');
             })
-            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
-            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->leftjoin('m_circle', 'm_circle.id', '=', 'agency_hoardings.zone_mstr_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'agency_hoardings.ward_mstr_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.id', $request->applicationId)
             ->where('agency_hoardings.status', true);
