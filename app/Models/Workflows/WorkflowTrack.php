@@ -13,8 +13,9 @@ class WorkflowTrack extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    protected $guarded = [];
+    protected $connection = 'pgsql_masters';
 
-    protected $connection='pgsql_masters';
 
     public function saveTrack($request)
     {
@@ -91,15 +92,15 @@ class WorkflowTrack extends Model
     public function getTracksByRefId($mRefTable, $tableId)
     {
         return self::select(
-                'workflow_tracks.ref_table_dot_id AS referenceTable',
-                'workflow_tracks.ref_table_id_value AS applicationId',
-                'workflow_tracks.message',
-                'workflow_tracks.track_date',
-                'workflow_tracks.forward_date',
-                'workflow_tracks.forward_time',
-                'w.role_name as commentedBy',
-                'wr.role_name as forwarded_to'
-            )
+            'workflow_tracks.ref_table_dot_id AS referenceTable',
+            'workflow_tracks.ref_table_id_value AS applicationId',
+            'workflow_tracks.message',
+            'workflow_tracks.track_date',
+            'workflow_tracks.forward_date',
+            'workflow_tracks.forward_time',
+            'w.role_name as commentedBy',
+            'wr.role_name as forwarded_to'
+        )
             ->where('ref_table_dot_id', $mRefTable)
             ->where('ref_table_id_value', $tableId)
             ->join('wf_roles as w', 'w.id', '=', 'workflow_tracks.sender_role_id')

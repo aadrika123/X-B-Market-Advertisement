@@ -631,7 +631,7 @@ class AgencyWorkflowController extends Controller
                 'forward_date' => $current->format('Y-m-d'),
                 'forward_time' => $current->format('H:i:s')
             ]);
-            DB::commit();
+                DB::commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
         } catch (Exception $e) {
             DB::rollBack();
