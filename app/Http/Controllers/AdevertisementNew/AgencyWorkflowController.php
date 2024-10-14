@@ -609,7 +609,7 @@ class AgencyWorkflowController extends Controller
 
             $metaReqs['moduleId']           = $this->_moduleId;
             $metaReqs['workflowId']         = $mHoardApplication->workflow_id;
-            $metaReqs['refTableDotId']      = 'agency_hoardngs.id';                                                // Static
+            $metaReqs['refTableDotId']      = 'agency_hoardings.id';                                                // Static
             $metaReqs['refTableIdValue']    = $req->applicationId;
             $metaReqs['user_id']            = authUser($req)->id;
             $req->request->add($metaReqs);
@@ -619,18 +619,18 @@ class AgencyWorkflowController extends Controller
 
             # Check in all the cases the data if entered in the track table 
             # Updation of Received Date
-            // $preWorkflowReq = [
-            //     'workflowId'        => $mHoardApplication->workflow_id,
-            //     'refTableDotId'     => "agency_hoardngs.id",
-            //     'refTableIdValue'   => $req->applicationId,
-            //     'receiverRoleId'    => $senderRoleId
-            // ];
+            $preWorkflowReq = [
+                'workflowId'        => $mHoardApplication->workflow_id,
+                'refTableDotId'     => "agency_hoardings.id",
+                'refTableIdValue'   => $req->applicationId,
+                'receiverRoleId'    => $senderRoleId
+            ];
 
-            // $previousWorkflowTrack = $waterTrack->getWfTrackByRefId($preWorkflowReq);
-            // $previousWorkflowTrack->update([
-            //     'forward_date' => $current->format('Y-m-d'),
-            //     'forward_time' => $current->format('H:i:s')
-            // ]);
+            $previousWorkflowTrack = $waterTrack->getWfTrackByRefId($preWorkflowReq);
+            $previousWorkflowTrack->update([
+                'forward_date' => $current->format('Y-m-d'),
+                'forward_time' => $current->format('H:i:s')
+            ]);
             DB::commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
         } catch (Exception $e) {
