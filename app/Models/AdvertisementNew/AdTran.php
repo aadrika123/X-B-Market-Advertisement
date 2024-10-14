@@ -100,9 +100,9 @@ class AdTran extends Model
     {
         return AdTran::select(
             'ad_trans.tran_no', 'ad_trans.tran_date','ad_trans.payment_mode','ad_trans.tran_type',
-            'agency_hoardings.from_date','agency_hoardings.to_date','ad_trans.amount'
+            'agency_hoarding_approve_applications.from_date','agency_hoarding_approve_applications.to_date','ad_trans.amount'
             )
-            ->join('agency_hoardings','agency_hoardings.id','=','ad_trans.related_id')
+            ->join('agency_hoarding_approve_applications','agency_hoarding_approve_applications.id','=','ad_trans.related_id')
             ->where('ad_trans.status', 1)
             ->where('ad_trans.tran_date', '>=', $fromDate)
             ->where('ad_trans.tran_date', '<=', $toDate)
