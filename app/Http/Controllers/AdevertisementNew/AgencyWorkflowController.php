@@ -48,6 +48,7 @@ use App\Models\AdvertisementNew\HoardType;
 use App\Models\AdvertisementNew\TemporaryHoardingType;
 use App\BLL\Advert;
 use App\BLL\Advert\CalculateRate;
+use App\Models\AdvertisementNew\AdApplicationAmount;
 use App\Models\AdvertisementNew\AdDirectApplicationAmount;
 use App\Models\AdvertisementNew\AdHoardingAddress;
 use App\Models\AdvertisementNew\MeasurementSize;
@@ -92,6 +93,7 @@ class AgencyWorkflowController extends Controller
     protected $incrementStatus;
     protected $_agencyApproveappObj;
     protected $_directapplicationAmount;
+    protected $_applicationAmount;
     // private static $registrationCounter = 1;
 
     public function __construct()
@@ -107,6 +109,7 @@ class AgencyWorkflowController extends Controller
         $this->_activeHObj      = new AdvActiveHoarding();
         $this->_mRefReqDocs     = new RefRequiredDocument();
         $this->_directapplicationAmount    = new AdDirectApplicationAmount();
+        $this->_applicationAmount    = new AdApplicationAmount();
         $this->_applicationDate = Carbon::now()->format('Y-m-d');
         // $this->_workflowIds = Config::get('workflow-constants.AGENCY_WORKFLOWS');
         $this->_moduleId        = Config::get('workflow-constants.ADVERTISMENT_MODULE');
@@ -631,7 +634,7 @@ class AgencyWorkflowController extends Controller
                 'forward_date' => $current->format('Y-m-d'),
                 'forward_time' => $current->format('H:i:s')
             ]);
-                DB::commit();
+            DB::commit();
             return responseMsgs(true, "Successfully Forwarded The Application!!", "", "", "", '01', '.ms', 'Post', '');
         } catch (Exception $e) {
             DB::rollBack();
@@ -1440,9 +1443,11 @@ class AgencyWorkflowController extends Controller
 
             $query = $this->_agencyApproveappObj->getApproveDetailV1($request);                      // COMMON FUNCTION FOR ALL TYPE OF APPLICATION OF ADVERTISEMENT
             #check demand of applications 
-            // if ($query->direct_hoarding == 1) {
-            $checkDmeand = $this->_directapplicationAmount->getChargesbyIds($request->applicationId);
-            // }
+            if ($query->direct_hoarding == 1) {
+                $checkDmeand = $this->_directapplicationAmount->getChargesbyIds($request->applicationId);
+            } else {
+                $checkDmeand = $this->_applicationAmount->getChargesbyIds($request->applicationId);
+            }
 
             $mHoardingAddress           = new AdHoardingAddress();
 
@@ -1455,37 +1460,37 @@ class AgencyWorkflowController extends Controller
             } else {
                 switch ($advertisementType) {
                     case 'TEMPORARY_ADVERTISEMENT':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'LAMP_POST':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'ABOVE_KIOX_ADVERTISEMENT':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'AD_POL':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
                     case 'COMPASS_CANTILEVER':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'GLOSSINE_BOARD':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'ADVERTISEMENT_ON_BALLONS':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['total_ballon'];
                         $query->key = 'Total Ballon';
                         break;
@@ -1496,23 +1501,23 @@ class AgencyWorkflowController extends Controller
 
                         break;
                     case 'CITY_BUS_STOP':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
                     case 'ADVERTISEMENT_ON_THE_WALL':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
 
                         break;
                     case 'ADVERTISEMENT_ON_MOVING_VEHICLE':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['total_vehicle'];
                         $query->key = 'Total Vehicle';
                         break;
                     case 'ROAD_SHOW_ADVERTISING':
-                        $query = $this->_agencyObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $numberOfDays;
                         $query->key = 'Total DAYS';
                         break;
