@@ -383,7 +383,7 @@ class MarShopPayment extends Model
       $MarTranDeativation = new MarTransactionDeactivateDtl();
       $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
       $marketModuleId = Config::get('constants.MARKET_MODULE_ID');
-      $relativePath = $req->moduleId == $marketModuleId ? "Market/TranDeactivate" : "Other/ModulePath";
+      $relativePath = Config::get('constants.SHOP_PATH');
       $document = $req->document;
       $imageName = $req->document ? $relativePath . "/" . $docUpload->upload($refImageName, $document, $relativePath) : "";
       $deactivationArr = [
