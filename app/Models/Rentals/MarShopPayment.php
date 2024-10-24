@@ -2,10 +2,12 @@
 
 namespace App\Models\Rentals;
 
+use App\MicroServices\DocumentUpload;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class MarShopPayment extends Model
@@ -376,6 +378,22 @@ class MarShopPayment extends Model
     */
    public function deActiveTransaction($req)
    {
+      $user = Auth()->user();
+      $docUpload = new DocumentUpload;
+      $MarTranDeativation = new MarTransactionDeactivateDtl();
+      $refImageName = $req->id . "_" . $req->moduleId . "_" . (Carbon::now()->format("Y-m-d"));
+      $marketModuleId = Config::get('constants.MARKET_MODULE_ID');
+      $relativePath = $req->moduleId == $marketModuleId ? "Market/TranDeactivate" : "Other/ModulePath";
+      $document = $req->document;
+      $imageName = $req->document ? $relativePath . "/" . $docUpload->upload($refImageName, $document, $relativePath) : "";
+      $deactivationArr = [
+         "tran_id" => $req->tranId,
+         "deactivated_by" => $user->id,
+         "reason" => $req->deactiveReason,
+         "file_path" => $imageName,
+         "deactive_date" => $req->deactiveDate ?? Carbon::now()->format("Y-m-d"),
+      ];
+      $MarTranDeativation->create($deactivationArr);
       $tranDetails = $tran = Self::find($req->tranId);
       $tran->payment_status = 0;
       $tran->deactive_date = Carbon::now();

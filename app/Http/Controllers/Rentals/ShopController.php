@@ -2199,6 +2199,7 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
+            
             if ($req->module == 'Shop') {
                 $mMarShopPayment = new MarShopPayment();
                 DB::beginTransaction();
@@ -2207,7 +2208,7 @@ class ShopController extends Controller
             }
             // $list = paginator($listShop, $req);
             return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055044", "1.0", responseTime(), "POST");
-        } catch (Exception $e) {
+        } catch (Exception $e) {    
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055044", "1.0", responseTime(), "POST");
         }

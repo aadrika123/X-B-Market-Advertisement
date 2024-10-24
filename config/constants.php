@@ -5,10 +5,10 @@
  */
 return [
     // Live URL
-    "AUTH_URL" => env("AUTH_URL", "http://localhost/"),     
+    "AUTH_URL" => env("AUTH_URL", "http://localhost/"),
     "PAYMENT_URL" => env("PAYMENT_URL", "http://localhost/"),
-    "BASE_URL" => env("BASE_URL", "http://localhost/"),  
-    "CALLBACK_URL" => env("CALLBACK_URL", "http://localhost/"),  
+    "BASE_URL" => env("BASE_URL", "http://localhost/"),
+    "CALLBACK_URL" => env("CALLBACK_URL", "http://localhost/"),
     "ULB_LOGO_URL" =>  env("ULB_LOGO_URL", "http://localhost/"),
 
     "AADHAR_RELATIVE_NAME" => "AADHAR",
@@ -75,4 +75,5 @@ return [
     "PARAM_IDS" => [
         "TRN" => 37,
     ],
+    "MARKET_MODULE_ID" => 5
 ];
