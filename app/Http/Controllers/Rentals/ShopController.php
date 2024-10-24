@@ -2860,16 +2860,16 @@ class ShopController extends Controller
         return $filename;
     }
     /**
-     * update consumer details
+     * update shop details
      */
     public function updateShopDetails(Request $request)
     {
         $validated = Validator::make(
             $request->all(),
             [
-                'shopId'         => 'required|integer',
-                'allotteName'          => 'nullable|',            // 'nullable|digits:10|regex:/[0-9]{10}/',
-                'ownerName'              => 'nullable|',
+                'shopId'           => 'required|integer',
+                'allotteName'      => 'nullable|',            // 'nullable|digits:10|regex:/[0-9]{10}/',
+                'ownerName'        => 'nullable|',
             ]
         );
         if ($validated->fails())

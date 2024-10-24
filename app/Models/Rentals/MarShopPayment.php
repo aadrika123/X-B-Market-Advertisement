@@ -362,6 +362,7 @@ class MarShopPayment extends Model
          'mar_shop_payments.dd_no',
          'mar_shop_payments.bank_name',
          'mar_shop_payments.cheque_no',
+         'mar_shop_payments.payment_status as status',
          DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
          DB::raw("'Municipal Rental' as type"),
       )
