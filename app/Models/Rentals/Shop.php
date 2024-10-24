@@ -211,7 +211,7 @@ class Shop extends Model
       'mm.market_name',
       'mst.shop_type',
     )
-      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join("mar_shop_types as mst", "mst.id", "mar_shops.shop_category_id");
   }
