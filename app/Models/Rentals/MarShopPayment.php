@@ -160,9 +160,7 @@ class MarShopPayment extends Model
    /**
     * | update payment status for clear or bounce cheque
     */
-   public function clearBounceCheque()
-   {
-   }
+   public function clearBounceCheque() {}
 
    /**
     * | List of shop collection between two given date
@@ -196,17 +194,16 @@ class MarShopPayment extends Model
          ->where('mar_shop_payments.payment_date', '>=', $fromDate)
          ->where('mar_shop_payments.payment_date', '<=', $toDate)
          ->whereIn('mar_shop_payments.payment_status', [1, 2]);
-
    }
 
    /**
     * | find total collection shop type wise
     */
-    public function totalCollectoion($shopType)
-    {
+   public function totalCollectoion($shopType)
+   {
       //  return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
-       return MarShopPayment::select('*')->whereIn('mar_shop_payments.payment_status', [1, 2])->where('shop_category_id', $shopType)->where('shop_category_id', $shopType)->sum('amount');
-    }
+      return MarShopPayment::select('*')->whereIn('mar_shop_payments.payment_status', [1, 2])->where('shop_category_id', $shopType)->sum('amount');
+   }
    /**
     * | find total Arrear collection shop type wise
     */
@@ -227,7 +224,7 @@ class MarShopPayment extends Model
     */
    public function shopCollectoion($shopId)
    {
-      return MarShopPayment::select('*')->where('payment_status', '1')->where('shop_id', $shopId)->sum('amount');
+      return MarShopPayment::select('*')->whereIn('mar_shop_payments.payment_status', [1, 2])->where('shop_id', $shopId)->sum('amount');
    }
 
    /**
@@ -443,18 +440,19 @@ class MarShopPayment extends Model
          ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 
-   public function getListTCwise(){
+   public function getListTCwise()
+   {
       return  DB::table('mar_shop_payments')
-      ->select(
-         DB::raw('sum(mar_shop_payments.amount) as total_amount'),
-         DB::raw('count(mar_shop_payments.id) as total_transaction'),
-         'user.name as tc_name',
-         // 'user.mobile as tc_mobile',
-         //  't1.allottee as shop_name',
-      )
-      ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
-      ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
-      ->where('mar_shop_payments.deactive_date', '=', NULL)
-      ->where('mar_shop_payments.payment_status', '!=', "3");
+         ->select(
+            DB::raw('sum(mar_shop_payments.amount) as total_amount'),
+            DB::raw('count(mar_shop_payments.id) as total_transaction'),
+            'user.name as tc_name',
+            // 'user.mobile as tc_mobile',
+            //  't1.allottee as shop_name',
+         )
+         ->join('users as user', 'user.id', '=', 'mar_shop_payments.user_id')
+         ->where('mar_shop_payments.pmt_mode', '!=', "ONLINE")
+         ->where('mar_shop_payments.deactive_date', '=', NULL)
+         ->where('mar_shop_payments.payment_status', '!=', "3");
    }
 }
