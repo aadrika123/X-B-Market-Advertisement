@@ -18,6 +18,7 @@ use App\Models\Rentals\MarShopPayment;
 use App\Models\Rentals\MarShopRateList;
 use App\Models\Rentals\MarShopTpye;
 use App\Models\Rentals\MarShopType;
+use App\Models\Rentals\MarShopUpdateLog;
 use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
@@ -2857,5 +2858,66 @@ class ShopController extends Controller
 
         // Optionally, you can return a response or redirect
         return $filename;
+    }
+    /**
+     * update consumer details
+     */
+    public function updateShopDetails(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'shopId'         => 'required|integer',
+                'allotteName'          => 'nullable|',            // 'nullable|digits:10|regex:/[0-9]{10}/',
+                'ownerName'              => 'nullable|',
+            ]
+        );
+        if ($validated->fails())
+            return validationErrorV2($validated);
+        try {
+            $request->merge([]);
+            $now            = Carbon::now();
+            $user           = Auth()->user();
+            $userId         = $user->id;
+            $shopId         = $request->shopId;
+            $mMarShops = new shop();
+            $mMarShopLog = new MarShopUpdateLog();
+            $shopDtls = $mMarShops->find($shopId);
+            if (!$shopDtls) {
+                throw new Exception("Shop details not found!");
+            }
+            $conUpdaleLog = $shopDtls->replicate();
+            $conUpdaleLog->setTable($mMarShopLog->getTable());
+            $conUpdaleLog->purpose       =   "Shop Update";
+            $conUpdaleLog->shop_id       =    $shopDtls->id;
+            $conUpdaleLog->up_user_id    =    $user->id;
+            $conUpdaleLog->up_user_type  =    $user->user_type;
+            $conUpdaleLog->remarks       =    $request->remarks;
+
+            #=========shop updates=================
+            $shopDtls->circle_id                   =  $request->circleId             ? $request->circleId : $shopDtls->circle_id;
+            $shopDtls->market_id                   =  $request->marketId             ? $request->marketId : $shopDtls->market_id;
+            $shopDtls->shop_category_id            =  $request->shopCategoryId       ? $request->shopCategoryId : $shopDtls->shop_category_id;
+            $shopDtls->allottee                    =  $request->allotteName          ? $request->allotteName : $shopDtls->allottee;
+            $shopDtls->address                     =  $request->address              ? $request->address : $shopDtls->address;
+            $shopDtls->amc_shop_no                 =  $request->amcShopNo            ? $request->amcShopNo : $shopDtls->amc_shop_no;
+            $shopDtls->alloted_upto                =  $request->allotedUpto          ? $request->allotedUpto : $shopDtls->alloted_upto;
+            $shopDtls->area                        =  $request->area                 ? $request->area : $shopDtls->area;
+            $shopDtls->present_occupier            =  $request->allotteName          ? $request->allotteName : $shopDtls->present_occupier;
+            $shopDtls->shop_owner_name             =  $request->ownerName            ? $request->ownerName : $shopDtls->shop_owner_name;
+            DB::beginTransaction();
+
+            $conUpdaleLog->save();
+            // return ($consumerDtls);
+            $shopDtls->update();
+            $conUpdaleLog->new_data_json = json_encode($shopDtls->toArray(), JSON_UNESCAPED_UNICODE);
+            $conUpdaleLog->update();
+
+            DB::commit();
+            return responseMsgs(true, "update Shop details succesfull!", "", "", "01", ".ms", "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
     }
 }
