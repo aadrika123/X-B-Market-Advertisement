@@ -702,4 +702,136 @@ class AdPaymentController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
+
+    /**
+     * | water Collection report 
+     */
+    public function tcCollectionReport(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'advType' => 'nullable',
+            'marketId' => 'nullable|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'  => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+
+            // $refUser        = authUser($request);
+            // $ulbId          = $refUser->ulb_id;
+            $advType = null;
+            $userId = null;
+            $shopCategoryId = null;
+            $paymentMode = null;
+            $now                        = Carbon::now()->format('Y-m-d');
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $now                        = Carbon::now();
+            $currentDate                = Carbon::now()->format('Y-m-d');
+            $currentDate                = $now->format('Y-m-d');
+            $zoneId = $wardId = null;
+            $currentYear                = collect(explode('-', $request->fiYear))->first() ?? $now->year;
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
+            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
+            $previousFinancialYear      = getFinancialYears($startOfPreviousYear);
+
+
+
+            if ($request->fromDate) {
+                $fromDate = $request->fromDate;
+            }
+            if ($request->uptoDate) {
+                $uptoDate = $request->uptoDate;
+            }
+            if ($request->wardId) {
+                $wardId = $request->wardId;
+            }
+
+            if ($request->userId) {
+                $userId = $request->userId;
+            }
+
+            # In Case of any logged in TC User
+            // if ($refUser->user_type == "TC") {
+            //     $userId = $refUser->id;
+            // }
+
+            if ($request->marketId) {
+                $paymentMode = $request->paymentMode;
+            }
+            if ($request->marketId) {
+                $marketId = $request->marketId;
+            }
+            if ($request->shopCategoryId) {
+                $shopCategoryId = $request->shopCategoryId;
+            }
+
+            // DB::enableQueryLog();
+            $data = DB::select(DB::raw("SELECT 
+              subquery.tran_id,
+              subquery.tran_no,
+              subquery.amount,
+              subquery.user_name,
+              subquery.tran_date,
+              subquery.payment_mode,
+              subquery.tran_type,
+              subquery.name
+     FROM (
+         SELECT 
+                ad_trans.id as tran_id,
+                ad_trans.tran_date,
+                ad_trans.tran_no,
+                agency_hoardings.shop_owner_name,
+                ad_trans.amount,
+                users.user_name,
+                users.name
+        
+        FROM ad_trans 
+        -- LEFT JOIN ulb_ward_masters ON ulb_ward_masters.id=water_trans.ward_id
+        LEFT JOIN agency_hoardings ON agency_hoardings.id=ad_trans.
+        -- JOIN water_consumer_demands ON water_consumer_demands.consumer_id=water_trans.related_id
+        JOIN mar_shop_demands on mar_shop_demands.shop_id = mar_shop_payments.shop_id
+        LEFT JOIN users ON users.id=mar_shop_payments.user_id
+       -- and tran_type = 'Demand Collection'
+        and ad_trans.payment_date between '$fromDate' and '$uptoDate'
+                    " . ($advType ? " AND  mar_shops.shop_category_id = $advType" : "") . "
+                     " . ($paymentMode ? " AND mar_shop_payments.pmt_mode = $paymentMode" : "") . "
+                     " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
+                    " . ($paymentMode ? " AND mar_shop_payments.payment_mode = '$paymentMode'" : "") . "
+        GROUP BY 
+               ad_trans.id,
+                ad_trans.tran_date,
+                ad_trans.tran_no,
+                ad_trans.amount,
+                users.user_name,
+                users.name
+        
+     ) AS subquery"));
+            $refData = collect($data);
+
+            $refDetailsV2 = [
+                "array" => $data,
+                "sum_current_coll" => roundFigure($refData->pluck('current_collections')->sum() ?? 0),
+                "sum_arrear_coll" => roundFigure($refData->pluck('arrear_collections')->sum() ?? 0),
+                "sum_total_coll" => roundFigure($refData->pluck('total_collections')->sum() ?? 0),
+                "sum_current_coll_bot" => roundFigure($refData->pluck('current_collections_bot')->sum() ?? 0),
+                "sum_current_coll_city" => roundFigure($refData->pluck('current_collections_city')->sum() ?? 0),
+                "sum_current_coll_gp" => roundFigure($refData->pluck('current_collections_gp')->sum() ?? 0),
+                "sum_arrear_coll_bot" => roundFigure($refData->pluck('arrear_collections_bot')->sum() ?? 0),
+                "sum_arrear_coll_city" => roundFigure($refData->pluck('arrear_collections_city')->sum() ?? 0),
+                "sum_arrear_coll_gp" => roundFigure($refData->pluck('arrear_collections_gp')->sum() ?? 0),
+                "totalAmount"   =>  roundFigure($refData->pluck('amount')->sum() ?? 0),
+                "totalColletion" => $refData->pluck('tran_id')->count(),
+                "currentDate"  => $currentDate
+            ];
+            return responseMsgs(true, "collection Report", $refDetailsV2);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), $request->all());
+        }
+    }
 }

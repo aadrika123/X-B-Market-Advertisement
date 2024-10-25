@@ -1080,7 +1080,7 @@ class ShopController extends Controller
             'marketId' => 'nullable|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable'
+            'paymentMode' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -1129,7 +1129,7 @@ class ShopController extends Controller
             //     $userId = $refUser->id;
             // }
 
-            if ($request->marketId) {
+            if ($request->paymentMode) {
                 $paymentMode = $request->paymentMode;
             }
             if ($request->marketId) {
@@ -1234,9 +1234,8 @@ class ShopController extends Controller
        -- and tran_type = 'Demand Collection'
         and mar_shop_payments.payment_date between '$fromDate' and '$uptoDate'
                     " . ($shopCategoryId ? " AND  mar_shops.shop_category_id = $shopCategoryId" : "") . "
-                     " . ($paymentMode ? " AND mar_shop_payments.pmt_mode = $paymentMode" : "") . "
-                     " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
-                    " . ($paymentMode ? " AND mar_shop_payments.payment_mode = '$paymentMode'" : "") . "
+                     " . ($userId ? " AND mar_shop_payments.user_id = $userId" : "") . "
+                      " . ($paymentMode ? " AND mar_shop_payments.pmt_mode = '$paymentMode'" : "") . "
         GROUP BY 
                 mar_shop_payments.id,
                     mar_shops.amc_shop_no,
@@ -1416,11 +1415,11 @@ class ShopController extends Controller
             $marketDemand = collect();
             $marketCollection = collect();
             $demand = null;
-            $totalMarketDCB = collect($shopIds->get())->map(function ($shop) use ($mMarShopDemand, $mMarShopPayment, $marketDemand, $marketCollection,$req) {
+            $totalMarketDCB = collect($shopIds->get())->map(function ($shop) use ($mMarShopDemand, $mMarShopPayment, $marketDemand, $marketCollection, $req) {
                 $marketDemand->push($mMarShopDemand->shopDemand($shop->id));
                 $marketCollection->push($mMarShopPayment->shopCollectoion($shop->id));
             });
-            $demand = (float)$mMarShopDemand->totalDemand($req->shopCategoryId);          
+            $demand = (float)$mMarShopDemand->totalDemand($req->shopCategoryId);
             // $totalDemand = $marketDemand->sum() > 0 ? $marketDemand->sum() : 0;
             $totalDemand = $demand;
             $totalCollection = $marketCollection->sum() > 0 ? $marketCollection->sum() : 0;
