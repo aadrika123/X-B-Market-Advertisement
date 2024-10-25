@@ -547,6 +547,7 @@ class ShopController extends Controller
             $ulbId = $req->auth['ulb_id'];
             $mShop = new Shop();
             $list = $mShop->getAllShopUlbWise($ulbId);
+
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
             $list = paginator($list, $req);
@@ -677,6 +678,7 @@ class ShopController extends Controller
             'shopCategoryId' => 'required|integer',
             'circleId' => 'required|integer',
             'marketId' => 'required|integer',
+            'Key'        => 'nullable'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -686,8 +688,10 @@ class ShopController extends Controller
             // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
             DB::enableQueryLog();
             $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId);                                       // Get List Shop FOr Payment
-            if ($req->key)
-                $list = searchShopRentalFilter($list, $req);
+            // Apply filtering based on the 'key' if it exists
+            if ($req->Key != null){
+                $list = $list->where('mar_shops.shop_owner_name', $req->Key);
+            }
             $list = paginator($list, $req);
             // return [dd(DB::getQueryLog())];
             return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
