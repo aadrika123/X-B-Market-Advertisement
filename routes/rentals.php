@@ -85,6 +85,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/update-shop-demand', 'UpdateShopDemand');                                           // 52  Update Shop Demand
         Route::post('rental/balance-sheet-financial-year-wise', 'dcbFinancialYearWise');                        // 53  DCB Financial Year Wise
         Route::post('rental/list-collections', 'listShopCollectionv2');                                     // 54 list shop collection !pagination
+        Route::post('rental/list-tc-collections', 'tcCollectionReport');                                     // 54 list shop collection !pagination
         Route::post('rental/shop-demand-generate', 'generateShopDemandYearly');
         Route::post('rental/shop-update-details', 'updateShopDetails');
     });

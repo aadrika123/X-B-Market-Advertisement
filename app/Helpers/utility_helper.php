@@ -371,7 +371,29 @@ if (!function_exists('getClientIpAddress')) {
             }
         }
     }
+    if (!function_exists('roundFigure')) {
+        function roundFigure(float $number)
+        {
+            $round = round($number, 2);
+            return number_format((float)$round, 2, '.', '');
+        }
+    }
 
+    /**
+ * |
+ */
+if (!function_exists('getFinancialYears')) {
+    function getFinancialYears($date)
+    {
+        $year = date('Y', strtotime($date));
+        $month = date('m', strtotime($date));
+        if ($month <= 3) {
+            return ($year - 1) . '-' . $year;
+        } else {
+            return $year . '-' . ($year + 1);
+        }
+    }
+}
 
     /**
      * | Api Response time for the the apis

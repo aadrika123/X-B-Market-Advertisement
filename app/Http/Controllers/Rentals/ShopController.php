@@ -955,11 +955,11 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
     }
-    /**
-     * | List shop Collection between two dates
-     * | API - 17
-     * | Function - 17
-     */
+    // /**
+    //  * | List shop Collection between two dates
+    //  * | API - 17
+    //  * | Function - 17
+    //  */
     public function listShopCollectionv2(Request $req)
     {
         $validator = Validator::make($req->all(), [
@@ -990,8 +990,25 @@ class ShopController extends Controller
             if ($req->paymentMode) {
                 $paymentMode = $req->paymentMode;
             }
+            $now                        = Carbon::now()->format('Y-m-d');
+            $now                        = Carbon::now();
+            $currentYear                = collect(explode('-', $req->fiYear))->first() ?? $now->year;
+            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();
+            $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
+            $currentDate                = $now->format('Y-m-d');
+            $currentFyear               = $request->fiYear ?? getFinancialYear($currentDate);
+            $refDate = $this->getFyearDate($currentFyear);
+            $fromDates = $refDate['fromDate'];
+            $uptoDates = $refDate['uptoDate'];
+            #common function 
+            $refDate = $this->getFyearDate($previousFinancialYear);
+            $previousFromDate = $refDate['fromDate'];
+            $previousUptoDate = $refDate['uptoDate'];
+
 
             $mMarShopPayment = new MarShopPayment();
+
             $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
 
             if ($req->shopCategoryId != 0)
@@ -1014,6 +1031,249 @@ class ShopController extends Controller
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
         }
+    }
+    // public function listShopCollection($fromDate, $toDate)
+    // {
+    //     return DB::table('mar_shop_payments')
+    //         ->select(
+    //             'mar_shop_payments.amount',
+    //             'mar_shop_payments.transaction_id as tran_number',
+    //             'mar_shop_payments.user_id as collected_by',
+    //             DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+    //             'mar_shop_payments.paid_from',
+    //             'mar_shop_payments.paid_to',
+    //             't2.shop_category_id',
+    //             't2.amc_shop_no as shop_no',
+    //             't2.allottee',
+    //             't2.market_id',
+    //             't2.shop_owner_name as ownerName',
+    //             'mst.shop_type',
+    //             'mkt.market_name',
+    //             'mc.circle_name',
+    //             'mar_shop_payments.pmt_mode as paymentMode',
+    //             'mar_shop_payments.shop_category_id'
+
+    //         )
+    //         ->leftjoin('mar_shops as t2', 't2.id', '=', 'mar_shop_payments.shop_id')
+    //         ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
+    //         ->leftjoin('m_circle as mc', 'mc.id', '=', 't2.circle_id')
+    //         ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
+    //         ->where('mar_shop_payments.payment_date', '>=', $fromDate)
+    //         ->where('mar_shop_payments.payment_date', '<=', $toDate)
+    //         ->whereIn('mar_shop_payments.payment_status', [1, 2]);
+    // }
+
+    /**
+     * | water Collection report 
+     */
+    public function tcCollectionReport(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'shopCategoryId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'fromDate' => 'nullable|date_format:Y-m-d',
+            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'  => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            return $validator->errors();
+        }
+        try {
+
+            // $refUser        = authUser($request);
+            // $ulbId          = $refUser->ulb_id;
+            $wardId = null;
+            $userId = null;
+            $zoneId = null;
+            $paymentMode = null;
+            $now                        = Carbon::now()->format('Y-m-d');
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $now                        = Carbon::now();
+            $currentDate                = Carbon::now()->format('Y-m-d');
+            $mWaterConsumerDemand       = new MarShopDemand();
+            $currentDate                = $now->format('Y-m-d');
+            $zoneId = $wardId = null;
+            $currentYear                = collect(explode('-', $request->fiYear))->first() ?? $now->year;
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
+            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
+            $previousFinancialYear      = getFinancialYears($startOfPreviousYear);
+
+
+
+            if ($request->fromDate) {
+                $fromDate = $request->fromDate;
+            }
+            if ($request->uptoDate) {
+                $uptoDate = $request->uptoDate;
+            }
+            if ($request->wardId) {
+                $wardId = $request->wardId;
+            }
+
+            if ($request->userId) {
+                $userId = $request->userId;
+            }
+
+            # In Case of any logged in TC User
+            // if ($refUser->user_type == "TC") {
+            //     $userId = $refUser->id;
+            // }
+
+            if ($request->paymentMode) {
+                $paymentMode = $request->paymentMode;
+            }
+            if ($request->ulbId) {
+                $ulbId = $request->ulbId;
+            }
+            if ($request->zoneId) {
+                $zoneId = $request->zoneId;
+            }
+
+            // DB::enableQueryLog();
+            $data = DB::select(DB::raw ("SELECT 
+              subquery.tran_id,
+              subquery.transaction_id,
+              COALESCE(subquery.arrear_collections, 0) AS arrear_collections,
+              COALESCE(subquery.current_collections, 0) AS current_collections,
+              COALESCE(subquery.arrear_collections, 0) + COALESCE(subquery.current_collections, 0) AS total_collections,
+              subquery.amc_shop_no,
+              subquery.amount,
+              subquery.user_name,
+              subquery.payment_date,
+              subquery.pmt_mode,
+              subquery.shop_type,
+              subquery.market_name,
+              subquery.current_collections_bot,
+              subquery.current_collections_city,
+              subquery.current_collections_gp,
+              subquery.arrear_collections_bot,
+              subquery.current_collections_city,
+              subquery.current_collections_gp
+     FROM (
+         SELECT 
+                mar_shop_payments.id as tran_id,
+                mar_shop_payments.payment_date,
+                mar_shop_payments.transaction_id,
+                mar_shops.amc_shop_no,
+                mar_shop_payments.pmt_mode,
+                mar_shop_payments.amount,
+                users.user_name,
+                users.name,
+                mar_shop_types.shop_type,
+                m_market.market_name,
+        SUM(CASE 
+            WHEN mar_shop_demands.financial_year <= '$currentFyear' THEN mar_shop_demands.amount 
+            ELSE 0 
+        END) AS arrear_collections,
+        SUM(CASE 
+            WHEN mar_shop_demands.financial_year >= '$currentFyear'
+            THEN mar_shop_demands.amount 
+            ELSE 0 
+        END) AS current_collections,
+        SUM(CASE 
+            WHEN mar_shop_demands.financial_year >= '$currentFyear' AND mar_shop_demands.shop_category_id = 1
+            THEN mar_shop_demands.amount 
+            ELSE 0 
+        END) AS current_collections_bot,
+        SUM(CASE 
+            WHEN mar_shop_demands.financial_year >= '$currentFyear' AND mar_shop_demands.shop_category_id = 2
+            THEN mar_shop_demands.amount 
+            ELSE 0 
+        END) AS current_collections_city,
+        SUM(CASE 
+            WHEN mar_shop_demands.financial_year >= '$currentFyear' AND mar_shop_demands.shop_category_id = 3
+            THEN mar_shop_demands.amount 
+            ELSE 0 
+        END) AS current_collections_gp,
+         SUM(CASE 
+            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 1
+             THEN mar_shop_demands.amount
+            ELSE 0 
+        END) AS arrear_collections_bot,
+         SUM(CASE 
+            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 2
+             THEN mar_shop_demands.amount
+            ELSE 0 
+        END) AS arrear_collections_city,
+         SUM(CASE 
+            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 3
+             THEN mar_shop_demands.amount
+            ELSE 0 
+        END) AS arrear_collections_gp
+          
+        FROM mar_shop_payments 
+        -- LEFT JOIN ulb_ward_masters ON ulb_ward_masters.id=water_trans.ward_id
+        LEFT JOIN mar_shops ON mar_shops.id=mar_shop_payments.shop_id
+        -- JOIN water_consumer_demands ON water_consumer_demands.consumer_id=water_trans.related_id
+        left Join mar_shop_types on mar_shop_types.id= mar_shops.shop_category_id
+        JOIN mar_shop_demands on mar_shop_demands.shop_id = mar_shop_payments.shop_id
+        LEFT JOIN users ON users.id=mar_shop_payments.user_id
+        LEFT JOIN m_market ON m_market.id=mar_shops.market_id
+        where mar_shop_payments.shop_id is not null 
+        and mar_shop_payments.payment_status in (1, 2) 
+        and mar_shop_demands.payment_status = 1 
+       -- and tran_type = 'Demand Collection'
+        and mar_shop_payments.payment_date between '$fromDate' and '$uptoDate'
+                    -- " . ($zoneId ? " AND  water_second_consumers.zone_mstr_id = $zoneId" : "") . "
+                    -- " . ($wardId ? " AND water_second_consumers.ward_mstr_id = $wardId" : "") . "
+                    -- " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
+                    " . ($paymentMode ? " AND mar_shop_payments.payment_mode = '$paymentMode'" : "") . "
+        GROUP BY 
+                mar_shop_payments.id,
+                    mar_shops.amc_shop_no,
+                    mar_shop_payments.payment_date,
+                    users.user_name,
+                    mar_shop_types.shop_type,
+                    users.name,
+                    mar_shop_payments.pmt_mode,
+                    mar_shops.amc_shop_no,
+                    m_market.market_name
+     ) AS subquery"));
+            $refData = collect($data);
+
+            $refDetailsV2 = [
+                "array" => $data,
+                "sum_current_coll" => roundFigure($refData->pluck('current_collections')->sum() ?? 0),
+                "sum_arrear_coll" => roundFigure($refData->pluck('arrear_collections')->sum() ?? 0),
+                "sum_total_coll" => roundFigure($refData->pluck('total_collections')->sum() ?? 0),
+                "sum_current_coll_bot" => roundFigure($refData->pluck('current_collections_bot')->sum() ?? 0),
+                "sum_current_coll_city" => roundFigure($refData->pluck('current_collections_city')->sum() ?? 0),
+                "sum_current_coll_gp" => roundFigure($refData->pluck('current_collections_gp')->sum() ?? 0),
+                "sum_arrear_coll_bot" => roundFigure($refData->pluck('arrear_collections_bot')->sum() ?? 0),
+                "sum_arrear_coll_city" => roundFigure($refData->pluck('arrear_collections_city')->sum() ?? 0),
+                "sum_arrear_coll_gp" => roundFigure($refData->pluck('arrear_collections_gp')->sum() ?? 0),
+                "totalAmount"   =>  roundFigure($refData->pluck('amount')->sum() ?? 0),
+                "totalColletion" => $refData->pluck('tran_id')->count(),
+                "currentDate"  => $currentDate
+            ];
+            return responseMsgs(true, "collection Report", $refDetailsV2);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), $request->all());
+        }
+    }
+
+    /**
+     * | for collecting finantial year's starting date and end date
+     * | common functon
+     * | @param fyear
+        | Serial No : 04.01
+        | Working
+     */
+    public function getFyearDate($fyear)
+    {
+        list($fromYear, $toYear) = explode("-", $fyear);
+        if ($toYear - $fromYear != 1) {
+            throw new Exception("Enter Valide Financial Year");
+        }
+        $fromDate = $fromYear . "-04-01";
+        $uptoDate = $toYear . "-03-31";
+        return [
+            "fromDate" => $fromDate,
+            "uptoDate" => $uptoDate
+        ];
     }
 
     /**
@@ -2192,14 +2452,14 @@ class ShopController extends Controller
     public function transactionDeactivation(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            "tranId" => "required|integer",
+            "tranId"         => "required|integer",
             "deactiveReason" => "required|string",
-            "module" => "required|in:Shop",
+            "module"         => "required|in:Shop",
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            
+
             if ($req->module == 'Shop') {
                 $mMarShopPayment = new MarShopPayment();
                 DB::beginTransaction();
@@ -2208,7 +2468,7 @@ class ShopController extends Controller
             }
             // $list = paginator($listShop, $req);
             return responseMsgs(true, "Transaction De-Active Successfully !!!", $status, "055044", "1.0", responseTime(), "POST");
-        } catch (Exception $e) {    
+        } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "055044", "1.0", responseTime(), "POST");
         }
