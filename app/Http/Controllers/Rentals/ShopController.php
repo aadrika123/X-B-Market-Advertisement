@@ -1155,7 +1155,8 @@ class ShopController extends Controller
               subquery.arrear_collections_bot,
               subquery.current_collections_city,
               subquery.current_collections_gp,
-              subquery.allottee
+              subquery.allottee,
+              subquery.shop_owner_name
      FROM (
          SELECT 
                 mar_shop_payments.id as tran_id,
@@ -1163,12 +1164,14 @@ class ShopController extends Controller
                 mar_shop_payments.transaction_id,
                 mar_shops.amc_shop_no,
                 mar_shops.allottee,
+                mar_shops.shop_owner_name,
                 mar_shop_payments.pmt_mode,
                 mar_shop_payments.amount,
                 users.user_name,
                 users.name,
                 mar_shop_types.shop_type,
                 m_market.market_name,
+                
         SUM(CASE 
             WHEN mar_shop_demands.financial_year <= '$currentFyear' THEN mar_shop_demands.amount 
             ELSE 0 
@@ -1236,7 +1239,8 @@ class ShopController extends Controller
                     mar_shop_payments.pmt_mode,
                     mar_shops.amc_shop_no,
                     m_market.market_name,
-                    mar_shops.allottee
+                    mar_shops.allottee,
+                    mar_shops.shop_owner_name
      ) AS subquery"));
             $refData = collect($data);
 
