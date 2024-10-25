@@ -1154,13 +1154,15 @@ class ShopController extends Controller
               subquery.current_collections_gp,
               subquery.arrear_collections_bot,
               subquery.current_collections_city,
-              subquery.current_collections_gp
+              subquery.current_collections_gp,
+              subquery.allottee
      FROM (
          SELECT 
                 mar_shop_payments.id as tran_id,
                 mar_shop_payments.payment_date,
                 mar_shop_payments.transaction_id,
                 mar_shops.amc_shop_no,
+                mar_shops.allottee,
                 mar_shop_payments.pmt_mode,
                 mar_shop_payments.amount,
                 users.user_name,
@@ -1233,7 +1235,8 @@ class ShopController extends Controller
                     users.name,
                     mar_shop_payments.pmt_mode,
                     mar_shops.amc_shop_no,
-                    m_market.market_name
+                    m_market.market_name,
+                    mar_shops.allottee
      ) AS subquery"));
             $refData = collect($data);
 
