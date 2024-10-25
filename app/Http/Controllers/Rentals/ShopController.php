@@ -689,8 +689,8 @@ class ShopController extends Controller
             DB::enableQueryLog();
             $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId);                                       // Get List Shop FOr Payment
             // Apply filtering based on the 'key' if it exists
-            if ($req->Key != null){
-                $list = $list->where('mar_shops.shop_owner_name', $req->Key);
+            if ($req->Key != null) {
+                $list = $list->where('mar_shops.shop_owner_name', 'LIKE', '%' . $req->Key . '%');
             }
             $list = paginator($list, $req);
             // return [dd(DB::getQueryLog())];
