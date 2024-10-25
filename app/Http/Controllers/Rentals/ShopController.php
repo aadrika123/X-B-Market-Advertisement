@@ -918,7 +918,8 @@ class ShopController extends Controller
             'marketId' => 'nullable|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable'
+            'paymentMode'  => 'nullable',
+            'key'        => 'nullable'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -946,6 +947,8 @@ class ShopController extends Controller
                 $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
             if ($req->marketId != 0)
                 $data = $data->where('t2.market_id', $req->marketId);
+            if ($req->key != null)
+                $data = $data->where('mar_shop_payments.transaction_id', $req->key);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
             $list = paginator($data, $req);
