@@ -1415,11 +1415,14 @@ class ShopController extends Controller
             $mMarShopPayment = new MarShopPayment();
             $marketDemand = collect();
             $marketCollection = collect();
-            $totalMarketDCB = collect($shopIds->get())->map(function ($shop) use ($mMarShopDemand, $mMarShopPayment, $marketDemand, $marketCollection) {
+            $demand = null;
+            $totalMarketDCB = collect($shopIds->get())->map(function ($shop) use ($mMarShopDemand, $mMarShopPayment, $marketDemand, $marketCollection,$req) {
                 $marketDemand->push($mMarShopDemand->shopDemand($shop->id));
                 $marketCollection->push($mMarShopPayment->shopCollectoion($shop->id));
             });
-            $totalDemand = $marketDemand->sum() > 0 ? $marketDemand->sum() : 0;
+            $demand = (float)$mMarShopDemand->totalDemand($req->shopCategoryId);          
+            // $totalDemand = $marketDemand->sum() > 0 ? $marketDemand->sum() : 0;
+            $totalDemand = $demand;
             $totalCollection = $marketCollection->sum() > 0 ? $marketCollection->sum() : 0;
             DB::enableQueryLog();
             $list = paginator($shopIds, $req); #return(DB::getQueryLog());
