@@ -1086,9 +1086,9 @@ class ShopController extends Controller
 
             // $refUser        = authUser($request);
             // $ulbId          = $refUser->ulb_id;
-            $wardId = null;
+            $marketId = null;
             $userId = null;
-            $zoneId = null;
+            $shopCategoryId = null;
             $paymentMode = null;
             $now                        = Carbon::now()->format('Y-m-d');
             $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
@@ -1125,18 +1125,18 @@ class ShopController extends Controller
             //     $userId = $refUser->id;
             // }
 
-            if ($request->paymentMode) {
+            if ($request->marketId) {
                 $paymentMode = $request->paymentMode;
             }
-            if ($request->ulbId) {
-                $ulbId = $request->ulbId;
+            if ($request->marketId) {
+                $marketId = $request->marketId;
             }
-            if ($request->zoneId) {
-                $zoneId = $request->zoneId;
+            if ($request->shopCategoryId) {
+                $shopCategoryId = $request->shopCategoryId;
             }
 
             // DB::enableQueryLog();
-            $data = DB::select(DB::raw ("SELECT 
+            $data = DB::select(DB::raw("SELECT 
               subquery.tran_id,
               subquery.transaction_id,
               COALESCE(subquery.arrear_collections, 0) AS arrear_collections,
@@ -1156,7 +1156,9 @@ class ShopController extends Controller
               subquery.current_collections_city,
               subquery.current_collections_gp,
               subquery.allottee,
-              subquery.shop_owner_name
+              subquery.shop_owner_name,
+            --   subquery.circle_name,
+              subquery.zone
      FROM (
          SELECT 
                 mar_shop_payments.id as tran_id,
@@ -1171,6 +1173,7 @@ class ShopController extends Controller
                 users.name,
                 mar_shop_types.shop_type,
                 m_market.market_name,
+                m_circle.circle_name as zone,
                 
         SUM(CASE 
             WHEN mar_shop_demands.financial_year <= '$currentFyear' THEN mar_shop_demands.amount 
@@ -1220,14 +1223,15 @@ class ShopController extends Controller
         JOIN mar_shop_demands on mar_shop_demands.shop_id = mar_shop_payments.shop_id
         LEFT JOIN users ON users.id=mar_shop_payments.user_id
         LEFT JOIN m_market ON m_market.id=mar_shops.market_id
+        LEFT JOIN m_circle ON m_circle.id=mar_shops.circle_id
         where mar_shop_payments.shop_id is not null 
         and mar_shop_payments.payment_status in (1, 2) 
         and mar_shop_demands.payment_status = 1 
        -- and tran_type = 'Demand Collection'
         and mar_shop_payments.payment_date between '$fromDate' and '$uptoDate'
-                    -- " . ($zoneId ? " AND  water_second_consumers.zone_mstr_id = $zoneId" : "") . "
-                    -- " . ($wardId ? " AND water_second_consumers.ward_mstr_id = $wardId" : "") . "
-                    -- " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
+                    " . ($shopCategoryId ? " AND  mar_shops.shop_category_id = $shopCategoryId" : "") . "
+                     " . ($paymentMode ? " AND mar_shop_payments.pmt_mode = $paymentMode" : "") . "
+                     " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
                     " . ($paymentMode ? " AND mar_shop_payments.payment_mode = '$paymentMode'" : "") . "
         GROUP BY 
                 mar_shop_payments.id,
@@ -1240,7 +1244,8 @@ class ShopController extends Controller
                     mar_shops.amc_shop_no,
                     m_market.market_name,
                     mar_shops.allottee,
-                    mar_shops.shop_owner_name
+                    mar_shops.shop_owner_name,
+                    m_circle.circle_name
      ) AS subquery"));
             $refData = collect($data);
 
