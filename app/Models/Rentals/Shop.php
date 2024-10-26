@@ -187,6 +187,54 @@ class Shop extends Model
       ->orderByDesc('mar_shops.id');
     // ->get();
   }
+  /**
+   * | Search Shop for Payment
+   */
+  public function searchShopForPaymentv1($key, $refNo)
+  {
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'sc.construction_type',
+      'mst.shop_type',
+      'msp.amount as last_payment_amount',
+      // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId]
+      ->where('mar_shops.' . $key, 'LIKE', '%' . $refNo . '%')
+      ->orderByDesc('mar_shops.id');
+    // ->get();
+  }
+  /**
+   * | Search Shop for Payment
+   */
+  public function searchShopForPaymentv2($key, $refNo)
+  {
+    return Shop::select(
+      'mar_shops.*',
+      'mc.circle_name',
+      'mm.market_name',
+      'sc.construction_type',
+      'mst.shop_type',
+      'msp.amount as last_payment_amount',
+      // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
+    )
+      ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+      ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
+      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
+      // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId]
+      ->where('mar_shops.' . $key, $refNo)
+      ->orderByDesc('mar_shops.id');
+    // ->get();
+  }
 
   /**
    * | Count Total No of Shop (Shop Type Wise)

@@ -675,24 +675,50 @@ class ShopController extends Controller
     public function searchShopForPayment(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'shopCategoryId' => 'required|integer',
-            'circleId' => 'required|integer',
-            'marketId' => 'required|integer',
-            'Key'        => 'nullable'
+            'shopCategoryId' => 'nullable|integer',
+            'circleId' => 'nullable|integer',
+            'marketId' => 'nullable|integer',
+            'Key'        => 'nullable',
+            'filterBy'  => 'nullable',
+            'parameter' => 'nullable',
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
         }
         try {
             $mShop = new Shop();
-            // $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->circleId, $req->marketId);
+            $key            = $req->filterBy;
+            $paramenter     = $req->parameter;
+            $string         = preg_replace("/([A-Z])/", "_$1", $key);
+            $refstring      = strtolower($string);
+            $pages          = $req->perPage ? $req->perPage : 10;
             DB::enableQueryLog();
-            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId);                                       // Get List Shop FOr Payment
-            // Apply filtering based on the 'key' if it exists
-            if ($req->Key != null) {
-                $list = $list->where('mar_shops.shop_owner_name', 'LIKE', '%' . $req->Key . '%');
+            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId)->paginate($pages);                                       // Get List Shop FOr Payment
+            if ($key != null) {
+                switch ($key) {
+                    case ("shopOwnerName"):                                                                        // Static
+                        $list = $mShop->searchShopForPaymentv1($refstring, $paramenter)->paginate($pages);
+                        $checkVal = collect($list)->last();
+                        if (!$checkVal || $checkVal == 0)
+                            throw new Exception("Data according to " . $key . " not Found!");
+                        break;
+                    case ("amcShopNo"):
+                        $list = $mShop->searchShopForPaymentv2($refstring, $paramenter)->paginate($pages);
+                        $checkVal = collect($list)->last();
+                        if (!$checkVal || $checkVal == 0)
+                            throw new Exception("Data according to " . $key . " not Found!");
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                        // $list = paginator($list, $req);
+                }
             }
-            $list = paginator($list, $req);
+            $list = [
+                "current_page" => $list->currentPage(),
+                "last_page" => $list->lastPage(),
+                "data" => $list->items(),
+                "total" => $list->total(),
+            ];
             // return [dd(DB::getQueryLog())];
             return responseMsgs(true, "Shop List Fetch Successfully !!!",  $list, "055012", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
