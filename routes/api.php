@@ -624,7 +624,6 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-permanant-size', 'getAllFixedMeasurementPermanantAdv');             # 26   (GET MASTER DATA OF SIZES)
         Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');                            # 27      
         Route::post('advertisement/get-vehicle', 'getVehicle');
-        Route::post('advertisement/list-tc-collections', 'tcCollectionReport');                                     // 54 list shop collection !pagination
     });
 });
 Route::controller(AdPaymentController::class)->group(function () {
@@ -632,6 +631,7 @@ Route::controller(AdPaymentController::class)->group(function () {
     Route::post('advertisement/easebuzz-handel-response', "easebuzzHandelResponse");
     Route::post('advertisement/offline-payment', 'offlinePayment');
     Route::post("advertisement/payment-receipt", "generatePaymentReceipt");
+    Route::post('advertisement/list-tc-collections', 'tcCollectionReport');
 
     //Written by prity pandey
     Route::post("advertisement/collection-receipt", "listCollection");                                  # Admin / Agency

@@ -713,7 +713,7 @@ class AdPaymentController extends Controller
             'marketId' => 'nullable|integer',
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable'
+            'paymentMode'  => 'nullable|string'
         ]);
 
         if ($validator->fails()) {
@@ -761,16 +761,15 @@ class AdPaymentController extends Controller
             //     $userId = $refUser->id;
             // }
 
-            if ($request->marketId) {
+            if ($request->paymentMode) {
                 $paymentMode = $request->paymentMode;
             }
-            if ($request->marketId) {
-                $marketId = $request->marketId;
+            if ($request->advType) {
+                $advType = $request->advType;
             }
             if ($request->shopCategoryId) {
                 $shopCategoryId = $request->shopCategoryId;
             }
-
             // DB::enableQueryLog();
             $data = DB::select(DB::raw("SELECT 
               subquery.tran_id,
@@ -778,38 +777,39 @@ class AdPaymentController extends Controller
               subquery.amount,
               subquery.user_name,
               subquery.tran_date,
-              subquery.payment_mode,
               subquery.tran_type,
-              subquery.name
+              subquery.name,
+              subquery.advertiser,
+              subquery.payment_mode
      FROM (
          SELECT 
-                ad_trans.id as tran_id,
+                ad_trans.id as tran_id, 
                 ad_trans.tran_date,
                 ad_trans.tran_no,
-                agency_hoardings.shop_owner_name,
+                ad_trans.tran_type,
+                ad_trans.payment_mode,
+                agency_hoardings.advertiser,
                 ad_trans.amount,
                 users.user_name,
                 users.name
+                 
         
         FROM ad_trans 
-        -- LEFT JOIN ulb_ward_masters ON ulb_ward_masters.id=water_trans.ward_id
-        LEFT JOIN agency_hoardings ON agency_hoardings.id=ad_trans.
-        -- JOIN water_consumer_demands ON water_consumer_demands.consumer_id=water_trans.related_id
-        JOIN mar_shop_demands on mar_shop_demands.shop_id = mar_shop_payments.shop_id
-        LEFT JOIN users ON users.id=mar_shop_payments.user_id
-       -- and tran_type = 'Demand Collection'
-        and ad_trans.payment_date between '$fromDate' and '$uptoDate'
-                    " . ($advType ? " AND  mar_shops.shop_category_id = $advType" : "") . "
-                     " . ($paymentMode ? " AND mar_shop_payments.pmt_mode = $paymentMode" : "") . "
-                     " . ($userId ? " AND water_trans.emp_dtl_id = $userId" : "") . "
-                    " . ($paymentMode ? " AND mar_shop_payments.payment_mode = '$paymentMode'" : "") . "
+        LEFT JOIN agency_hoardings ON agency_hoardings.id=ad_trans.related_id
+        LEFT JOIN users ON users.id=ad_trans.emp_dtl_id
+        WHERE  ad_trans.tran_date between '$fromDate' and '$uptoDate'
+                     " . ($userId ? " AND ad_trans.emp_dtl_id = $userId" : "") . "
+                    " . ($paymentMode ? " AND ad_trans.payment_mode = '$paymentMode'" : "") . "
+                    " . ($advType ? " AND ad_trans.tran_type = '$advType'" : "") . "
         GROUP BY 
                ad_trans.id,
                 ad_trans.tran_date,
                 ad_trans.tran_no,
                 ad_trans.amount,
                 users.user_name,
-                users.name
+                users.name,
+                ad_trans.payment_mode,
+                agency_hoardings.advertiser
         
      ) AS subquery"));
             $refData = collect($data);
@@ -819,14 +819,12 @@ class AdPaymentController extends Controller
                 "sum_current_coll" => roundFigure($refData->pluck('current_collections')->sum() ?? 0),
                 "sum_arrear_coll" => roundFigure($refData->pluck('arrear_collections')->sum() ?? 0),
                 "sum_total_coll" => roundFigure($refData->pluck('total_collections')->sum() ?? 0),
-                "sum_current_coll_bot" => roundFigure($refData->pluck('current_collections_bot')->sum() ?? 0),
-                "sum_current_coll_city" => roundFigure($refData->pluck('current_collections_city')->sum() ?? 0),
-                "sum_current_coll_gp" => roundFigure($refData->pluck('current_collections_gp')->sum() ?? 0),
-                "sum_arrear_coll_bot" => roundFigure($refData->pluck('arrear_collections_bot')->sum() ?? 0),
-                "sum_arrear_coll_city" => roundFigure($refData->pluck('arrear_collections_city')->sum() ?? 0),
-                "sum_arrear_coll_gp" => roundFigure($refData->pluck('arrear_collections_gp')->sum() ?? 0),
                 "totalAmount"   =>  roundFigure($refData->pluck('amount')->sum() ?? 0),
                 "totalColletion" => $refData->pluck('tran_id')->count(),
+                "countPermanant" => $refData->where('tran_type', 'PERMANANT')->count(),
+                "countTemporary" => $refData->where('tran_type', 'TEMPORARY')->count(),
+                "collPermanant" => $refData->where('tran_type', 'PERMANANT')->sum('amount'),
+                "collTemprorary" => $refData->where('tran_type', 'TEMPORARY')->sum('amount'),
                 "currentDate"  => $currentDate
             ];
             return responseMsgs(true, "collection Report", $refDetailsV2);
