@@ -679,7 +679,7 @@ class ShopController extends Controller
             'circleId' => 'nullable|integer',
             'marketId' => 'nullable|integer',
             'Key'        => 'nullable',
-            'filterBy'  => 'nullable',
+            'filterby'  => 'nullable',
             'parameter' => 'nullable',
         ]);
         if ($validator->fails()) {
@@ -687,7 +687,7 @@ class ShopController extends Controller
         }
         try {
             $mShop = new Shop();
-            $key            = $req->filterBy;
+            $key            = $req->filterby;
             $paramenter     = $req->parameter;
             $string         = preg_replace("/([A-Z])/", "_$1", $key);
             $refstring      = strtolower($string);
