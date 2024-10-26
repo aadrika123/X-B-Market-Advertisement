@@ -624,6 +624,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-permanant-size', 'getAllFixedMeasurementPermanantAdv');             # 26   (GET MASTER DATA OF SIZES)
         Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');                            # 27      
         Route::post('advertisement/get-vehicle', 'getVehicle');
+        Route::post('advertisement/list-inbox2','listInboxv2');
     });
 });
 Route::controller(AdPaymentController::class)->group(function () {

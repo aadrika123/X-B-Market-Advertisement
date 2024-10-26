@@ -170,6 +170,42 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
         }
     }
+    public function listInboxv2(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'perPage' => 'nullable|integer',
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                   = authUser($req);
+            $pages                  = $req->perPage ?? 10;
+            $userId                 = $user->id;
+            $ulbId                  = $user->ulb_id;
+            $mWfWorkflowRoleMaps    = new WfWorkflowrolemap();
+
+            $occupiedWards  = $this->getWardByUserIdV1($userId)->pluck('ward_id');
+            $roleId         = $this->getRoleIdByUserId($userId)->pluck('wf_role_id');
+            $workflowIds    = $mWfWorkflowRoleMaps->getWfByRoleId($roleId)->pluck('workflow_id');
+
+            $inboxDetails = $this->getConsumerWfBaseQuerryv2($workflowIds, $ulbId)
+                ->whereIn('agency_hoardings.current_role_id', $roleId)
+                ->where('agency_hoardings.is_escalate', false)
+                ->where('agency_hoardings.parked', false)
+                ->where('agency_hoardings.approve', 0);
+
+            // // Order by ID and paginate results
+            $inboxDetails = $inboxDetails->orderByDesc('agency_hoardings.id')
+                ->paginate($pages);
+            return responseMsgs(true, "Successfully listed consumer req inbox details!", $inboxDetails, "", "01", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], '', '01', responseTime(), "POST", $req->deviceId);
+        }
+    }
 
     # bta inbox
     public function btaInbox(Request $req)
@@ -224,6 +260,19 @@ class AgencyWorkflowController extends Controller
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
             ->where('agency_hoardings.status', true)
             ->where('agency_hoardings.ulb_id', $ulbId)
+            ->where('agency_hoardings.application_type', 'PERMANENT')
+            ->whereIn('agency_hoardings.workflow_id', $workflowIds);
+    }
+    public function getConsumerWfBaseQuerryv2($workflowIds, $ulbId)
+    {
+        return AgencyHoarding::select(
+            'agency_hoardings.*',
+            'agency_masters.agency_name as agencyName'
+        )
+            ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
+            ->where('agency_hoardings.status', true)
+            ->where('agency_hoardings.ulb_id', $ulbId)
+            ->where('agency_hoardings.application_type', 'TEMPORARY')
             ->whereIn('agency_hoardings.workflow_id', $workflowIds);
     }
 
@@ -710,8 +759,9 @@ class AgencyWorkflowController extends Controller
 
             # validating role for DA
             $senderRoleId = $senderRoleDtls->wf_role_id;
-            if ($senderRoleId != $wfLevel['DA'])                                    // Authorization for Dealing Assistant Only
+            if ($senderRoleId != $wfLevel['DA'] && $senderRoleId != $wfLevel['EO']) {
                 throw new Exception("You are not Authorized");
+            }
 
             # validating if full documet is uploaded
             $ifFullDocVerified = $this->ifFullDocVerified($applicationId);          // (Current Object Derivative Function 0.1)
@@ -1465,7 +1515,7 @@ class AgencyWorkflowController extends Controller
                         $query->key = 'Size';
                         break;
                     case 'LAMP_POST':
-                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size'];
                         $query->key = 'Size';
                         break;
@@ -1485,7 +1535,7 @@ class AgencyWorkflowController extends Controller
                         $query->key = 'Size';
                         break;
                     case 'GLOSSINE_BOARD':
-                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
                         break;
@@ -1506,7 +1556,7 @@ class AgencyWorkflowController extends Controller
                         $query->key = 'Size';
                         break;
                     case 'ADVERTISEMENT_ON_THE_WALL':
-                        $query =$this->_agencyApproveappObj->getApproveDetailV1($request);
+                        $query = $this->_agencyApproveappObj->getApproveDetailV1($request);
                         $query->value = $query['size_square_feet'];
                         $query->key = 'Size';
 

@@ -832,6 +832,7 @@ class AgencyNewController extends Controller
             $refUserType                    = Config::get('workflow-constants.REF_USER_TYPE');
             $refApplyFrom                   = Config::get('workflow-constants.APP_APPLY_FROM');
             $refWorkflow                    = Config::get('workflow-constants.ADVERTISEMENT-HOARDING');
+            $refTemporaryWorkflow           = Config::get('workflow-constants.ADVERTISEMENT-TEMPORARY');
             $confModuleId                   = Config::get('workflow-constants.ADVERTISMENT_MODULE');
             $refConParamId                  = Config::get('waterConstaint.PARAM_IDS');
             $advtRole                       = Config::get("workflow-constants.ROLE-LABEL");
@@ -850,6 +851,7 @@ class AgencyNewController extends Controller
                 $applicationTypeId = 1;  // Use assignment operator here
             } else {
                 $applicationTypeId = 2;  // Use assignment operator here
+                $refWorkflow        = $refTemporaryWorkflow;
             }
             # Get initiater and finisher
             $ulbWorkflowId = $ulbWorkflowObj->getulbWorkflowId($refWorkflow, $ulbId);
