@@ -669,7 +669,7 @@ class AdPaymentController extends Controller
         $validator = Validator::make($req->all(), [
             'fromDate' => 'nullable|date_format:Y-m-d',
             'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'advertisement_type' => 'nullable|in:TEMPORARY,PERMANANT'
+            'advertisement_type' => 'nullable|in:TEMPORARY,PERMANENT'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
