@@ -167,7 +167,7 @@ class MarShopPayment extends Model
    /**
     * | List of shop collection between two given date
     */
-   public function listShopCollection($fromDate, $toDate)
+   public function listShopCollection($fromDate, $toDate, $currentFyear)
    {
       return DB::table('mar_shop_payments')
          ->select(
@@ -175,6 +175,33 @@ class MarShopPayment extends Model
             'mar_shop_payments.transaction_id as tran_number',
             'mar_shop_payments.user_id as collected_by',
             DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
+            DB::raw("(
+               SELECT SUM(mar_shop_demands.amount)
+               FROM mar_shop_demands
+               WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
+               AND mar_shop_demands.payment_status = 1
+               AND mar_shop_demands.financial_year <= '$currentFyear'
+            ) AS arrear_amount"),
+            DB::raw("(
+               SELECT SUM(mar_shop_demands.amount)
+               FROM mar_shop_demands
+               WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
+               AND mar_shop_demands.payment_status = 1
+               AND mar_shop_demands.financial_year >= '$currentFyear'
+            ) AS current_amount"),
+            DB::raw("COALESCE((
+               SELECT SUM(mar_shop_demands.amount)
+               FROM mar_shop_demands
+               WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
+               AND mar_shop_demands.payment_status = 1
+               AND mar_shop_demands.financial_year <= '$currentFyear'
+           ), 0) + COALESCE((
+               SELECT SUM(mar_shop_demands.amount)
+               FROM mar_shop_demands
+               WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
+               AND mar_shop_demands.payment_status = 1
+               AND mar_shop_demands.financial_year >= '$currentFyear'
+           ), 0) AS total_amount"),
             'mar_shop_payments.paid_from',
             'mar_shop_payments.paid_to',
             't2.shop_category_id',

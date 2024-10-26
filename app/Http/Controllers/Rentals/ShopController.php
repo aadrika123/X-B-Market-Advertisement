@@ -957,6 +957,19 @@ class ShopController extends Controller
         // return $req->all();
         try {
             $paymentMode = null;
+            $now                        = Carbon::now()->format('Y-m-d');
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $fromDate = $uptoDate       = Carbon::now()->format("Y-m-d");
+            $now                        = Carbon::now();
+            $currentDate                = Carbon::now()->format('Y-m-d');
+            $mWaterConsumerDemand       = new MarShopDemand();
+            $currentDate                = $now->format('Y-m-d');
+            $zoneId = $wardId = null;
+            $currentYear                = collect(explode('-', $req->fiYear))->first() ?? $now->year;
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
+            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
+            $previousFinancialYear      = getFinancialYears($startOfPreviousYear);
             if (!isset($req->fromDate))
                 $fromDate = Carbon::now()->format('Y-m-d');                                                 // if date Is not pass then From Date take current Date
             else
@@ -969,8 +982,9 @@ class ShopController extends Controller
             if ($req->paymentMode) {
                 $paymentMode = $req->paymentMode;
             }
+
             $mMarShopPayment = new MarShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,);                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,$currentFyear);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->paymentMode != 0)
@@ -993,107 +1007,77 @@ class ShopController extends Controller
     //  * | API - 17
     //  * | Function - 17
     //  */
-    public function listShopCollectionv2(Request $req)
-    {
-        $validator = Validator::make($req->all(), [
-            'shopCategoryId' => 'nullable|integer',
-            'marketId' => 'nullable|integer',
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable'
-        ]);
-
-        if ($validator->fails()) {
-            return $validator->errors();
-        }
-
-        try {
-            $paymentMode = null;
-
-            if (!isset($req->fromDate))
-                $fromDate = Carbon::now()->format('Y-m-d');
-            else
-                $fromDate = $req->fromDate;
-
-            if (!isset($req->toDate))
-                $toDate = Carbon::now()->format('Y-m-d');
-            else
-                $toDate = $req->toDate;
-
-            if ($req->paymentMode) {
-                $paymentMode = $req->paymentMode;
-            }
-            $now                        = Carbon::now()->format('Y-m-d');
-            $now                        = Carbon::now();
-            $currentYear                = collect(explode('-', $req->fiYear))->first() ?? $now->year;
-            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
-            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();
-            $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
-            $currentDate                = $now->format('Y-m-d');
-            $currentFyear               = $request->fiYear ?? getFinancialYear($currentDate);
-            $refDate = $this->getFyearDate($currentFyear);
-            $fromDates = $refDate['fromDate'];
-            $uptoDates = $refDate['uptoDate'];
-            #common function 
-            $refDate = $this->getFyearDate($previousFinancialYear);
-            $previousFromDate = $refDate['fromDate'];
-            $previousUptoDate = $refDate['uptoDate'];
-
-
-            $mMarShopPayment = new MarShopPayment();
-
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
-
-            if ($req->shopCategoryId != 0)
-                $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
-
-            if ($req->paymentMode != 0)
-                $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
-
-            if ($req->marketId != 0)
-                $data = $data->where('t2.market_id', $req->marketId);
-
-            if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
-                $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
-
-            $result = $data->get(); // Retrieve the actual result set
-
-            $totalAmount = $result->sum('amount');
-
-            return responseMsgs(true, "Shop Collection List Fetch Successfully !!!", ['data' => $result, 'collectAmount' => $totalAmount], "055017", "1.0", responseTime(), "POST", $req->deviceId);
-        } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
-        }
-    }
-    // public function listShopCollection($fromDate, $toDate)
+    // public function listShopCollectionv2(Request $req)
     // {
-    //     return DB::table('mar_shop_payments')
-    //         ->select(
-    //             'mar_shop_payments.amount',
-    //             'mar_shop_payments.transaction_id as tran_number',
-    //             'mar_shop_payments.user_id as collected_by',
-    //             DB::raw("TO_CHAR(mar_shop_payments.payment_date, 'DD-MM-YYYY') as payment_date"),
-    //             'mar_shop_payments.paid_from',
-    //             'mar_shop_payments.paid_to',
-    //             't2.shop_category_id',
-    //             't2.amc_shop_no as shop_no',
-    //             't2.allottee',
-    //             't2.market_id',
-    //             't2.shop_owner_name as ownerName',
-    //             'mst.shop_type',
-    //             'mkt.market_name',
-    //             'mc.circle_name',
-    //             'mar_shop_payments.pmt_mode as paymentMode',
-    //             'mar_shop_payments.shop_category_id'
+    //     $validator = Validator::make($req->all(), [
+    //         'shopCategoryId' => 'nullable|integer',
+    //         'marketId' => 'nullable|integer',
+    //         'fromDate' => 'nullable|date_format:Y-m-d',
+    //         'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+    //         'paymentMode'  => 'nullable'
+    //     ]);
 
-    //         )
-    //         ->leftjoin('mar_shops as t2', 't2.id', '=', 'mar_shop_payments.shop_id')
-    //         ->leftjoin('mar_shop_types as mst', 'mst.id', '=', 't2.shop_category_id')
-    //         ->leftjoin('m_circle as mc', 'mc.id', '=', 't2.circle_id')
-    //         ->leftjoin('m_market as mkt', 'mkt.id', '=', 't2.market_id')
-    //         ->where('mar_shop_payments.payment_date', '>=', $fromDate)
-    //         ->where('mar_shop_payments.payment_date', '<=', $toDate)
-    //         ->whereIn('mar_shop_payments.payment_status', [1, 2]);
+    //     if ($validator->fails()) {
+    //         return $validator->errors();
+    //     }
+
+    //     try {
+    //         $paymentMode = null;
+
+    //         if (!isset($req->fromDate))
+    //             $fromDate = Carbon::now()->format('Y-m-d');
+    //         else
+    //             $fromDate = $req->fromDate;
+
+    //         if (!isset($req->toDate))
+    //             $toDate = Carbon::now()->format('Y-m-d');
+    //         else
+    //             $toDate = $req->toDate;
+
+    //         if ($req->paymentMode) {
+    //             $paymentMode = $req->paymentMode;
+    //         }
+    //         $now                        = Carbon::now()->format('Y-m-d');
+    //         $now                        = Carbon::now();
+    //         $currentYear                = collect(explode('-', $req->fiYear))->first() ?? $now->year;
+    //         $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+    //         $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();
+    //         $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
+    //         $currentDate                = $now->format('Y-m-d');
+    //         $currentFyear               = $request->fiYear ?? getFinancialYear($currentDate);
+    //         $refDate = $this->getFyearDate($currentFyear);
+    //         $fromDates = $refDate['fromDate'];
+    //         $uptoDates = $refDate['uptoDate'];
+    //         #common function 
+    //         $refDate = $this->getFyearDate($previousFinancialYear);
+    //         $previousFromDate = $refDate['fromDate'];
+    //         $previousUptoDate = $refDate['uptoDate'];
+
+
+    //         $mMarShopPayment = new MarShopPayment();
+
+    //         // $data = $mMarShopPayment->listShopCollection($fromDate, $toDate);
+
+    //         if ($req->shopCategoryId != 0)
+    //             $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
+
+    //         if ($req->paymentMode != 0)
+    //             $data = $data->where('mar_shop_payments.pmt_mode', $req->paymentMode);
+
+    //         if ($req->marketId != 0)
+    //             $data = $data->where('t2.market_id', $req->marketId);
+
+    //         if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
+    //             $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+
+    //         $result = $data->get(); // Retrieve the actual result set
+
+    //         $totalAmount = $result->sum('amount');
+
+    //         return responseMsgs(true, "Shop Collection List Fetch Successfully !!!", ['data' => $result, 'collectAmount' => $totalAmount], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+    //     } catch (Exception $e) {
+    //         return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
+    //     }
     // }
 
     /**

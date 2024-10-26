@@ -780,7 +780,8 @@ class AdPaymentController extends Controller
               subquery.tran_type,
               subquery.name,
               subquery.advertiser,
-              subquery.payment_mode
+              subquery.payment_mode,   
+              subquery.zone_name
      FROM (
          SELECT 
                 ad_trans.id as tran_id, 
@@ -788,14 +789,16 @@ class AdPaymentController extends Controller
                 ad_trans.tran_no,
                 ad_trans.tran_type,
                 ad_trans.payment_mode,
-                agency_hoardings.advertiser,
+                agency_hoarding_approve_applications.advertiser,
                 ad_trans.amount,
-                users.user_name,
-                users.name
+                users.user_name,    
+                users.name,
+                m_circle.circle_name AS zone_name
                  
         
         FROM ad_trans 
-        LEFT JOIN agency_hoardings ON agency_hoardings.id=ad_trans.related_id
+        LEFT JOIN agency_hoarding_approve_applications ON agency_hoarding_approve_applications.id=ad_trans.related_id
+        LEFT JOIN m_circle ON m_circle.id=agency_hoarding_approve_applications.zone_mstr_id
         LEFT JOIN users ON users.id=ad_trans.emp_dtl_id
         WHERE  ad_trans.tran_date between '$fromDate' and '$uptoDate'
                      " . ($userId ? " AND ad_trans.emp_dtl_id = $userId" : "") . "
@@ -809,7 +812,8 @@ class AdPaymentController extends Controller
                 users.user_name,
                 users.name,
                 ad_trans.payment_mode,
-                agency_hoardings.advertiser
+                agency_hoarding_approve_applications.advertiser,
+                m_circle.circle_name
         
      ) AS subquery"));
             $refData = collect($data);
@@ -821,10 +825,14 @@ class AdPaymentController extends Controller
                 "sum_total_coll" => roundFigure($refData->pluck('total_collections')->sum() ?? 0),
                 "totalAmount"   =>  roundFigure($refData->pluck('amount')->sum() ?? 0),
                 "totalColletion" => $refData->pluck('tran_id')->count(),
-                "countPermanant" => $refData->where('tran_type', 'PERMANANT')->count(),
-                "countTemporary" => $refData->where('tran_type', 'TEMPORARY')->count(),
+                "Permanant" => 'PERMANANT',
+                "Temporary" => 'TEMPORARY',
                 "collPermanant" => $refData->where('tran_type', 'PERMANANT')->sum('amount'),
                 "collTemprorary" => $refData->where('tran_type', 'TEMPORARY')->sum('amount'),
+                "countPermanant" => $refData->where('tran_type', 'PERMANANT')->count('tran_id'),
+                "countTemprorary" => $refData->where('tran_type', 'TEMPORARY')->count('tran_id'),
+                "fromDate" => $fromDate,
+                "toDate" => $uptoDate,
                 "currentDate"  => $currentDate
             ];
             return responseMsgs(true, "collection Report", $refDetailsV2);
