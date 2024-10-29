@@ -89,7 +89,7 @@ class WorkflowTrack extends Model
     /**
      * | Get Tracks by Ref Table Id
      */
-    public function getTracksByRefId($mRefTable, $tableId)
+    public function getTracksByRefId($mRefTable, $tableId, $workflowId)
     {
         return self::select(
             'workflow_tracks.ref_table_dot_id AS referenceTable',
@@ -104,6 +104,7 @@ class WorkflowTrack extends Model
         )
             ->where('ref_table_dot_id', $mRefTable)
             ->where('ref_table_id_value', $tableId)
+            ->where('workflow_id', $workflowId)
             ->join('users', 'users.id', 'workflow_tracks.user_id')
             ->join('wf_roles as w', 'w.id', '=', 'workflow_tracks.sender_role_id')
             ->leftJoin('wf_roles as wr', 'wr.id', '=', 'workflow_tracks.receiver_role_id')

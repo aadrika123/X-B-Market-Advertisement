@@ -970,6 +970,7 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, "Application Data Not found!", $request->applicationId);
         }
         $applicationId  = $applicationDetails->pluck('id');
+        $workflowId  = $applicationDetails->pluck('workflow_id');
 
         $HoardingLocations = $mhoardingAddress->getAddress($applicationId)->get();
         # Combine addresses into a single string
@@ -980,7 +981,8 @@ class AgencyWorkflowController extends Controller
         // $wardDetails = $mUlbNewWardmap->getWard($refApplication->ward_id);
         $aplictionList = [
             'application_no' => collect($applicationDetails)->first()->application_no,
-            'apply_date' => collect($applicationDetails)->first()->allotment_date
+            'apply_date' => collect($applicationDetails)->first()->allotment_date,
+            'workflow_id' => collect($applicationDetails)->first()->workflow_id
         ];
         # DataArray
         $basicDetails = $this->getBasicDetails($applicationDetails, $combinedLocations);
@@ -1009,7 +1011,7 @@ class AgencyWorkflowController extends Controller
         # Level comment
         $mtableId = $applicationDetails->first()->id;
         $mRefTable = "agency_hoardings.id";
-        $levelComment['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId);
+        $levelComment['levelComment'] = $mWorkflowTracks->getTracksByRefId($mRefTable, $mtableId, $workflowId);
 
         #citizen comment
         // $refCitizenId = $applicationDetails->first()->citizen_id;
@@ -2000,10 +2002,10 @@ class AgencyWorkflowController extends Controller
         $appDetails = AgencyHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
         // if ($totalRequireDocs == $totalUploadedDocs) {
-            $appDetails->doc_upload_status = true;
-            $appDetails->doc_verify_status = '0';
-            // $appDetails->parked = false;
-            $appDetails->save();
+        $appDetails->doc_upload_status = true;
+        $appDetails->doc_verify_status = '0';
+        // $appDetails->parked = false;
+        $appDetails->save();
         // } else {
         //     $appDetails->doc_upload_status = '0';
         //     $appDetails->doc_verify_status = '0';
@@ -2246,7 +2248,7 @@ class AgencyWorkflowController extends Controller
         }
         try {
             $applicationId = $req->applicationId;
-            $appDetails = AgencyHoarding::find($applicationId); 
+            $appDetails = AgencyHoarding::find($applicationId);
             if ($appDetails->doc_upload_status == 0) {
                 throw new Exception('Please Upload Document!');
             }
