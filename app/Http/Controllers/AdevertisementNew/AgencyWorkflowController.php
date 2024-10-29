@@ -1919,7 +1919,7 @@ class AgencyWorkflowController extends Controller
             return validationError($validated);
         try {
             // Variable initialization
-            $user = authUser($req);
+           return  $user = authUser($req);
             $redis = Redis::connection();
             $mAgencyHoarding = AgencyHoarding::find($req->applicationId);
             if ($mAgencyHoarding->doc_verify_status == 1)
