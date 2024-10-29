@@ -984,7 +984,7 @@ class ShopController extends Controller
             }
 
             $mMarShopPayment = new MarShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,$currentFyear);                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate, $currentFyear);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->paymentMode != 0)
@@ -1876,13 +1876,16 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'shopId' => 'required|integer',
-            'financialYear' => 'required|string',
+            'financialYear' => 'nullable|string',
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
             $mMarShopDemand = new MarShopDemand();
-            $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);                            // Demand Details Before Payment 
+            $shopDemand = $mMarShopDemand->payBeforeDemandv1($req->shopId);                            // Demand Details Before Payment 
+            if ($req->financialYear != null) {
+                $shopDemand =  $shopDemand->where('financial_year', '=', $req->financialYear);
+            }
             $demands['shopDemand'] = $shopDemand;
             $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
             if ($demands['totalAmount'] > 0)
