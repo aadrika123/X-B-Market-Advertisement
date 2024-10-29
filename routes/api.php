@@ -607,6 +607,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/get-all-agency', 'getAllAgency');                                       # 08     (GET ALL AGENCY DETAILS)
         Route::post('advertisement/agency-hoarding-address', 'agencyhoardingAddress');                     # 09     (GET AGENCY HOARIDNGS ADDRESS)
         Route::post('advertisement/search-hoarding', 'searchHoarding');                                    # 10     (SEARCH HOARDINGS APPLICATIONS)
+        Route::post('advertisement/search-btc-hoarding', 'searchBtcHoarding');                                    # 10     (SEARCH HOARDINGS APPLICATIONS)
         Route::post('advertisement/get-approve-applications', 'getApproveApplications');                   # 11     (GET APPROVE APPLICATIONS)
         Route::post('advertisement/dashboard-agency', 'dashboardAgency');                                  # 12     (GET DASHBOARD DATA OF AGENCY)
         Route::post('advertisement/get-agency-application-dtls', 'getAgencyAplicationdtl');                # 13       GET DASHBOARD DATA OF AGENCY)

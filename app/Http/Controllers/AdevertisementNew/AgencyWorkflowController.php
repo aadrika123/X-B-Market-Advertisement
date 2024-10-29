@@ -1339,6 +1339,110 @@ class AgencyWorkflowController extends Controller
             return responseMsg(false, $e->getMessage(), "");
         }
     }
+    /**
+     * |---------------------------- Search Hoarding Application Which Is Btc ----------------------------|
+     * | Search Application using provided condition 
+     */
+
+    public function searchBtcHoarding(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'filterBy'  => 'nullable',
+                'parameter' => 'nullable',
+                'pages'     => 'nullable',
+                'wardId'    => 'nullable',
+                'zoneId'    => 'nullable'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+        try {
+            $user           = authUser($request);
+            $userType       = $user->user_type;
+            $userId         = $user->id;
+            $key            = $request->filterBy;
+            $paramenter     = $request->parameter;
+            $pages          = $request->perPage ? $request->perPage : 10;
+            $string         = preg_replace("/([A-Z])/", "_$1", $key);
+            $refstring      = strtolower($string);
+            if ($key !== null) {
+                switch ($key) {
+                    case "applicationNo":
+                        $data = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter,);
+                        if ($userType !== 'Citizen') {
+                            $data->where('agency_masters.email', $request->auth['email']);
+                            $data->where('agency_masters.status', 1);
+                            $data->where('agency_hoardings.parked', true);
+                        } else {
+                            $data->where('agency_hoardings.user_id', $userId);
+                            $data->where('agency_hoardings.parked', true);
+                        }
+                        if ($paramenter !== null) {
+                            $data->where('agency_hoardings.' . $refstring, 'LIKE', '%' . $paramenter . '%');
+                        }
+                        $ReturnDetails = $data->paginate($pages);
+                        // Check if data is not found
+                        $checkVal = $ReturnDetails->count();
+                        if (!$checkVal || $checkVal == 0) {
+                            throw new Exception("Data according to " . $key . " not Found!");
+                        }
+                        break;
+                    case ("mobile"):
+                        $data = $this->_modelObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        if ($paramenter !== null) {
+                            $data->where('agency_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
+                        }
+                        $ReturnDetails = $data->paginate($pages);
+                        // Check if data is not found
+                        $checkVal = $ReturnDetails->count();
+                        if (!$checkVal || $checkVal == 0) {
+                            throw new Exception("Data according to " . $key . " not Found!");
+                        }
+                        break;
+                    case ("hoardingNo"):
+                        $data = $this->_modelObj->getByItsDetailsV2($request, $refstring, $paramenter, $request->auth['email']);
+                        if ($paramenter !== null) {
+                            $data->where('hoarding_masters.' . $refstring, 'LIKE', '%' . $paramenter . '%');
+                        }
+                        $ReturnDetails = $data->paginate($pages);
+                        // Check if data is not found
+                        $checkVal = $ReturnDetails->count();
+                        if (!$checkVal || $checkVal == 0) {
+                            throw new Exception("Data according to " . $key . " not Found!");
+                        }
+                        break;
+                    default:
+                        throw new Exception("Data provided in filterBy is not valid!");
+                }
+            } else {
+                $ReturnDetails = $this->_agencyObj->getByItsDetailsV2($request, $refstring, $paramenter,);
+                if ($userType !== 'Citizen') {
+                    $ReturnDetails->where('agency_masters.email', $request->auth['email']);
+                    $ReturnDetails->where('agency_masters.status', 1);
+                    $ReturnDetails->where('agency_hoardings.parked', true);
+                } else {
+                    $ReturnDetails->where('agency_hoardings.user_id', $userId);
+                    $ReturnDetails->where('agency_hoardings.parked', true);
+                }
+                $ReturnDetails = $ReturnDetails->paginate($pages);
+                if (!$ReturnDetails) {
+                    throw new Exception('data not found');
+                }
+            }
+            $list = [
+                "current_page" => $ReturnDetails->currentPage(),
+                "last_page" => $ReturnDetails->lastPage(),
+                "data" => $ReturnDetails->items(),
+                "total" => $ReturnDetails->total(),
+            ];
+
+            return responseMsgs(true, " Data According To Parameter!", remove_null($list), "", "01", "652 ms", "POST", "");
+        } catch (Exception $e) {
+            return responseMsg(false, $e->getMessage(), "");
+        }
+    }
 
 
     /**
@@ -1813,6 +1917,7 @@ class AgencyWorkflowController extends Controller
             return validationError($validated);
         try {
             // Variable initialization
+            $user = authUser($req);
             $redis = Redis::connection();
             $mAgencyHoarding = AgencyHoarding::find($req->applicationId);
             if ($mAgencyHoarding->doc_verify_status == 1)
@@ -1829,7 +1934,10 @@ class AgencyWorkflowController extends Controller
             }
 
             $mAgencyHoarding->current_role_id = $backId->wf_role_id;
-            $mAgencyHoarding->parked = 1;
+            $mAgencyHoarding->parked     = 1;
+            $mAgencyHoarding->btc_date   = Carbon::now();
+            $mAgencyHoarding->btc_by     = $user->user_type;
+            $mAgencyHoarding->btc_reason = $req->comment;
             $mAgencyHoarding->save();
 
             $metaReqs['moduleId'] = $this->_moduleId;

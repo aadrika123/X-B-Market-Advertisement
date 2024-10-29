@@ -260,6 +260,7 @@ class AgencyHoarding extends Model
             "hoarding_masters.address",
             "hoarding_masters.hoarding_no",
             "agency_hoardings.approve",
+            "agency_hoardings.parked",
             "agency_hoardings.application_no",
             "agency_hoardings.apply_date",
             "agency_hoardings.registration_no",
@@ -284,8 +285,8 @@ class AgencyHoarding extends Model
             ->leftjoin('hoarding_masters', 'hoarding_masters.id', 'agency_hoardings.hoarding_id')
             ->leftjoin('hoarding_types', 'hoarding_types.id', 'hoarding_masters.hoarding_type_id')
             ->join('wf_roles', 'wf_roles.id', '=', 'agency_hoardings.current_role_id')
-            ->leftjoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
-            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
+            ->leftjoin('m_circle', 'm_circle.id', '=', 'agency_hoardings.zone_mstr_id')
+            ->leftjoin('ulb_ward_masters', 'ulb_ward_masters.id', '=', 'agency_hoardings.ward_mstr_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
             ->where('agency_hoardings.status', 1)
 
