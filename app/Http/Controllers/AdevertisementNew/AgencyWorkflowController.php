@@ -1996,19 +1996,19 @@ class AgencyWorkflowController extends Controller
         $mWfActiveDocument = new WfActiveDocument();
         $mRefRequirement = new RefRequiredDocument();
         $moduleId = $this->_moduleId;
-        $totalRequireDocs = $mRefRequirement->totalNoOfDocs($moduleId);
+        // $totalRequireDocs = $mRefRequirement->totalNoOfDocs($moduleId);
         $appDetails = AgencyHoarding::find($applicationId);
         $totalUploadedDocs = $mWfActiveDocument->totalUploadedDocs($applicationId, $appDetails->workflow_id, $moduleId);
-        if ($totalRequireDocs == $totalUploadedDocs) {
+        // if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = true;
             $appDetails->doc_verify_status = '0';
             // $appDetails->parked = false;
             $appDetails->save();
-        } else {
-            $appDetails->doc_upload_status = '0';
-            $appDetails->doc_verify_status = '0';
-            $appDetails->save();
-        }
+        // } else {
+        //     $appDetails->doc_upload_status = '0';
+        //     $appDetails->doc_verify_status = '0';
+        //     $appDetails->save();
+        // }
     }
 
     /**
