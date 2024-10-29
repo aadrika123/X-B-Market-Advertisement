@@ -984,7 +984,7 @@ class ShopController extends Controller
             }
 
             $mMarShopPayment = new MarShopPayment();
-            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate, $currentFyear);                              // Get Shop Payment collection between givrn two dates
+            $data = $mMarShopPayment->listShopCollection($fromDate, $toDate,$currentFyear);                              // Get Shop Payment collection between givrn two dates
             if ($req->shopCategoryId != 0)
                 $data = $data->where('t2.shop_category_id', $req->shopCategoryId);
             if ($req->paymentMode != 0)
@@ -1876,16 +1876,71 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'shopId' => 'required|integer',
+            'financialYear' => 'required|string',
+        ]);
+        if ($validator->fails())
+            return responseMsgs(false, $validator->errors(), []);
+        try {
+            $mMarShopDemand = new MarShopDemand();
+            $shopDemand = $mMarShopDemand->payBeforeDemand($req->shopId, $req->financialYear);                            // Demand Details Before Payment 
+            $demands['shopDemand'] = $shopDemand;
+            $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
+            if ($demands['totalAmount'] > 0)
+                $demands['amountinWords'] = getIndianCurrency($demands['totalAmount']) . "Only /-";
+            $shopDetails = $this->_mShops->getShopDetailById($req->shopId);                                               // Get Shop Details By Shop Id
+            $ulbDetails = DB::table('ulb_masters')->where('id', $shopDetails->ulb_id)->first();
+            $demands['shopNo'] = $shopDetails->shop_no;
+            $demands['amcShopNo'] = $shopDetails->amc_shop_no;
+            $demands['allottee'] = $shopDetails->allottee;
+            $demands['market'] = $shopDetails->market_name;
+            $demands['shopType'] = $shopDetails->shop_type;
+            $demands['ulbName'] = $ulbDetails->ulb_name;
+            $demands['tollFreeNo'] = $ulbDetails->toll_free_no;
+            $demands['website'] = $ulbDetails->current_website;
+            $demands['ulbLogo'] =  $this->_ulbLogoUrl . $ulbDetails->logo;
+            $demands['rentType'] =  $shopDetails->rent_type;
+            $demands['aggrementEndDate'] =  $shopDetails->alloted_upto;
+
+
+            $mobile = $shopDetails->contact_no;
+            $mobile = "8271522513";
+            // if ($mobile != NULL && strlen($mobile) == 10) {
+            //     (Whatsapp_Send(
+            //         $mobile,
+            //         "market_test_v2",           // Dear *{{name}}*, your payment demand has been generated successfully of Rs *{{amount}}* on *{{date in d-m-Y}}* for *{{shop/Toll Rent}}*. You can download your receipt from *{{recieptLink}}*
+            //         [
+            //             "content_type" => "text",
+            //             [
+            //                 $shopDetails->allottee,
+            //                 $demands['totalAmount'],
+            //                 Carbon::now()->format('d-m-Y'),
+            //                 "Shop Demand Reciept",
+            //                 "https://modernulb.com/advertisement/demand-receipt/" . $shopDetails->id . "/" . $req->financialYear,
+            //             ]
+            //         ]
+            //     ));
+            // }
+            return responseMsgs(true, "", $demands, "055030", "1.0", responseTime(), "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "055030", "1.0", responseTime(), "POST", $req->deviceId);
+        }
+    }
+    /**
+     * | Generate Demand Reciept Details Before Payment
+     * | API - 30
+     * | Function - 30
+     */
+    public function generateShopDemandV1(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'shopId' => 'required|integer',
             'financialYear' => 'nullable|string',
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
             $mMarShopDemand = new MarShopDemand();
-            $shopDemand = $mMarShopDemand->payBeforeDemandv1($req->shopId);                            // Demand Details Before Payment 
-            if ($req->financialYear != null) {
-                $shopDemand =  $shopDemand->where('financial_year', '=', $req->financialYear);
-            }
+            $shopDemand = $mMarShopDemand->payBeforeDemandv1($req->shopId, $req->financialYear);                            // Demand Details Before Payment 
             $demands['shopDemand'] = $shopDemand;
             $demands['totalAmount'] = round($shopDemand->pluck('amount')->sum());
             if ($demands['totalAmount'] > 0)

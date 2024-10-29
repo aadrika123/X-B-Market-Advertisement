@@ -88,6 +88,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/list-tc-collections', 'tcCollectionReport');                                     // 54 list shop collection !pagination
         Route::post('rental/shop-demand-generate', 'generateShopDemandYearly');
         Route::post('rental/shop-update-details', 'updateShopDetails');
+        Route::post('rental/generate-shop-demandv1', 'generateShopDemandV1');
     });
 
     /**

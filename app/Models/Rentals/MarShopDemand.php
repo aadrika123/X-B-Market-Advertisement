@@ -16,7 +16,7 @@ class MarShopDemand extends Model
      */
     public function getDemandByShopId($shopId)
     {
-        return self::select('id', 'financial_year', DB::raw('ROUND(amount, 2) as amount'),'payment_status', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'tran_id')->where('shop_id', $shopId)->orderBy('financial_year', 'ASC')->get();
+        return self::select('id', 'financial_year', DB::raw('ROUND(amount, 2) as amount'), 'payment_status', DB::raw("TO_CHAR(payment_date, 'DD-MM-YYYY') as payment_date"), 'tran_id')->where('shop_id', $shopId)->orderBy('financial_year', 'ASC')->get();
     }
 
     /**
@@ -62,9 +62,9 @@ class MarShopDemand extends Model
     /**
      * | Get Generated Demand Details Pay Before
      */
-    public function payBeforeDemandv1($shopId,)
+    public function payBeforeDemandv1($shopId, $financialYear)
     {
-        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('payment_status', '0')->where('amount', '<>',null)->orderBy('financial_year', 'ASC')->get();
+        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('financial_year', '<=', $financialYear)->where('payment_status', '0')->where('amount', '<>', null)->orderBy('financial_year', 'ASC')->get();
     }
 
     /**
