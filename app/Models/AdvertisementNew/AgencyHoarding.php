@@ -295,7 +295,7 @@ class AgencyHoarding extends Model
     /**
      * get details of approve applications 
      */
-    public function getApproveDetails($request)
+    public function getPendingDetails($applicationId)
     {
         return self::select(
             'agency_hoardings.from_date',
@@ -329,21 +329,20 @@ class AgencyHoarding extends Model
                 $join->on('measurement_sizes.id', '=', 'agency_hoardings.hoard_size_id')
                     ->where('measurement_sizes.status', 1);
             })
-            ->leftJoin('ulb_ward_masters', function ($join) {
-                $join->on('ulb_ward_masters.id', '=', 'hoarding_masters.ward_id')
-                    ->where('ulb_ward_masters.status', 1);
-            })
             ->leftJoin('hoarding_rates', function ($join) {
                 $join->on('hoarding_rates.id', '=', 'agency_hoardings.hoard_size_id')
                     ->where('hoarding_rates.status', 1);
             })
+            ->leftJoin('ulb_ward_masters', function ($join) {
+                $join->on('ulb_ward_masters.id', '=', 'agency_hoardings.ward_mstr_id')
+                    ->where('ulb_ward_masters.status', 1);
+            })
 
 
-            ->leftJoin('m_circle', 'hoarding_masters.zone_id', '=', 'm_circle.id')
+            ->leftJoin('m_circle', 'm_circle.id', '=', 'agency_hoardings.zone_mstr_id')
             ->join('ulb_masters', 'ulb_masters.id', '=', 'agency_hoardings.ulb_id')
-            ->where('agency_hoardings.id', $request->applicationId)
+            ->where('agency_hoardings.id', $applicationId)
             ->where('agency_hoardings.status', true)
-            ->where('agency_hoardings.approve', 1)
             ->first();
     }
     /**

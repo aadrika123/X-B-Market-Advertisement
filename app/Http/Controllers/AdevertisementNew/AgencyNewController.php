@@ -1638,6 +1638,52 @@ class AgencyNewController extends Controller
         }
     }
 
+    /**
+     * |Get Application Details
+     */
+    public function getPendingApplicationDetails(Request $req)
+    {
+        $validated = Validator::make(
+            $req->all(),
+            [
+                'applicationId' => 'required'
+            ]
+        );
+        if ($validated->fails())
+            return validationError($validated);
+
+        try {
+            $user                       = null;
+            $canTakePayment             = false;
+            if ($req->authRequired == true && $req->token != null) {
+                $user = authUser($req);
+                // Check if user is JSK type for payment
+                if (!is_null($user) && $user->user_type == 'JSK') {
+                    $canTakePayment = true;
+                }
+            }
+            $viewRenewButton            = false;
+            $applicationId              = $req->applicationId;
+            $mAgencHording              = new AgencyHoarding();
+            $mHoardingAddress           = new AdHoardingAddress();
+            $mAdTran                    = new AdTran();
+
+            $ApplicationDetails = $mAgencHording->getPendingDetails($applicationId);
+            if (is_null($ApplicationDetails)) {
+                throw new Exception("application Not found!");
+            }
+            # get Address
+            $getAddress = $mHoardingAddress->getAddress($applicationId)->get();
+
+            # return Details 
+            $approveApplicationDetails["applicationDetails"]      = $ApplicationDetails;
+            $approveApplicationDetails['address']                  = $getAddress;
+            return responseMsgs(true, "Listed application details!", remove_null($approveApplicationDetails), "", "01", ".ms", "POST", $req->deviceId);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "01", ".ms", "POST", $req->deviceId);
+        }
+    }
+
     public function approvePaidList(Request $req)
     {
         $validator = Validator::make($req->all(), [
