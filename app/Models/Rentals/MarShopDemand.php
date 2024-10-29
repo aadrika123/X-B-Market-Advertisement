@@ -62,9 +62,9 @@ class MarShopDemand extends Model
     /**
      * | Get Generated Demand Details Pay Before
      */
-    public function payBeforeDemandv1($shopId, $financialYear)
+    public function payBeforeDemandv1($shopId)
     {
-        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('financial_year', '<=', $financialYear)->where('payment_status', '0')->where('amount', '<>', null)->orderBy('financial_year', 'ASC')->get();
+        return self::select('financial_year', 'amount')->where('shop_id', $shopId)->where('payment_status', '0')->where('amount', '<>', null)->orderBy('financial_year', 'ASC')->get();
     }
 
     /**
