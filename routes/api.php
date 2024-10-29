@@ -627,6 +627,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('advertisement/pipeline-search', 'searchHoardingPipeline');                            # 27      
         Route::post('advertisement/get-vehicle', 'getVehicle');
         Route::post('advertisement/list-inbox2', 'listInboxv2');
+        Route::post('advertisement/send-next-level', 'sendNextlevelOfficer');
     });
 });
 Route::controller(AdPaymentController::class)->group(function () {

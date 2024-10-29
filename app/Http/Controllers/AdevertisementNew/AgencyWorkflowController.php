@@ -2002,7 +2002,7 @@ class AgencyWorkflowController extends Controller
         if ($totalRequireDocs == $totalUploadedDocs) {
             $appDetails->doc_upload_status = true;
             $appDetails->doc_verify_status = '0';
-            $appDetails->parked = false;
+            // $appDetails->parked = false;
             $appDetails->save();
         } else {
             $appDetails->doc_upload_status = '0';
@@ -2232,6 +2232,29 @@ class AgencyWorkflowController extends Controller
             return responseMsgs(true, "Data According To Parameter!", remove_null($getVehicle), "", "01", "652 ms", "POST", "");
         } catch (Exception $e) {
             return responseMsg(false, $e->getMessage(), "");
+        }
+    }
+    #send to next level
+    public function sendNextlevelOfficer(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'applicationId'   => 'required',
+
+        ]);
+        if ($validator->fails()) {
+            return ['status' => false, 'message' => $validator->errors()];
+        }
+        try {
+            $applicationId = $req->applicationId;
+            $appDetails = AgencyHoarding::find($applicationId); 
+            if ($appDetails->doc_upload_status == 0) {
+                throw new Exception('Please Upload Document!');
+            }
+            $appDetails->parked = false;
+            $appDetails->save();
+            return  responseMsgs(true, "Send To Next Level", "050133", 1.0, responseTime(), "POST", "", "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "", "050502", "1.0", "", "POST", $req->deviceId ?? "");
         }
     }
 }

@@ -326,7 +326,10 @@ class AgencyHoarding extends Model
             'hoarding_rates.size',
             'agency_hoardings.size_square_feet',
             'agency_hoardings.application_no',
-            'agency_hoardings.no_of_hoarding'
+            'agency_hoardings.no_of_hoarding',
+            'agency_hoardings.doc_upload_status',
+            'agency_hoardings.locations',
+            'agency_hoardings.mobile_no',
 
         )
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoardings.agency_id')
