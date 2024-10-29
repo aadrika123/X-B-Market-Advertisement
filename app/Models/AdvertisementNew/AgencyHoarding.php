@@ -328,7 +328,7 @@ class AgencyHoarding extends Model
             'agency_hoardings.application_no',
             'agency_hoardings.no_of_hoarding',
             'agency_hoardings.doc_upload_status',
-            'agency_hoardings.locations',
+            'agency_hoardings.location',
             'agency_hoardings.mobile_no',
 
         )
