@@ -1938,7 +1938,7 @@ class AgencyWorkflowController extends Controller
             $mAgencyHoarding->current_role_id = $backId->wf_role_id;
             $mAgencyHoarding->parked     = 1;
             $mAgencyHoarding->btc_date   = Carbon::now();
-            $mAgencyHoarding->btc_by     = $user->user_type;
+            $mAgencyHoarding->btc_by     = $user->description;
             $mAgencyHoarding->btc_reason = $req->comment;
             $mAgencyHoarding->save();
 
