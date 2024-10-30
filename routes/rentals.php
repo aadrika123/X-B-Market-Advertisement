@@ -89,6 +89,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/shop-demand-generate', 'generateShopDemandYearly');
         Route::post('rental/shop-update-details', 'updateShopDetails');
         Route::post('rental/generate-shop-demandv1', 'generateShopDemandV1');
+        Route::post('rental/tran-deactived-list', 'tranDeactivatedList');
     });
 
     /**

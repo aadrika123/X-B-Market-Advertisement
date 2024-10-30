@@ -3273,4 +3273,70 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
+    /**
+     * Transaction Deactivation list
+     */
+    public function tranDeactivatedList(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "fromDate" => "nullable|date|date_format:Y-m-d",
+                "uptoDate" => "nullable|date|date_format:Y-m-d|after_or_equal:" . $request->fromDate,
+                "ulbId"    => "nullable|digits_between:1,9223372036854775807",
+                "wardId"   => "nullable|digits_between:1,9223372036854775807",
+                "zoneId"   => "nullable|digits_between:1,9223372036854775807",
+                "appType"  => "nullable|in:PROPERTY,SAF",
+                "userId"   => "nullable|digits_between:1,9223372036854775807",
+                "page"     => "nullable|digits_between:1,9223372036854775807",
+                "perPage"  => "nullable|digits_between:1,9223372036854775807",
+            ]
+        );
+        if ($validated->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'validation error',
+                'errors' => $validated->errors()
+            ]);
+        }
+        try {
+            $searchType = $request->searchType;
+            $value = $request->value;
+
+            $listShopTransaction = MarShopPayment::query()
+                ->select(
+                    'mar_shop_payments.id',
+                    'mc.circle_name as zone_name',
+                    'mm.market_name',
+                    'mst.shop_type',
+                    'mar_shop_payments.amount as last_payment_amount',
+                    'mar_shop_payments.transaction_id as transaction_no',
+                    'mar_shop_payments.deactive_reason',
+                    'mar_shop_payments.deactive_date',
+                    'mar_shop_payments.payment_date',
+                    'mar_shop_payments.pmt_mode as payment_mode',
+                    'mar_shop_payments.bank_name',
+                    'mar_shop_payments.cheque_no'
+                )
+                ->Join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
+                ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+                ->leftjoin('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
+                ->Join('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+                ->where('mar_shops.status', '1')
+                ->where('mar_shop_payments.payment_date', '>=', $request->fromDate)
+                ->where('mar_shop_payments.payment_date', '<=', $request->uptoDate)
+                ->where('mar_shop_payments.payment_status', '0');
+
+            if ($request->zone_id != null) {
+                $listShopTransaction->where('mar_shops.circle_name', $request->zone_id);
+            }
+            // if($request->)
+
+            $list = paginator($listShopTransaction, $request);
+            return responseMsgs(true, 'Shop Trans Deactivation List  Fetch Successfully !!!', $list, '055052', '1.0', responseTime(), 'POST');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
 }
