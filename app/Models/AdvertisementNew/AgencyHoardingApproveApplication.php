@@ -379,8 +379,23 @@ class AgencyHoardingApproveApplication extends Model
             ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
             ->leftjoin('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.hoarding_id')
             ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id');
-            // ->whereIn('agency_hoarding_approve_applications.user_type',['Agency','Citizen'])
-            // ->where('agency_masters.email', $email);
-            // ->where('agency_masters.status', 1);
+        // ->whereIn('agency_hoarding_approve_applications.user_type',['Agency','Citizen'])
+        // ->where('agency_masters.email', $email);
+        // ->where('agency_masters.status', 1);
+    }
+    /**
+     * | Get all details according to key 
+     */
+    public function getAllApprovdApplicationDetailsCitizen($userId)
+    {
+        return self::select(
+            'agency_hoarding_approve_applications.*'
+        )
+            ->leftJoin('wf_roles', 'wf_roles.id', 'agency_hoarding_approve_applications.current_role_id')
+            ->leftjoin('agency_hoardings', 'agency_hoardings.id', 'agency_hoarding_approve_applications.hoarding_id')
+            ->leftjoin('agency_masters', 'agency_masters.id', 'agency_hoarding_approve_applications.agency_id')
+            ->where('agency_hoarding_approve_applications.user_id', $userId);
+        // ->where('agency_masters.email', $email);
+        // ->where('agency_masters.status', 1);
     }
 }
