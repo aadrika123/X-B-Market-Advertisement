@@ -90,6 +90,7 @@ class ShopPaymentBll
     public function shopPayment($req)
     {
         // Calculate Amount For Payment
+        $user = authUser($req);
         $amount = DB::table('mar_shop_demands')
             ->where('shop_id', $req->shopId)
             ->where('payment_status', 0)
@@ -116,7 +117,8 @@ class ShopPaymentBll
             'paid_to' => $req->toFYear,
             'payment_date' => Carbon::now(),
             'payment_status' => '1',
-            'user_id' => $req->auth['id'] ?? $req->userId ?? 0,
+            // 'user_id' => $req->auth['id'] ?? $req->userId ?? 0,
+            'user_id' => $user->id,
             'ulb_id' => $shopDetails->ulb_id,
             'remarks' => $req->remarks,
             'pmt_mode' => $req->paymentMode,
