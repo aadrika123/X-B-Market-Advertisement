@@ -3316,12 +3316,16 @@ class ShopController extends Controller
                     'mar_shop_payments.payment_date',
                     'mar_shop_payments.pmt_mode as payment_mode',
                     'mar_shop_payments.bank_name',
-                    'mar_shop_payments.cheque_no'
+                    'mar_shop_payments.cheque_no',
+                    'mar_shop_payments.branch_name',
+                    'users.name as deactivated_by'
                 )
                 ->Join('mar_shops', 'mar_shops.id', 'mar_shop_payments.shop_id')
                 ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
                 ->leftjoin('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
                 ->Join('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+                ->leftjoin('mar_transaction_deactivate_dtls', 'mar_transaction_deactivate_dtls.tran_id', 'mar_shop_payments.id')
+                ->leftjoin('users', 'users.id', 'mar_transaction_deactivate_dtls.deactivated_by')
                 ->where('mar_shops.status', '1')
                 ->where('mar_shop_payments.payment_date', '>=', $request->fromDate)
                 ->where('mar_shop_payments.payment_date', '<=', $request->uptoDate)
