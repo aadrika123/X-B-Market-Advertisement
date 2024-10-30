@@ -98,7 +98,8 @@ class ShopController extends Controller
                 throw new Exception("Payment Already Clear");
             }
             $data = [
-                "userId" => $user && $user->getTable() == "users" ? $user->id : null,
+                // "userId" => $user && $user->getTable() == "users" ? $user->id : null,
+                "userId" => ($user && $user->getTable() == "users") ? ($user->id ?? $request->userId) : null,
                 "applicationId" => $shop->id,
                 "applicationNo" => $shop->shop_no,
                 "moduleId" => 30,
