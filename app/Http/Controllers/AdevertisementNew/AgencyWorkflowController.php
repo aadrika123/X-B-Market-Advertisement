@@ -1487,7 +1487,7 @@ class AgencyWorkflowController extends Controller
 
             $getAddress = $mHoardingAddress->getAddress($request->applicationId)->get();
 
-            if ($data->application_type == 'PERMANANT') {
+            if ($data->application_type == 'PERMANENT') {
                 $query =  $this->_agencyApproveappObj->getApproveDetails($request);
                 $query->value = $query['measurement'];
                 $query->key = 'SIZES';
