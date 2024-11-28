@@ -946,11 +946,12 @@ class ShopController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'shopCategoryId' => 'nullable|integer',
-            'marketId' => 'nullable|integer',
-            'fromDate' => 'nullable|date_format:Y-m-d',
-            'toDate' => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
-            'paymentMode'  => 'nullable',
-            'key'        => 'nullable'
+            'marketId'       => 'nullable|integer',
+            'fromDate'       => 'nullable|date_format:Y-m-d',
+            'toDate'         => 'nullable|date_format:Y-m-d|after_or_equal:fromDate',
+            'paymentMode'    => 'nullable',
+            'key'            => 'nullable',
+            'page'           => 'nullable'
         ]);
         if ($validator->fails()) {
             return  $validator->errors();
@@ -996,8 +997,9 @@ class ShopController extends Controller
                 $data = $data->where('mar_shop_payments.transaction_id', $req->key);
             if ($req->auth['user_type'] == 'JSK' || $req->auth['user_type'] == 'TC')
                 $data = $data->where('mar_shop_payments.user_id', $req->auth['id']);
+            $totalCollectAmount = $data->sum('amount');
             $list = paginator($data, $req);
-            $list['collectAmount'] = $data->sum('amount');
+            $list['collectAmount'] = $totalCollectAmount;
             return responseMsgs(true, "Shop Collection List Fetch Succefully !!!", $list, "055017", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "055017", "1.0", responseTime(), "POST", $req->deviceId);
