@@ -77,21 +77,25 @@ class Shop extends Model
   /**
    * | Get All Shop List By Ulb Id 
    */
-  public function getAllShopUlbWise($ulbId)
+  public function getAllShopUlbWise($ulbId, $currentFyear)
   {
     return Shop::select(
       'mar_shops.*',
       'mc.circle_name',
       'mm.market_name',
       'mst.shop_type',
+      DB::raw("COALESCE(SUM(CASE WHEN mar_shop_demands.financial_year < '$currentFyear' AND mar_shop_demands.payment_status = 0 THEN mar_shop_demands.amount ELSE 0 END), 0) AS arrear_demand"),
+      DB::raw("COALESCE(SUM(CASE WHEN mar_shop_demands.financial_year >= '$currentFyear' AND mar_shop_demands.payment_status = 0 THEN mar_shop_demands.amount ELSE 0 END), 0) AS current_demand")
     )
-      ->leftjoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
+      ->leftJoin('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
-      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
-      ->orderByDesc('id')
-      ->where('mar_shops.ulb_id', $ulbId);
-    // ->where('mar_shops.shop_category_id',2);
+      ->leftJoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftJoin('mar_shop_demands', 'mar_shops.id', '=', 'mar_shop_demands.shop_id') // Join properly to avoid Cartesian product
+      ->where('mar_shops.ulb_id', $ulbId)
+      ->groupBy('mar_shops.id', 'mc.circle_name', 'mm.market_name', 'mst.shop_type') // Group by necessary columns to aggregate data
+      ->orderByDesc('mar_shops.id');
   }
+
 
   /**
    * | Get Shop List By Market Id

@@ -545,9 +545,19 @@ class ShopController extends Controller
     public function listShop(Request $req)
     {
         try {
-            $ulbId = $req->auth['ulb_id'];
-            $mShop = new Shop();
-            $list = $mShop->getAllShopUlbWise($ulbId);
+            $ulbId                      = 2;
+            $mShop                      = new Shop();
+            $now                        = Carbon::now();
+            $currentDate                = $now->format('Y-m-d');
+            $currentYear                = collect(explode('-', $req->fiYear))->first() ?? $now->year;
+            $currentFyear               = $request->fiYear ?? getFinancialYear($currentDate);
+            $currentDate                = $now->format('Y-m-d');
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
+            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
+            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
+            $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
+
+            $list = $mShop->getAllShopUlbWise($ulbId,$currentFyear);
 
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
