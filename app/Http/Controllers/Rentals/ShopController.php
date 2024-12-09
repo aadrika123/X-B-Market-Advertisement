@@ -1247,7 +1247,7 @@ class ShopController extends Controller
         LEFT JOIN mar_shops ON mar_shops.id=mar_shop_payments.shop_id
         -- JOIN water_consumer_demands ON water_consumer_demands.consumer_id=water_trans.related_id
         left Join mar_shop_types on mar_shop_types.id= mar_shops.shop_category_id
-        JOIN mar_shop_demands on mar_shop_demands.shop_id = mar_shop_payments.shop_id
+        JOIN mar_shop_demands on mar_shop_demands.tran_id = mar_shop_payments.id
         LEFT JOIN users ON users.id=mar_shop_payments.user_id
         LEFT JOIN m_market ON m_market.id=mar_shops.market_id
         LEFT JOIN m_circle ON m_circle.id=mar_shops.circle_id
