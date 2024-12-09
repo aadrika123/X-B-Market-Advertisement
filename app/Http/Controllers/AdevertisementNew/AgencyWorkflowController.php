@@ -1137,7 +1137,8 @@ class AgencyWorkflowController extends Controller
 
     public function finalApprovalRejection($req, $application)
     {
-
+        $user                   = authUser($req);
+        $userId                 = $user->id;
         $currentDateTime        = Carbon::now();
         $mAgencyApproval        = new AgencyHoardingApproveApplication();
         # check 
@@ -1168,6 +1169,8 @@ class AgencyWorkflowController extends Controller
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_approve_applications');
             $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->approve_by = $userId;
+            $approveApplicationRep->approve_date = Carbon::now()->format("Y-m-d");
             $approveApplicationRep->save();
             $approveApplications->delete();
             return $msg  = "register Application Approved!";
@@ -1180,6 +1183,8 @@ class AgencyWorkflowController extends Controller
             $approveApplicationRep = $approveApplications->replicate();
             $approveApplicationRep->setTable('agency_hoarding_rejected_applications');
             $approveApplicationRep->id = $approveApplications->id;
+            $approveApplicationRep->reject_by = $userId;
+            $approveApplicationRep->reject_date = Carbon::now()->format("Y-m-d");
             $approveApplicationRep->save();
             $approveApplications->delete();
             return $msg  = "register Application Rejected!";
