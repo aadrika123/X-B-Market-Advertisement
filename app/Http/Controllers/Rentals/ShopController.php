@@ -557,7 +557,7 @@ class ShopController extends Controller
             $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
             $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
 
-            $list = $mShop->getAllShopUlbWise($ulbId,$currentFyear);
+            $list = $mShop->getAllShopUlbWise($ulbId, $currentFyear);
 
             if ($req->key)
                 $list = searchShopRentalFilter($list, $req);
@@ -1203,7 +1203,7 @@ class ShopController extends Controller
                 m_circle.circle_name as zone,
                 
         SUM(CASE 
-            WHEN mar_shop_demands.financial_year <= '$currentFyear' THEN mar_shop_demands.amount 
+            WHEN mar_shop_demands.financial_year < '$currentFyear' THEN mar_shop_demands.amount 
             ELSE 0 
         END) AS arrear_collections,
         SUM(CASE 
@@ -1227,17 +1227,17 @@ class ShopController extends Controller
             ELSE 0 
         END) AS current_collections_gp,
          SUM(CASE 
-            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 1
+            WHEN mar_shop_demands.financial_year < '$currentFyear' AND mar_shop_demands.shop_category_id = 1
              THEN mar_shop_demands.amount
             ELSE 0 
         END) AS arrear_collections_bot,
          SUM(CASE 
-            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 2
+            WHEN mar_shop_demands.financial_year < '$currentFyear' AND mar_shop_demands.shop_category_id = 2
              THEN mar_shop_demands.amount
             ELSE 0 
         END) AS arrear_collections_city,
          SUM(CASE 
-            WHEN mar_shop_demands.financial_year <= '$currentFyear' AND mar_shop_demands.shop_category_id = 3
+            WHEN mar_shop_demands.financial_year < '$currentFyear' AND mar_shop_demands.shop_category_id = 3
              THEN mar_shop_demands.amount
             ELSE 0 
         END) AS arrear_collections_gp

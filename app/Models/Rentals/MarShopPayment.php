@@ -180,7 +180,7 @@ class MarShopPayment extends Model
                FROM mar_shop_demands
                WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
                AND mar_shop_demands.payment_status = 1
-               AND mar_shop_demands.financial_year <= '$currentFyear'
+               AND mar_shop_demands.financial_year < '$currentFyear'
             ) AS arrear_amount"),
             DB::raw("(
                SELECT SUM(mar_shop_demands.amount)
@@ -194,7 +194,7 @@ class MarShopPayment extends Model
                FROM mar_shop_demands
                WHERE mar_shop_demands.shop_id = mar_shop_payments.shop_id
                AND mar_shop_demands.payment_status = 1
-               AND mar_shop_demands.financial_year <= '$currentFyear'
+               AND mar_shop_demands.financial_year < '$currentFyear'
            ), 0) + COALESCE((
                SELECT SUM(mar_shop_demands.amount)
                FROM mar_shop_demands
