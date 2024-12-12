@@ -91,6 +91,8 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/generate-shop-demandv1', 'generateShopDemandV1');
         Route::post('rental/tran-deactived-list', 'tranDeactivatedList');
         Route::post('rental/tran-tc-list', 'tranDetailsListTc');
+        Route::post('rental/tc-visit_record', 'tcVisitRecordUpdate');
+        Route::post('rental/tc-visit_record-by-id', 'tcVisitReportsById');
     });
 
     /**

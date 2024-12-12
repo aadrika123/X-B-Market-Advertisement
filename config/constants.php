@@ -10,6 +10,7 @@ return [
     "BASE_URL" => env("BASE_URL", "http://localhost/"),
     "CALLBACK_URL" => env("CALLBACK_URL", "http://localhost/"),
     "ULB_LOGO_URL" =>  env("ULB_LOGO_URL", "http://localhost/"),
+    "DOC_URL"   => env("DOC_URL", "http://localhost/"),
 
     "AADHAR_RELATIVE_NAME" => "AADHAR",
     "TRADE_RELATIVE_NAME" => "TRADE",

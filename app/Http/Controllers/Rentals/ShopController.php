@@ -23,6 +23,7 @@ use App\Models\Rentals\MarTollPayment;
 use App\Models\Rentals\Shop;
 use App\Models\Rentals\ShopConstruction;
 use App\Models\Rentals\ShopPayment;
+use App\Models\Rentals\ShopTcVisit;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -3424,6 +3425,103 @@ class ShopController extends Controller
             return responseMsgs(true, 'Shop Trans Deactivation List  Fetch Successfully !!!', $list, '055052', '1.0', responseTime(), 'POST');
         } catch (Exception $e) {
             DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
+
+    # shop tc visit report
+    /**
+     * tc vistit report
+     */
+    public function tcVisitRecordUpdate(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'shopId'         => 'nullable|integer',
+                'mobile_no'      => 'nullable|',            // 'nullable|digits:10|regex:/[0-9]{10}/',
+                'amcShopNo'      => 'nullable|',
+                'shopType'       => 'nullable|',
+                'marketName'     => 'nullable|',
+                'allotee'        => 'nullable|',
+                'shopOwnerName'  => 'nullable|',
+                'arrearDemand'    => 'nullable|',
+                'currentDemands'  => 'nullable',
+                'totalDemand'     => 'nullable',
+                'citizenRemark'   => 'nullable',
+                "tcRemark"        => "nullable|",
+                "location"        =>  "nullable",
+                "pickByCamp"      =>  "nullable",
+                "lat"             =>  "nullable",
+                "lan"             =>  "nullable|",
+                "document"         =>  "nullable|mimes:pdf,jpeg,png,jpg,gif",
+            ]
+        );
+        if ($validated->fails())
+            return validationErrorV2($validated);
+        try {
+            $now            = Carbon::now();
+            $user           = Auth()->user();
+            $userId         = $user->id;
+            $userType       = $user->user_type;
+            $shopId         = $request->shopId;
+            $relativePath   = Config::get('constants.SHOP_PATH');
+            $imageName = null;
+
+            $docUpload        = new DocumentUpload();
+            $mMarShops        = new Shop();
+            $mMarShopDemand   = new MarShopDemand();
+            $mShopTcVisit     = new ShopTcVisit();
+            $consumerDtls = $mMarShops->find($shopId);
+            $owner = $mMarShops->where("id", $request->shop_id)->orderBy("id", "ASC")->first();
+
+            DB::beginTransaction();
+            if ($request->document) {
+                $imageName = $docUpload->upload($shopId, $request->document, $relativePath);
+            }
+            #add remarks of tc 
+            $conUpdaleLog = $mShopTcVisit->addTcVisitRecord($request);
+            $conUpdaleLog->relative_path       = $imageName ? $relativePath : null;
+            $conUpdaleLog->document            = $imageName;
+            $conUpdaleLog->emp_details_id      = $userId;
+            $conUpdaleLog->user_type           = $userType;
+            $conUpdaleLog->apply_date          = $now;
+            $conUpdaleLog->update();
+            DB::commit();
+            return responseMsgs(true, "Add Tc Visit Remarks Succesfull!", "", "", "01", ".ms", "POST", $request->deviceId);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
+        }
+    }
+
+    /**
+     * | view details of tc visit records
+     * 
+     */
+    public function tcVisitReportsById(Request $request)
+    {
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'applicationId'         => "required|integer|",
+            ]
+        );
+        if ($validated->fails())
+            return validationErrorV2($validated);
+
+        try {
+            $docUrl              = Config::get('constants.DOC_URL');
+            $mShop               = new Shop();
+            $mTcVisitReport      = new ShopTcVisit();
+            $tcRecord            = $mTcVisitReport->getDetailsRecords($request)->first();
+            $data = [
+                'tcReocord' => $tcRecord,
+                "document" => $tcRecord->document ? trim($docUrl . "/" . $tcRecord->relative_path . "/" . $tcRecord->document, "/") : "",
+
+            ];
+            return responseMsgs(true, "Log Details", remove_null($data), "", "010203", "1.0", "", 'POST', "");
+        } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
