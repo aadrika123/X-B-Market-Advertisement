@@ -93,6 +93,7 @@ Route::group(['middleware' => ['checkToken']], function () {
         Route::post('rental/tran-tc-list', 'tranDetailsListTc');
         Route::post('rental/tc-visit_record', 'tcVisitRecordUpdate');
         Route::post('rental/tc-visit_record-by-id', 'tcVisitReportsById');
+        Route::post('rental/search-tc-visit-records', 'searchTcVisitRecords');
     });
 
     /**

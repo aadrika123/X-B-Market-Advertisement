@@ -3531,4 +3531,107 @@ class ShopController extends Controller
             return responseMsgs(false, $e->getMessage(), "", "010203", "1.0", "", 'POST', "");
         }
     }
+
+    /**
+     * | function for search tc visit records
+     */
+    public function searchTcVisitRecords(Request $request)
+    {
+
+        $now = Carbon::now()->format("Y-m-d");
+        $validated = Validator::make(
+            $request->all(),
+            [
+                "fromDate" => "nullable|date|before_or_equal:$now|date_format:Y-m-d",
+                "uptoDate" => "nullable|date|before_or_equal:$now|date_format:Y-m-d",
+                "userId" => "nullable|digits_between:1,9223372036854775807",
+                "wardId" => "nullable|digits_between:1,9223372036854775807",
+                "zoneId"    => "nullable|digits_between:1,9223372036854775807",
+                "page" => "nullable|digits_between:1,9223372036854775807",
+                "perPage" => "nullable|digits_between:1,9223372036854775807",
+            ]
+        );
+        if ($validated->fails())
+            return validationErrorV2($validated);
+        try {
+            $user     = authUser($request);
+            $userType = $user->user_type;
+            $tcId     = $user->id;
+            $fromDate = $uptoDate = $now;
+            $userId = $wardId = $zoneId = null;
+            $docUrl = Config('app.url');
+            $key = $request->key;
+            if ($key) {
+                $fromDate = $uptoDate = null;
+            }
+            if ($request->fromDate) {
+                $fromDate = $request->fromDate;
+            }
+            if ($request->uptoDate) {
+                $uptoDate = $request->uptoDate;
+            }
+            if ($request->wardId) {
+                $wardId = $request->wardId;
+            }
+            if ($request->zoneId) {
+                $zoneId = $request->zoneId;
+            }
+            if ($request->userId) {
+                $userId = $request->userId;
+            }
+            $data = ShopTcVisit::select(
+                "shop_tc_visits.id",
+                "shop_tc_visits.shop_id",
+                "shop_tc_visits.tc_remark",
+                "shop_tc_visits.market_name",
+                "shop_tc_visits.apply_date AS created_at",
+                "m_circle.circle_name",
+                "shop_tc_visits.allottee",
+                "users.name AS user_name",
+                "shop_tc_visits.arrear_demands",
+                "shop_tc_visits.current_demands",
+                "shop_tc_visits.longitude",
+                "shop_tc_visits.latitude",
+                "shop_tc_visits.citizen_remark",
+                "shop_tc_visits.report_type",
+                DB::raw("TRIM(BOTH '/' FROM concat('$docUrl/', relative_path, '/', document)) as doc_path")
+            )
+
+                ->leftJoin("users", "users.id", "shop_tc_visits.emp_details_id")
+                ->leftjoin('m_circle', 'm_circle.id', 'shop_tc_visits.zone_id');
+            if ($fromDate && $uptoDate) {
+                $data->whereBetween(DB::raw("CAST(shop_tc_visits.apply_date AS DATE)"), [$fromDate, $uptoDate]);
+            }
+            if ($userId) {
+                $data->where("shop_tc_visits.emp_details_id", $userId);
+            }
+            if ($zoneId) {
+                $data->where("shop_tc_visits.zone_id", $zoneId);
+            }
+            if ($user->user_type == 'TC') {
+                $data->where("shop_tc_visits.emp_details_id", $tcId);
+            }
+            if ($key) {
+                $data->where(function ($where) use ($key) {
+                    $where->orWhere("shop_tc_visits.old_consumer_no", "ILIKE", "%$key%")
+                        ->orWhere("shop_tc_visits.address", "ILIKE", "%$key%")
+                        ->orWhere("owners.allottee", "ILIKE", "%$key%")
+                        ->orWhere("owners.mobile_no", "ILIKE", "%$key%");
+                });
+            }
+            // return $data;
+            $perPage = $request->perPage ? $request->perPage : 10;
+            $paginator = $data->paginate($perPage);
+            $list = [
+                "current_page" => $paginator->currentPage(),
+                "last_page" => $paginator->lastPage(),
+                "data" => $paginator->items(),
+                "total" => $paginator->total(),
+            ];
+            $queryRunTime = (collect(DB::getQueryLog())->sum("time"));
+            return responseMsgs(true, "", $list);
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), "");
+        }
+    }
 }
