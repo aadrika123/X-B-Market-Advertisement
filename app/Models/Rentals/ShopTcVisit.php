@@ -15,11 +15,12 @@ class ShopTcVisit extends Model
     {
         $shopTcVisit = new ShopTcVisit();
         $shopTcVisit->zone_id           = $req->zoneId ?? null;
+        $shopTcVisit->zone              = $req->circleName ?? null;
         $shopTcVisit->shop_id           = $req->shopId ?? null;
         $shopTcVisit->amc_shop_no       = $req->amcShopNo ?? null;
         $shopTcVisit->shop_type         = $req->shopType ?? null;
         $shopTcVisit->market_name       = $req->marketName ?? null;
-        $shopTcVisit->shop_category     = $req->shopCategoryName ?? null;
+        $shopTcVisit->shop_category     = $req->shopOwnerName ?? null;
         $shopTcVisit->allottee          = $req->alloteeName ?? null;
         $shopTcVisit->shop_owner_name   = $req->shopOwnerName ?? null;
         $shopTcVisit->arrear_demands    = $req->arrearDemand ?? null;
