@@ -426,6 +426,10 @@ class ShopController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
+            $now                        = Carbon::now();
+            $currentDate                = $now->format('Y-m-d');
+            $ulbId                      = 2;
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
             $details = $this->_mShops->getShopDetailById($req->id);                                             // Get Shop Details By ID
             if (collect($details)->isEmpty())
                 throw new Exception("Shop Does Not Exists");
@@ -447,9 +451,14 @@ class ShopController extends Controller
             $mMarShopPayment = new MarShopPayment(); // DB::enableQueryLog();
             $payments = $mMarShopPayment->getPaidListByShopId($req->id);                                        // Get Paid Demand Against Shop
             $totalPaid = $payments->pluck('amount')->sum();
+            $list = $this->_mShops->getShopDmeand($req->id, $currentFyear)->get();
+            $arearDemand = $list->pluck('arrear_demand')->sum();
+            $currentDemand = $list->pluck('current_demand')->sum();
             // $shop['payments'] = $payments;
             $shop['totalPaid'] =   round($totalPaid, 2);
             $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
+            $shop['arrearDemand']  = round($arearDemand);
+            $shop['currentDemand']  = round($currentDemand);
             // return([DB::getQueryLog(),$payments]);
             return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
@@ -554,9 +563,6 @@ class ShopController extends Controller
             $currentFyear               = $request->fiYear ?? getFinancialYear($currentDate);
             $currentDate                = $now->format('Y-m-d');
             $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
-            $startOfCurrentYear         = Carbon::createFromDate($currentYear, 4, 1);           // Start date of current financial year
-            $startOfPreviousYear        = $startOfCurrentYear->copy()->subYear();               // Start date of previous financial year
-            $previousFinancialYear      = getFinancialYear($startOfPreviousYear);
 
             $list = $mShop->getAllShopUlbWise($ulbId, $currentFyear);
 
