@@ -32,6 +32,7 @@ class ShopTcVisit extends Model
         $shopTcVisit->longitude         = $req->lan ?? null;
         $shopTcVisit->emp_details_id    = $req->empDetailId ?? null;
         $shopTcVisit->report_type       = $req->reportType ?? null;
+        $shopTcVisit->mobile_no          = $req->mobile_no ?? null;
 
         $shopTcVisit->save();
 
