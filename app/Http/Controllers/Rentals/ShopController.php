@@ -3517,7 +3517,7 @@ class ShopController extends Controller
             return validationErrorV2($validated);
 
         try {
-            $docUrl              = Config::get('constants.DOC_URL');
+            $docUrl              = Config('app.url');
             $mShop               = new Shop();
             $mTcVisitReport      = new ShopTcVisit();
             $tcRecord            = $mTcVisitReport->getDetailsRecords($request)->first();

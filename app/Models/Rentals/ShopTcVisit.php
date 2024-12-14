@@ -19,17 +19,18 @@ class ShopTcVisit extends Model
         $shopTcVisit->amc_shop_no       = $req->amcShopNo ?? null;
         $shopTcVisit->shop_type         = $req->shopType ?? null;
         $shopTcVisit->market_name       = $req->marketName ?? null;
-        $shopTcVisit->allottee          = $req->allottee ?? null;
+        $shopTcVisit->shop_category     = $req->shopCategoryName ?? null;
+        $shopTcVisit->allottee          = $req->alloteeName ?? null;
         $shopTcVisit->shop_owner_name   = $req->shopOwnerName ?? null;
-        $shopTcVisit->arrear_demands    = $req->arrearDemands ?? null;
+        $shopTcVisit->arrear_demands    = $req->arrearDemand ?? null;
         $shopTcVisit->current_demands   = $req->currentDemands ?? null;
         $shopTcVisit->total_demands     = $req->totalDemands ?? null;
         $shopTcVisit->citizen_remark    = $req->citizenRemark ?? null;
         $shopTcVisit->tc_remark         = $req->tcRemark ?? null;
         $shopTcVisit->location          = $req->location ?? null;
-        $shopTcVisit->latitude          = $req->latitude ?? null;
-        $shopTcVisit->longitude         = $req->longitude ?? null;
-        $shopTcVisit->emp_details_id     = $req->empDetailId ?? null;
+        $shopTcVisit->latitude          = $req->lat ?? null;
+        $shopTcVisit->longitude         = $req->lan ?? null;
+        $shopTcVisit->emp_details_id    = $req->empDetailId ?? null;
         $shopTcVisit->report_type       = $req->reportType ?? null;
 
         $shopTcVisit->save();
