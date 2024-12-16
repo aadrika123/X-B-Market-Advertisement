@@ -25,7 +25,7 @@ class ShopTcVisit extends Model
         $shopTcVisit->shop_owner_name   = $req->shopOwnerName ?? null;
         $shopTcVisit->arrear_demands    = $req->arrearDemand ?? null;
         $shopTcVisit->current_demands   = $req->currentDemands ?? null;
-        $shopTcVisit->total_demands     = $req->totalDemands ?? null;
+        $shopTcVisit->total_demands     = $req->totalDemand ?? null;
         $shopTcVisit->citizen_remark    = $req->citizenRemark ?? null;
         $shopTcVisit->tc_remark         = $req->tcRemark ?? null;
         $shopTcVisit->location          = $req->location ?? null;

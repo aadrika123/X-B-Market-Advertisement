@@ -3581,12 +3581,13 @@ class ShopController extends Controller
             }
             $data = ShopTcVisit::select(
                 "shop_tc_visits.*",
+                "users.name as user_name",
                 DB::raw("TRIM(BOTH '/' FROM concat('$docUrl/', relative_path, '/', document)) as doc_path")
             )
 
                 ->leftJoin("users", "users.id", "shop_tc_visits.emp_details_id")
                 ->leftjoin('m_circle', 'm_circle.id', 'shop_tc_visits.zone_id')
-                ->orderby('shop_tc_visits.id','desc');
+                ->orderby('shop_tc_visits.id', 'desc');
             if ($fromDate && $uptoDate) {
                 $data->whereBetween(DB::raw("CAST(shop_tc_visits.apply_date AS DATE)"), [$fromDate, $uptoDate]);
             }
