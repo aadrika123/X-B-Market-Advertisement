@@ -459,6 +459,7 @@ class ShopController extends Controller
             $shop['pendingAmount'] =  round(($total - $totalPaid), 2);
             $shop['arrearDemand']  = round($arearDemand);
             $shop['currentDemand']  = round($currentDemand);
+            $shop['totalDemand']   = round($shop['arrearDemand'] + $shop['currentDemand']);
             // return([DB::getQueryLog(),$payments]);
             return responseMsgs(true, "", $shop, "055004", "1.0", responseTime(), "POST", $req->deviceId);
         } catch (Exception $e) {
