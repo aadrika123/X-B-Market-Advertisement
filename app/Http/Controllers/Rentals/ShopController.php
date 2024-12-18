@@ -711,18 +711,22 @@ class ShopController extends Controller
             $string         = preg_replace("/([A-Z])/", "_$1", $key);
             $refstring      = strtolower($string);
             $pages          = $req->perPage ? $req->perPage : 10;
+            $now                        = Carbon::now();
+            $currentDate                = $now->format('Y-m-d');
+            $ulbId                      = 2;
+            $currentFyear               = $request->fiYear ?? getFinancialYears($currentDate);
             DB::enableQueryLog();
-            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId)->paginate($pages);                                       // Get List Shop FOr Payment
+            $list = $mShop->searchShopForPayment($req->shopCategoryId, $req->marketId, $currentFyear)->paginate($pages);                                       // Get List Shop FOr Payment
             if ($key != null) {
                 switch ($key) {
                     case ("shopOwnerName"):                                                                        // Static
-                        $list = $mShop->searchShopForPaymentv1($refstring, $paramenter)->paginate($pages);
+                        $list = $mShop->searchShopForPaymentv1($refstring, $paramenter,$currentFyear)->paginate($pages);
                         $checkVal = collect($list)->last();
                         if (!$checkVal || $checkVal == 0)
                             throw new Exception("Data according to " . $key . " not Found!");
                         break;
                     case ("amcShopNo"):
-                        $list = $mShop->searchShopForPaymentv2($refstring, $paramenter)->paginate($pages);
+                        $list = $mShop->searchShopForPaymentv2($refstring, $paramenter,$currentFyear)->paginate($pages);
                         $checkVal = collect($list)->last();
                         if (!$checkVal || $checkVal == 0)
                             throw new Exception("Data according to " . $key . " not Found!");

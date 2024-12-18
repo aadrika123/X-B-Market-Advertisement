@@ -191,7 +191,7 @@ class Shop extends Model
   /**
    * | Search Shop for Payment
    */
-  public function searchShopForPayment($shopCategoryId, $marketId)
+  public function searchShopForPayment($shopCategoryId, $marketId, $currentFyear)
   {
     return Shop::select(
       'mar_shops.*',
@@ -200,22 +200,30 @@ class Shop extends Model
       'sc.construction_type',
       'mst.shop_type',
       'msp.amount as last_payment_amount',
-      // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
+      DB::raw("(SELECT SUM(amount) 
+                  FROM mar_shop_demands 
+                  WHERE mar_shop_demands.shop_id = mar_shops.id 
+                    AND mar_shop_demands.financial_year < '$currentFyear' 
+                    AND mar_shop_demands.payment_status = 0) AS arrear"),
+      DB::raw("(SELECT SUM(amount) 
+                  FROM mar_shop_demands 
+                  WHERE mar_shop_demands.shop_id = mar_shops.id 
+                    AND mar_shop_demands.financial_year >= '$currentFyear' 
+                    AND mar_shop_demands.payment_status = 0) AS current_demand")
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
       ->join('m_market as mm', 'mar_shops.market_id', '=', 'mm.id')
       ->join('shop_constructions as sc', 'mar_shops.construction', '=', 'sc.id')
-      ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
-      ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
-      // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId])
+      ->leftJoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
+      ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.market_id' => $marketId])
       ->orderByDesc('mar_shops.id');
-    // ->get();
   }
+
   /**
    * | Search Shop for Payment
    */
-  public function searchShopForPaymentv1($key, $refNo)
+  public function searchShopForPaymentv1($key, $refNo, $currentFyear)
   {
     return Shop::select(
       'mar_shops.*',
@@ -224,6 +232,11 @@ class Shop extends Model
       'sc.construction_type',
       'mst.shop_type',
       'msp.amount as last_payment_amount',
+      DB::raw("(SELECT SUM(amount) 
+                  FROM mar_shop_demands 
+                  WHERE mar_shop_demands.shop_id = mar_shops.id 
+                    AND mar_shop_demands.financial_year < '$currentFyear' 
+                    AND mar_shop_demands.payment_status = 0) AS arrear"),
       // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
@@ -239,7 +252,7 @@ class Shop extends Model
   /**
    * | Search Shop for Payment
    */
-  public function searchShopForPaymentv2($key, $refNo)
+  public function searchShopForPaymentv2($key, $refNo, $currentFyear)
   {
     return Shop::select(
       'mar_shops.*',
@@ -248,6 +261,11 @@ class Shop extends Model
       'sc.construction_type',
       'mst.shop_type',
       'msp.amount as last_payment_amount',
+      DB::raw("(SELECT SUM(amount) 
+      FROM mar_shop_demands 
+      WHERE mar_shop_demands.shop_id = mar_shops.id 
+        AND mar_shop_demands.financial_year < '$currentFyear' 
+        AND mar_shop_demands.payment_status = 0) AS arrear"),
       // DB::raw('case when mar_shops.last_tran_id is NULL then 0 else 1 end as shop_payment_status')
     )
       ->join('m_circle as mc', 'mar_shops.circle_id', '=', 'mc.id')
