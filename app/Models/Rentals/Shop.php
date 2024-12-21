@@ -217,7 +217,7 @@ class Shop extends Model
       ->leftJoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftJoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.market_id' => $marketId])
-      ->where('mar_shops.status',1)
+      ->where('mar_shops.status', 1)
       ->orderByDesc('mar_shops.id');
   }
 
@@ -246,8 +246,8 @@ class Shop extends Model
       ->leftjoin('mar_shop_types as mst', 'mar_shops.shop_category_id', '=', 'mst.id')
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId]
-      ->where('mar_shops.' . $key, 'LIKE', '%' . $refNo . '%')
-      ->where('mar_shops.status',1)
+      ->where('mar_shops.' . $key, 'ILIKE', '%' . $refNo . '%')
+      ->where('mar_shops.status', 1)
       ->orderByDesc('mar_shops.id');
     // ->get();
   }
@@ -277,7 +277,7 @@ class Shop extends Model
       ->leftjoin('mar_shop_payments as msp', 'mar_shops.last_tran_id', '=', 'msp.id')
       // ->where(['mar_shops.shop_category_id' => $shopCategoryId, 'mar_shops.circle_id' => $circleId, 'mar_shops.market_id' => $marketId]
       ->where('mar_shops.' . $key, $refNo)
-      ->where('status',1)
+      ->where('status', 1)
       ->orderByDesc('mar_shops.id');
     // ->get();
   }
