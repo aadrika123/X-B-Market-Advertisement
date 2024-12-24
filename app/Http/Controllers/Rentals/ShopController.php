@@ -720,13 +720,13 @@ class ShopController extends Controller
             if ($key != null) {
                 switch ($key) {
                     case ("shopOwnerName"):                                                                        // Static
-                        $list = $mShop->searchShopForPaymentv1($refstring, $paramenter,$currentFyear)->paginate($pages);
+                        $list = $mShop->searchShopForPaymentv1($refstring, $paramenter, $currentFyear)->paginate($pages);
                         $checkVal = collect($list)->last();
                         if (!$checkVal || $checkVal == 0)
                             throw new Exception("Data according to " . $key . " not Found!");
                         break;
                     case ("amcShopNo"):
-                        $list = $mShop->searchShopForPaymentv2($refstring, $paramenter,$currentFyear)->paginate($pages);
+                        $list = $mShop->searchShopForPaymentv2($refstring, $paramenter, $currentFyear)->paginate($pages);
                         $checkVal = collect($list)->last();
                         if (!$checkVal || $checkVal == 0)
                             throw new Exception("Data according to " . $key . " not Found!");
@@ -2642,7 +2642,7 @@ class ShopController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         try {
             // $mShop=new Shop();
-            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('shop_category_id', $req->shopCategoryId)->orderBy('id')->get();
+            $shopIds = DB::table('mar_shops')->select('id')->where('market_id', $req->marketId)->where('shop_category_id', $req->shopCategoryId)->where('status', 1)->orderBy('id')->get();
             $receipts = array();
             foreach ($shopIds as $val) {
                 $mMarShopDemand = new MarShopDemand();
